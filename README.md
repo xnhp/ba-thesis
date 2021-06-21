@@ -1,1 +1,1 @@
-# ba-thesis
+# Node Duplication in Metabolic Networks
