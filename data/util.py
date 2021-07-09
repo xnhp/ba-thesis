@@ -178,10 +178,59 @@ def load_dataset(identifier: str) -> tuple[SBMLModel, networkx.Graph]:
 
 
 def print_model_summary(identifier: str):
-    model, graph = load_dataset(identifier)
-    print(
-        "Number of species: {0}".format(len(model.species))
-    )
-    print(
-        "Number of duplicate species: {0}".format(len(model.duplicate_aliases_ids))
-    )
+    path, model_class = get_dataset(identifier)
+    model: SBMLModel
+    model = model_class(path)  # call specific constructor
+
+    print("Model: {0} ({2}) at {1}".format(identifier, path, model_class.__name__))
+
+    print("Number of species: {0}".format(len(model.species)))
+    print("... with duplicate aliases: {0}".format(len(model.duplicate_aliases_ids)))
+
+    print("Number of reactions: {0}".format(len(model.reactions)))
+    rxn_without_id = len([rxn for rxn in model.reactions if rxn['id'] is None])
+    print("... without `id` attribute: {0}".format(rxn_without_id))
+
+    return model
+
+
+def print_graph_summary(model: SBMLModel):
+    # construct graph
+    from graphgym.contrib.loader.SBML import graph_from_model
+    graph: networkx.Graph
+    graph = graph_from_model(model)
+
+    print("Number of nodes: {0}".format(graph.number_of_nodes()))
+    # interesting because nielsen at al excluded species of complex type
+    # and with degree < 2 (unclear whether union or intersection of these criteria)
+    degrees = graph.degree(graph.nodes)  # (node, degree) tuples
+    print("... with degree >= 2: {0}".format(
+        len(
+            [node for (node, degree) in degrees if degree >= 2]
+        )
+    ))
+    # complex species are already disregarded
+    print("... with duplicate label and degree >= 2: {0}".format(len(
+        [node for (node, label) in
+            graph.nodes(data="is_duplicate", default=False)
+            if
+                graph.degree[node] >= 2 and
+                label is True
+         ]
+    )))
+
+    return graph
+
+
+
+
+
+
+
+
+
+
+
+
+
+
