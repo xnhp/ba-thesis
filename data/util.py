@@ -65,7 +65,11 @@ class SBMLModel:
         return set(self.duplicate_aliases.keys())
 
     def get_species_dict(self, species):
-        d = {'id': species.attrib['id'], 'type': 'species', 'is_duplicate': self.is_duplicate_species(species)}
+        d = {
+            'id': species.attrib['id'],
+            'type': 'species',
+            'is_duplicate': self.is_duplicate_species(species)
+        }
         # species id (or should we use the `metaid` attrib instead?)
         d['node_label'] = d['is_duplicate']  # GG expects this name
         return d
@@ -90,18 +94,28 @@ class SBMLModel:
 
     @functools.cached_property
     def reactions(self):
+        def attrib_or_none(el, key):
+            try:
+                return el.attrib[key]
+            except KeyError:
+                return None
+
         def extract_species_reference(el):
             return el.attrib[self.rxn_species_ref_attrib]
 
         r = []
         for rxn in self.reaction_els:
-            d = {'id': rxn.attrib['id'], 'class': 'reaction', 'node_label': 0,
-                 'reactants': [extract_species_reference(el) for el in
-                               rxn.findall("listOfReactants/speciesReference", self.nsmap)],
-                 'products': [extract_species_reference(el) for el in
+            d = {
+                'id': attrib_or_none(rxn, 'id'),
+                'class': 'reaction',
+                'node_label': 0,
+                'reactants': [extract_species_reference(el) for el in
+                              rxn.findall("listOfReactants/speciesReference", self.nsmap)],
+                'products': [extract_species_reference(el) for el in
                               rxn.findall("listOfProducts/speciesReference", self.nsmap)],
-                 'modifiers': [extract_species_reference(el) for el in
-                               rxn.findall("listOfModifiers/speciesReference", self.nsmap)]}
+                'modifiers': [extract_species_reference(el) for el in
+                              rxn.findall("listOfModifiers/speciesReference", self.nsmap)]
+            }
             # should be standard SBML and independent of dialects?
             # TODO need to set node_label here aswell?
             # TODO annotations from CellDesigner and RDF annotations ↝ read-annotations.ipynb
