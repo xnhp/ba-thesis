@@ -68,10 +68,9 @@ class SBMLModel:
         d = {
             'id': species.attrib['id'],
             'type': 'species',
-            'is_duplicate': self.is_duplicate_species(species)
+            'node_label': self.is_duplicate_species(species)  # GraphGym expects this key
         }
         # species id (or should we use the `metaid` attrib instead?)
-        d['node_label'] = d['is_duplicate']  # GG expects this name
         return d
 
     @functools.cached_property
@@ -226,7 +225,7 @@ def print_graph_summary(model: SBMLModel):
     # complex species are already disregarded
     print("... with duplicate label and degree >= 2: {0}".format(len(
         [node for (node, label) in
-            graph.nodes(data="is_duplicate", default=False)
+            graph.nodes(data="node_label", default=False)
             if
                 graph.degree[node] >= 2 and
                 label is True
