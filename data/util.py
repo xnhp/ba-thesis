@@ -96,7 +96,6 @@ class SBMLModel:
     @staticmethod
     def is_excluded_species(d):
         return False
-        return cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
 
     @functools.cached_property
     def reactions(self):
@@ -148,7 +147,7 @@ class CellDesignerModel(SBMLModel):
 
     @staticmethod
     def is_excluded_species(d):
-        return super().is_excluded_species(d) or cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
+        return SBMLModel.is_excluded_species(d) or cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
 
 
 class SBMLLayoutModel(SBMLModel):
@@ -161,6 +160,12 @@ class SBMLLayoutModel(SBMLModel):
         self.attrib_ns_prefix = "{http://www.sbml.org/sbml/level3/version1/layout/version1}"
         self.alias_groupby_attrib = self.attrib_ns_prefix + "species"
 
+    # see c33436
+    def get_species_dict(self, species):
+        d = super().get_species_dict(species)
+        # this kind of data format (at least the ReconMap example) does not seem to have class annotations
+        d['class'] = "unknown"  # TODO
+        return d
 
 def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
     """
