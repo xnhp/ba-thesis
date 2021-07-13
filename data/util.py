@@ -9,6 +9,12 @@ from lxml import etree
 
 
 class SBMLModel:
+
+    # Minimal degree for a node (of any type), used during preprocessing.
+    # Static property. This is not in GraphGym configuration files because it may also be accessed from outside the GG
+    # pipeline, e.g. for printing dataset summaries.
+    min_node_degree = 2
+
     def __init__(self, filepath):
         self.path = filepath
         self.tree = etree.parse(filepath)
@@ -89,6 +95,7 @@ class SBMLModel:
 
     @staticmethod
     def is_excluded_species(d):
+        return False
         return cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
 
     @functools.cached_property
@@ -138,6 +145,10 @@ class CellDesignerModel(SBMLModel):
                                   self.nsmap).text
         # TODO annotations, ↝ read-annotations.ipynb ↝ [[exploit annotations for features]]
         return d
+
+    @staticmethod
+    def is_excluded_species(d):
+        return super().is_excluded_species(d) or cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
 
 
 class SBMLLayoutModel(SBMLModel):
@@ -219,7 +230,7 @@ def print_graph_summary(model: SBMLModel):
     degrees = graph.degree(graph.nodes)  # (node, degree) tuples
     print("... with degree >= 2: {0}".format(
         len(
-            [node for (node, degree) in degrees if degree >= 2]
+            [node for (node, degree) in degrees if degree >= SBMLModel.min_node_degree]
         )
     ))
     # complex species are already disregarded
