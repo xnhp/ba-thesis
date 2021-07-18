@@ -113,7 +113,7 @@ class SBMLModel:
             d = {
                 'id': attrib_or_none(rxn, 'id'),
                 'class': 'reaction',
-                'node_label': 0,
+                'node_label': 0,  # never a duplicate
                 'reactants': [extract_species_reference(el) for el in
                               rxn.findall("listOfReactants/speciesReference", self.nsmap)],
                 'products': [extract_species_reference(el) for el in
