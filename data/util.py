@@ -174,7 +174,6 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
     :param identifier: An identifier for the dataset
     :return: The full path to the dataset
     """
-    # need to do local import
     identifier_map = {
         "AlzPathway": (
             "alzpathway/CellDesigner SBML/12918_2012_896_MOESM1_ESM.xml",
