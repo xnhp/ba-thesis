@@ -184,10 +184,10 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
             "pd_map_spring_18/PD_180412_2.xml",
             CellDesignerModel
         ),
-        "ReconMap": (
-            "ReconMap/ReconMap-2.01-SBML3-Layout-Render/ReconMap-2.01-SBML3-Layout-Render.xml",
-            SBMLLayoutModel
-        ),
+        # "ReconMap": (
+        #     "ReconMap/ReconMap-2.01-SBML3-Layout-Render/ReconMap-2.01-SBML3-Layout-Render.xml",
+        #     SBMLLayoutModel
+        # ),
         "ReconMapOlder": (
             "ReconMap/ReconMap-2.01/ReconMap-2.01.xml",
             CellDesignerModel
