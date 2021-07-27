@@ -17,6 +17,7 @@ class SBMLModel:
 
     def __init__(self, filepath):
         self.path = filepath
+        # cannot pickle ElementTree
         self.tree = etree.parse(filepath)
         self.root = self.tree.getroot()
         # need to explicitly add these namespaces
