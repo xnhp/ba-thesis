@@ -75,7 +75,9 @@ class SBMLModel:
         d = {
             'id': species.attrib['id'],
             'type': 'species',
-            'node_label': self.is_duplicate_species(species)  # GraphGym expects this key
+            'node_label': SBMLModel.is_duplicate_to_label(
+                self.is_duplicate_species(species)  # GraphGym expects this key
+            )
         }
         # species id (or should we use the `metaid` attrib instead?)
         return d
@@ -89,6 +91,16 @@ class SBMLModel:
             ]
             if not self.is_excluded_species(d)
         ]
+
+    @staticmethod
+    def is_duplicate_to_label(value):
+        """
+        Convert boolean to integer labels
+        """
+        if value is True:
+            return 1
+        else:
+            return 0
 
     def is_duplicate_species(self, species):
         # ↝ [[how to determine duplicates in validation networks]]
