@@ -1,16 +1,16 @@
 # directory containing dirs for each run (commonly called "config-{hyperparms}"
 import os
 
+import numpy as np
 import pandas as pd
 from graphgym.utils.io import json_to_dict_list
 from matplotlib import pyplot as plt
+from mlxtend.plotting import plot_confusion_matrix
 from sklearn import metrics
 
 from data.util import print_model_summary, print_graph_summary
 
-from graphgym.config import cfg
-
-out_dir = "GraphGym/run/sanity/generated-configs/config_grid_grid"
+out_dir = "GraphGym/run/train-on-many/generated-configs/config_grid_grid"
 
 
 def get_model_details(model_dir):
@@ -39,7 +39,7 @@ def get_model_details(model_dir):
     return d
 
 
-def flobble(out_dir):
+def read_model_results(out_dir):
     model_dirs = [dir for dir in os.scandir(out_dir) if dir.is_dir()]
     # dict from model name (arbitrary, lets make this the name of the directory)
     # to additional information such as performance metrics or predictions
@@ -55,11 +55,11 @@ def sort_models(split, key, model_details):
                reverse=True)
     # return extracted values for convenience
     v = [key_func(mdl) for mdl in s]
-    return list(zip(s,v))
+    return list(zip(s, v))
 
 
 def top_k_on_split(models, split, metric):
-    k=3
+    k = 5
     s1 = sort_models(split, metric, models)[:k]
     s = ""
     split_desc = {
@@ -71,6 +71,7 @@ def top_k_on_split(models, split, metric):
     for model, value in s1:
         s += ("\t" + model['name'] + ":\t " + str(value) + "\n")
     return s
+
 
 def top_k_all_splits(models, metric):
     s = ""
@@ -89,59 +90,150 @@ def split_info(mdls, split):
     pass
 
 
-
 def read_pd_csv(path):
     df = pd.read_csv(path)
     df.drop(df.columns[0], axis=1, inplace=True)
     return df
 
-def save_roc(model):
-    y_test = read_pd_csv(os.path.join(model['path'], "1", "val-graph", "Y_val.csv"))
-    # only probs of positive class
-    probas = read_pd_csv(os.path.join(model['path'], "1", "val-graph", "pred_val.csv"))['1']
-    fpr, tpr, threshold = metrics.roc_curve(y_test, probas)
+def roc_thresh(model, split):
+    y_true, y_proba = get_prediction_and_truth(model, split)
+    fpr, tpr, thresholds = metrics.roc_curve(y_true, y_proba)
+    optimal_idx = np.argmax(tpr - fpr)
+    optimal_threshold = thresholds[optimal_idx]
+    return fpr, tpr, optimal_threshold, optimal_idx
+
+def save_roc(model, split="train"):
+    fpr, tpr, _, _ = roc_thresh(model, split)
     roc_auc = metrics.auc(fpr, tpr)
-    plt.title('Receiver Operating Characteristic')
+    plt.title(f'Receiver Operating Characteristic ({split})')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
     plt.legend(loc='lower right')
-    plt.plot([0, 1], [0, 1], 'r--')
+    plt.plot([0, 1], [0, 1], '--')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
+    ticks = np.append(np.arange(0,1,step=0.25), 1)
+    plt.xticks(ticks)
+    plt.yticks(ticks)
+    plt.grid(b=True, linestyle="dotted")
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
-    plt.savefig(os.path.join(out_dir, "roc"))
+    plt.savefig(os.path.join(out_dir, "roc_" + split))
+    plt.close()
 
 
-def save_conf_mat(model, tresh):
-    # TODO https://vitalflux.com/python-draw-confusion-matrix-matplotlib/
-    #   https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
-    #   https://rasbt.github.io/mlxtend/user_guide/evaluate/confusion_matrix/
-    pass
+def get_prediction_and_truth(model, split):
+    def get_filename(split):
+        if split == "train":
+            return "train"
+        elif split == "val":
+            return "test"
+        elif split == "val-graph":
+            return "val"
 
+    y_test = read_pd_csv(os.path.join(model['path'], "1", split, "Y_" + get_filename(split) + ".csv"))
+    # only probs of positive class
+    probas = read_pd_csv(os.path.join(model['path'], "1", split, "pred_" + get_filename(split) + ".csv"))
+    if probas.shape[1] == 2:  # in case we forgot to limit to column of positive class when writing
+        probas = pd.DataFrame(probas['1'])
+
+    return y_test, probas
+
+
+def save_conf_mat(model, tresh=None, split="train"):
+    y_true, y_proba = get_prediction_and_truth(model, split)
+
+    if tresh is None:
+        _, _, tresh, _ = roc_thresh(model, split)
+
+    def decision_function(prob):
+        return 0 if float(prob) < tresh else 1
+
+    class_preds = [decision_function(prob) for prob in y_proba.values]
+    conf_mat = metrics.confusion_matrix(y_true, class_preds)
+    fig, ax = plot_confusion_matrix(conf_mat=conf_mat)
+    plt.title(f"Confusion Matrix (t={tresh} on {split})")
+    plt.savefig(os.path.join(out_dir, "confusion_" + split))
+    # TODO instead, print identifiers of datasets in splits?
+    plt.close()
+
+
+def read_yaml(path):
+    import yaml
+    with open(path) as f:
+        dataMap = yaml.safe_load(f)
+    return dataMap
+
+
+def map_summary(identifier):
+    model, s1 = print_model_summary(identifier)
+    graph, s2 = print_graph_summary(model)
+    return s1 + s2
+
+
+def get_used_maps(mdls):
+    # obtain identifiers of used maps
+    dummy_mdl = mdls[0]
+    dummy_config = read_yaml(os.path.join(dummy_mdl['path'], "1", "config.yaml"))
+    train_identifiers = dummy_config['dataset']['train_names']
+    # i.e. corresponding to val-graph
+    test_identifiers = dummy_config['dataset']['test_names']
+    return train_identifiers, test_identifiers
+
+def data_summary(models):
+    s = ""
+    train_ids, test_ids = get_used_maps(models)
+    s += "Models used for training (internal):\n"
+    for train_id in train_ids:
+        s += map_summary(train_id)
+        s += "\n"
+    s += "Models used for validation (external):\n"
+    for test_id in test_ids:
+        s += map_summary(test_id)
+        s += "\n"
+    return s
+
+def tpr_cutoffs(model, split, cutoffs=None):
+    if cutoffs is None:
+        cutoffs = [0.25, 0.5, 0.75]
+    fpr, tpr, t_opt, t_opt_ix = roc_thresh(model, split)
+    return {
+        # find fpr at (close) a given tpr
+        # i.e. "if we want to receive {tpr}% of true positives, how many false positives do we get?"
+        tpr_cutoff: fpr[
+            # find index of largest tpr <= cutoff
+            # assume tpr is in ascending order!
+            len([r for r in tpr if r <= tpr_cutoff]) - 1
+        ]
+        for tpr_cutoff in cutoffs
+    }
+
+def tpr_cutoffs_str(model, split):
+    s = ""
+    cutoffs = tpr_cutoffs(model, split)
+    s += "FPR at TPR cutoffs: \n"
+    for tpr_cutoff, fpr in cutoffs.items():
+        s += f"\t{tpr_cutoff:.2f}:\t {fpr:.3f}\n"
+    return s
 
 if __name__ == "__main__":
 
-    # TODO print network summaries of used networks
-    # dont have cfg initialised here, would either need to call this
-    # via python in main.py (no) or read from yaml or hardcode
-    # for name in cfg.dataset.train_names:
-    #     sbmlmdl = print_model_summary(name)
-    #     graph = print_graph_summary(name)
-    # for name in cfg.dataset.test_names:
-    #     sbmlmdl = print_model_summary(name)
-    #     graph = print_graph_summary(name)
-
-    # improve this by using logging module? https://stackoverflow.com/a/9321890/156884
-
-    models = flobble(out_dir)
-
-    with open(os.path.join(out_dir, "summary.txt"), "w") as f:
-        f.write(top_k_all_splits(models, 'auc'))
-        f.write(top_k_all_splits(models, 'accuracy'))
+    models = read_model_results(out_dir)
 
     fav_mdl, _ = sort_models("val-graph", 'auc', models)[0]
-    save_roc(fav_mdl)
 
-    split_info(models, "val")
+    for split in ["train", "val", "val-graph"]:
+        # TODO arrange these in subplots
+        save_roc(fav_mdl, split=split)
+        save_conf_mat(fav_mdl, split=split)
 
-    # save_conf_mat(fav_mdl, t_opt)
+    with open(os.path.join(out_dir, "summary.txt"), "w") as f:
+        # TODO info about each split
+        f.write(data_summary(models))
+        f.write(top_k_all_splits(models, 'auc'))
+        f.write(top_k_all_splits(models, 'accuracy'))
+        f.write(f"info on fav mdl: {fav_mdl['name']}\n")
+        f.write(str(tpr_cutoffs_str(fav_mdl, 'val-graph')))
+        f.write("\n (see folder for plots)")
+
+
+
