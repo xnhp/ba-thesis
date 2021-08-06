@@ -10,7 +10,12 @@ from sklearn import metrics
 
 from data.util import print_model_summary, print_graph_summary
 
-out_dir = "GraphGym/run/train-on-many/generated-configs/config_grid_grid"
+experiment_name = "gcn-projection"
+config_name = "config-gnn"
+experiment_dir = os.path.join("GraphGym/run/", experiment_name)
+grid_out_dir = os.path.join(experiment_dir, "generated-configs/", config_name + "_grid_grid")
+plot_out_dir = os.path.join(experiment_dir, "results")
+
 
 
 def get_model_details(model_dir):
@@ -21,12 +26,16 @@ def get_model_details(model_dir):
     """
 
     def find_stats(key):
-        return json_to_dict_list(
-            # rely on GG aggregation across repeats and only consider "agg" directory
-            # (triggered at end of main.py)
-            # Read from stats.json which contains averages and stddev ↝ GraphGym/graphgym/utils/agg_runs.py:48
-            os.path.join(model_dir, "agg", key, "stats.json")
-        )[0]  # stats.json will always contain only a single line
+        try:
+            return json_to_dict_list(
+                # rely on GG aggregation across repeats and only consider "agg" directory
+                # (triggered at end of main.py)
+                # Read from stats.json which contains averages and stddev ↝ GraphGym/graphgym/utils/agg_runs.py:48
+                os.path.join(model_dir, "agg", key, "stats.json")
+            )[0]  # stats.json will always contain only a single line
+        except FileNotFoundError:
+            # TODO we don't write val-graph results for GNNs yet
+            pass
 
     d = {
         'name': os.path.basename(model_dir),
@@ -117,7 +126,7 @@ def save_roc(model, split="train"):
     plt.grid(b=True, linestyle="dotted")
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
-    plt.savefig(os.path.join(out_dir, "roc_" + split))
+    plt.savefig(os.path.join(plot_out_dir, "roc_" + split))
     plt.close()
 
 
@@ -152,7 +161,7 @@ def save_conf_mat(model, tresh=None, split="train"):
     conf_mat = metrics.confusion_matrix(y_true, class_preds)
     fig, ax = plot_confusion_matrix(conf_mat=conf_mat)
     plt.title(f"Confusion Matrix (t={tresh} on {split})")
-    plt.savefig(os.path.join(out_dir, "confusion_" + split))
+    plt.savefig(os.path.join(plot_out_dir, "confusion_" + split))
     # TODO instead, print identifiers of datasets in splits?
     plt.close()
 
@@ -215,9 +224,14 @@ def tpr_cutoffs_str(model, split):
         s += f"\t{tpr_cutoff:.2f}:\t {fpr:.3f}\n"
     return s
 
+
+def save_loss_plot(mdl, split):
+    pass
+
+
 if __name__ == "__main__":
 
-    models = read_model_results(out_dir)
+    models = read_model_results(grid_out_dir)
 
     fav_mdl, _ = sort_models("val-graph", 'auc', models)[0]
 
@@ -225,8 +239,9 @@ if __name__ == "__main__":
         # TODO arrange these in subplots
         save_roc(fav_mdl, split=split)
         save_conf_mat(fav_mdl, split=split)
+        save_loss_plot(fav_mdl, split=split)
 
-    with open(os.path.join(out_dir, "summary.txt"), "w") as f:
+    with open(os.path.join(plot_out_dir, "summary.txt"), "w") as f:
         # TODO info about each split
         f.write(data_summary(models))
         f.write(top_k_all_splits(models, 'auc'))
