@@ -173,7 +173,7 @@ class SBMLLayoutModel(SBMLModel):
         self.attrib_ns_prefix = "{http://www.sbml.org/sbml/level3/version1/layout/version1}"
         self.alias_groupby_attrib = self.attrib_ns_prefix + "species"
 
-    # see c33436
+    # ↝ c33436
     def get_species_dict(self, species):
         d = super().get_species_dict(species)
         # this kind of data format (at least the ReconMap example) does not seem to have class annotations
