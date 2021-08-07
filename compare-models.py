@@ -10,8 +10,11 @@ from sklearn import metrics
 
 from data.util import print_model_summary, print_graph_summary
 
+# experiment_name = "train-on-many"
+# config_name = "config"
 experiment_name = "gcn-projection"
 config_name = "config-gnn"
+
 experiment_dir = os.path.join("GraphGym/run/", experiment_name)
 grid_out_dir = os.path.join(experiment_dir, "generated-configs/", config_name + "_grid_grid")
 plot_out_dir = os.path.join(experiment_dir, "results")
@@ -34,6 +37,7 @@ def get_model_details(model_dir):
                 os.path.join(model_dir, "agg", key, "stats.json")
             )[0]  # stats.json will always contain only a single line
         except FileNotFoundError:
+            print("file not found")
             # TODO we don't write val-graph results for GNNs yet
             pass
 
@@ -144,6 +148,7 @@ def save_roc(model, split="train"):
     plt.close()
 
 def get_filename(split):
+    # ouch.
     if split == "train":
         return "train"
     elif split == "val":
@@ -152,21 +157,26 @@ def get_filename(split):
         return "val"
 
 def get_prediction_and_truth(model, split):
-    def get_filename(split):
-        if split == "train":
-            return "train"
-        elif split == "val":
-            return "test"
-        elif split == "val-graph":
-            return "val"
+    svm_pred_path = os.path.join(model['path'], "1", split)
+    # gnn_pred_base_path = os.path.join(model['path'], "1", split, "preds")
+    if os.path.exists(os.path.join(svm_pred_path, "Y_" + get_filename(split) + ".csv")):
+        y_test = read_pd_csv(os.path.join(svm_pred_path, "Y_" + get_filename(split) + ".csv"))
+        # only probs of positive class
+        probas = read_pd_csv(os.path.join(svm_pred_path, "pred_" + get_filename(split) + ".csv"))
+        if probas.shape[1] == 2:  # in case we forgot to limit to column of positive class when writing
+            probas = pd.DataFrame(probas['1'])
+        return y_test, probas
+    else:  # in case of gnn we write preds for each eval epoch ↝ train.py
+        # eval_epoch_dirs = [dir for dir in os.scandir(gnn_pred_base_path)]
+        # get preds of best epoch
+        # find best performance on external validation split
+        best = json_to_dict_list(os.path.join(model['path'], 'agg', 'val-graph', 'best.json'))
+        best_epoch_ix = best[0]['epoch']
+        best_pred_dir = os.path.join(model['path'], '1', split, 'preds', str(best_epoch_ix))
+        y_test = read_pd_csv(os.path.join(best_pred_dir, "Y_" + get_filename(split) + ".csv"))
+        probas = read_pd_csv(os.path.join(best_pred_dir, "pred_" + get_filename(split) + ".csv"))
+        return y_test, probas
 
-    y_test = read_pd_csv(os.path.join(model['path'], "1", split, "Y_" + get_filename(split) + ".csv"))
-    # only probs of positive class
-    probas = read_pd_csv(os.path.join(model['path'], "1", split, "pred_" + get_filename(split) + ".csv"))
-    if probas.shape[1] == 2:  # in case we forgot to limit to column of positive class when writing
-        probas = pd.DataFrame(probas['1'])
-
-    return y_test, probas
 
 
 def save_conf_mat(model, tresh=None, split="train"):
@@ -253,19 +263,24 @@ if __name__ == "__main__":
 
     fav_mdl, _ = sort_models("val-graph", 'auc', models)[0]
 
+    config_mdl = get_model_details(os.path.join(experiment_dir, "results", config_name))
+
+    # model_to_inspect = config_mdl
+    model_to_inspect = fav_mdl
+
     for split in ["train", "val", "val-graph"]:
         # TODO arrange these in subplots
-        save_roc(fav_mdl, split=split)
-        save_conf_mat(fav_mdl, split=split)
-        save_loss(fav_mdl, split=split)
+        save_roc(model_to_inspect, split=split)
+        save_conf_mat(model_to_inspect, split=split)
+        save_loss(model_to_inspect, split=split)
 
     with open(os.path.join(plot_out_dir, "summary.txt"), "w") as f:
         # TODO info about each split
         f.write(data_summary(models))
         f.write(top_k_all_splits(models, 'auc'))
         f.write(top_k_all_splits(models, 'accuracy'))
-        f.write(f"info on fav mdl: {fav_mdl['name']}\n")
-        f.write(str(tpr_cutoffs_str(fav_mdl, 'val-graph')))
+        f.write(f"info on fav mdl: {model_to_inspect['name']}\n")
+        f.write(str(tpr_cutoffs_str(model_to_inspect, 'val-graph')))
         f.write("\n (see folder for plots)")
 
 
