@@ -200,7 +200,7 @@ def map_summary(identifier):
     return s1 + s2
 
 
-def get_used_maps(mdls):
+def get_used_datasets(mdls):
     # obtain identifiers of used maps
     dummy_mdl = mdls[0]
     dummy_config = read_yaml(os.path.join(dummy_mdl['path'], "1", "config.yaml"))
@@ -211,7 +211,7 @@ def get_used_maps(mdls):
 
 def data_summary(models):
     s = ""
-    train_ids, test_ids = get_used_maps(models)
+    train_ids, test_ids = get_used_datasets(models)
     s += "Models used for training (internal):\n"
     for train_id in train_ids:
         s += map_summary(train_id)
