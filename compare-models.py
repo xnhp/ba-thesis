@@ -111,6 +111,20 @@ def roc_thresh(model, split):
     optimal_threshold = thresholds[optimal_idx]
     return fpr, tpr, optimal_threshold, optimal_idx
 
+def save_loss(model, split):
+    try:
+        targetpath = os.path.join(model['path'], "1", split, "stats.json")
+    except FileNotFoundError:
+        return
+    dictlist = json_to_dict_list(targetpath)
+    plt.figure(figsize=(6, 3), facecolor='lightgray')
+    plt.title(f"Loss ({split})")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.plot([epoch['loss'] for epoch in dictlist])
+    plt.savefig(os.path.join(plot_out_dir, "loss_"+split))
+    plt.close()
+
 def save_roc(model, split="train"):
     fpr, tpr, _, _ = roc_thresh(model, split)
     roc_auc = metrics.auc(fpr, tpr)
@@ -129,6 +143,13 @@ def save_roc(model, split="train"):
     plt.savefig(os.path.join(plot_out_dir, "roc_" + split))
     plt.close()
 
+def get_filename(split):
+    if split == "train":
+        return "train"
+    elif split == "val":
+        return "test"
+    elif split == "val-graph":
+        return "val"
 
 def get_prediction_and_truth(model, split):
     def get_filename(split):
@@ -225,9 +246,6 @@ def tpr_cutoffs_str(model, split):
     return s
 
 
-def save_loss_plot(mdl, split):
-    pass
-
 
 if __name__ == "__main__":
 
@@ -239,7 +257,7 @@ if __name__ == "__main__":
         # TODO arrange these in subplots
         save_roc(fav_mdl, split=split)
         save_conf_mat(fav_mdl, split=split)
-        save_loss_plot(fav_mdl, split=split)
+        save_loss(fav_mdl, split=split)
 
     with open(os.path.join(plot_out_dir, "summary.txt"), "w") as f:
         # TODO info about each split
