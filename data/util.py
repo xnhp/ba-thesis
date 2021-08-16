@@ -1,281 +1,82 @@
-import functools
 import itertools
+import os
 import os.path
-from importlib.resources import files
 
-import networkx
-from graphgym.config import cfg
-from lxml import etree
+import networkx as nx
 
 
-class SBMLModel:
+def is_collection_dataset(dataset) -> bool:
+    path, _ = dataset
+    return os.path.isdir(path)
 
-    # Minimal degree for a node (of any type), used during preprocessing.
-    # Static property. This is not in GraphGym configuration files because it may also be accessed from outside the GG
-    # pipeline, e.g. for printing dataset summaries.
-    min_node_degree = 2
 
-    def __init__(self, filepath):
-        self.path = filepath
-        # cannot pickle ElementTree
-        self.tree = etree.parse(filepath)
-        self.root = self.tree.getroot()
-        # need to explicitly add these namespaces
-        self.nsmap = self.root.nsmap.copy()
-        self.nsmap['rdf'] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-        self.nsmap['dc'] = "http://purl.org/dc/elements/1.1/"
-        self.nsmap['dcterms'] = "http://purl.org/dc/terms/"
-        self.nsmap['vCard'] = "http://www.w3.org/2001/vcard-rdf/3.0#"
-        self.nsmap['bqbiol'] = "http://biomodels.net/biology-qualifiers/"
-        self.nsmap['bqmodel'] = "http://biomodels.net/model-qualifiers/"
+def is_model_file(e: os.DirEntry) -> bool:
+    return e.is_file() and e.name.endswith("xml")
 
-        ## Standard SBML, applies to all dialects
-        self.species_els = self.tree.findall("/model/listOfSpecies/species", self.nsmap)
-        self.reaction_els = self.tree.findall("/model/listOfReactions/reaction", self.nsmap)
-        # key of attribute of speciesReference that identifies the referenced species
-        self.rxn_species_ref_attrib = "species"
 
-        # to be set by implementing classes
-        self.alias_groupby_attrib = None
-        self.species_alias_els = None
+def attrib_or_none(el, key):
+    try:
+        return el.attrib[key]
+    except KeyError:
+        return None
 
-        assert len(self.species_els) > 0
-        assert len(self.reaction_els) > 0
 
-    @functools.cached_property
-    def species_aliases(self) -> list[dict]:
-        """
-        :return: List of dicts representing species aliases
-        """
-        # Note that this does not consider `listOfComplexSpeciesAliases`. Omitted for now because we are currently not
-        # considering complex species in the first place.
-        return [alias.attrib for alias in self.species_alias_els]
+def groupby(input_, key_fn) -> dict:
+    input_ = sorted(input_, key=key_fn)
+    groups = {}
+    for key, group in itertools.groupby(input_, key_fn):
+        groups[key] = list(group)
+    return groups
 
-    @functools.cached_property
-    def duplicate_aliases(self) -> dict:
-        """
-        :return: species that have strictly more than one alias. Each species is represented by a dict with key
-        being species id and value being a list of species aliases (dicts, see self.species_aliases)
-        """
-        # sort by key required before groupby
-        aliases_sorted = sorted(self.species_aliases, key=lambda x: x[self.alias_groupby_attrib])
-        # could also operate on the iterator that groupby returns but
-        # for values to persist (not be shared), we have to put them into a list
-        grouped = {}
-        for key, group in itertools.groupby(aliases_sorted, lambda x: x[self.alias_groupby_attrib]):
-            grouped[key] = list(group)
-        duplicates = {key: group for key, group in grouped.items() if len(group) > 1}
-        return duplicates
+def attrview(iterable, key):
+    return [i[key] for i in iterable]
 
-    @functools.cached_property
-    def duplicate_aliases_ids(self) -> set[str]:
-        return set(self.duplicate_aliases.keys())
 
-    def get_species_dict(self, species):
-        d = {
-            'id': species.attrib['id'],
-            'type': 'species',
-            'node_label': SBMLModel.is_duplicate_to_label(
-                self.is_duplicate_species(species)  # GraphGym expects this key
-            )
-        }
-        # species id (or should we use the `metaid` attrib instead?)
-        return d
+def upsert_dict(target, source):
+    """
+    add attributes from `source` to `target` only if they do not yet exist in `target`
+    :param target:
+    :param source:
+    :return:
+    """
+    d = target.copy()
+    for key in source:
+        if key not in target:
+            d[key] = source[key]
+    return d
 
-    @functools.cached_property
-    def species(self) -> list[dict]:
 
-        return [
-            d for d in [
-                self.get_species_dict(species) for species in self.species_els
-            ]
-            if not self.is_excluded_species(d)
-        ]
-
-    @staticmethod
-    def is_duplicate_to_label(value):
-        """
-        Convert boolean to integer labels
-        """
-        if value is True:
-            return 1
+def add_edge_safely(G, source, target, fail: bool):
+    if source not in G.nodes:
+        if fail:
+            raise KeyError("should have found source " + source)
         else:
-            return 0
-
-    def is_duplicate_species(self, species):
-        # ↝ [[how to determine duplicates in validation networks]]
-        return species.attrib['id'] in self.duplicate_aliases_ids
-
-    @staticmethod
-    def is_excluded_species(d):
-        return False
-
-    @functools.cached_property
-    def reactions(self):
-        def attrib_or_none(el, key):
-            try:
-                return el.attrib[key]
-            except KeyError:
-                return None
-
-        def extract_species_reference(el):
-            return el.attrib[self.rxn_species_ref_attrib]
-
-        r = []
-        for rxn in self.reaction_els:
-            d = {
-                'id': attrib_or_none(rxn, 'id'),
-                'class': 'reaction',
-                'node_label': 0,  # never a duplicate
-                'reactants': [extract_species_reference(el) for el in
-                              rxn.findall("listOfReactants/speciesReference", self.nsmap)],
-                'products': [extract_species_reference(el) for el in
-                              rxn.findall("listOfProducts/speciesReference", self.nsmap)],
-                'modifiers': [extract_species_reference(el) for el in
-                              rxn.findall("listOfModifiers/speciesReference", self.nsmap)]
-            }
-            # should be standard SBML and independent of dialects?
-            # TODO need to set node_label here aswell?
-            # TODO annotations from CellDesigner and RDF annotations ↝ read-annotations.ipynb
-            r.append(d)
-        return r
+            print(f"edge source not found in graph: {source}")
+            return
+    if target not in G.nodes:
+        if fail:
+            raise KeyError("should have found target " + target)
+        else:
+            print(f"edge target not found in graph: {target}")
+            return
+    G.add_edge(source, target)
 
 
-class CellDesignerModel(SBMLModel):
-    def __init__(self, filepath):
-        super().__init__(filepath)
-        # attribute key by which to group species aliases by (determining duplicates)
-        self.species_alias_els = self.tree.findall(
-            "/model/annotation/celldesigner:extension/celldesigner:listOfSpeciesAliases/celldesigner:speciesAlias",
-            self.nsmap)
-        self.alias_groupby_attrib = "species"  # or layout:species
-
-    def get_species_dict(self, species):
-        d = super().get_species_dict(species)
-        # species/node class (as per [[^2e2cfd]])
-        d['class'] = species.find("annotation/celldesigner:extension/celldesigner:speciesIdentity/celldesigner:class",
-                                  self.nsmap).text
-        # TODO annotations, ↝ read-annotations.ipynb ↝ [[exploit annotations for features]]
-        return d
-
-    @staticmethod
-    def is_excluded_species(d):
-        return SBMLModel.is_excluded_species(d) or cfg.dataset.exclude_complex_species and d['class'] == "COMPLEX"
+def init_empty_graph(model, name):
+    G = nx.Graph()
+    G.graph['name'] = name if name is not None else model.path
+    G.graph['model'] = model
+    return G
 
 
-class SBMLLayoutModel(SBMLModel):
-    def __init__(self, filepath):
-        super().__init__(filepath)
-        self.nsmap['layout'] = "http://www.sbml.org/sbml/level3/version1/layout/version1"
-        self.species_alias_els = self.tree.findall(
-            "/model/layout:listOfLayouts/layout:layout/layout:listOfSpeciesGlyphs/layout:speciesGlyph", self.nsmap)
-        # for whatever reason the layout namespace is prefixed to attribute keys
-        self.attrib_ns_prefix = "{http://www.sbml.org/sbml/level3/version1/layout/version1}"
-        self.alias_groupby_attrib = self.attrib_ns_prefix + "species"
-
-    # ↝ c33436
-    def get_species_dict(self, species):
-        d = super().get_species_dict(species)
-        # this kind of data format (at least the ReconMap example) does not seem to have class annotations
-        d['class'] = "unknown"  # TODO
-        return d
-
-def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
+def clean_rxn_data(rxn):
     """
-    This is a convenience mapping so we do not have to copy/paste the syntax for loading files
-    and remember the exact filename of a dataset.
-    :param identifier: An identifier for the dataset
-    :return: The full path to the dataset
+    obtain attributes of the reaction dict but drop references
+    :param rxn:
+    :return:
     """
-    identifier_map = {
-        "AlzPathway": (
-            "alzpathway/CellDesigner SBML/12918_2012_896_MOESM1_ESM.xml",
-            CellDesignerModel
-        ),
-        "PDMap": (
-            "pd_map_spring_18/PD_180412_2.xml",
-            CellDesignerModel
-        ),
-        # "ReconMap": (
-        #     "ReconMap/ReconMap-2.01-SBML3-Layout-Render/ReconMap-2.01-SBML3-Layout-Render.xml",
-        #     SBMLLayoutModel
-        # ),
-        "ReconMapOlder": (
-            "ReconMap/ReconMap-2.01/ReconMap-2.01.xml",
-            CellDesignerModel
-        )
-    }
-
-    match = identifier_map[identifier]
-    path = str(files("data").joinpath(match[0]))
-    return os.path.abspath(path), match[1]
-
-
-def load_dataset(identifier: str) -> tuple[SBMLModel, networkx.Graph]:
-    path, model_class = get_dataset(identifier)
-    model = model_class(path)
-    from graphgym.contrib.loader.SBML import graph_from_model
-    return model, graph_from_model(model)
-
-
-def print_model_summary(identifier: str):
-    s = ""
-    path, model_class = get_dataset(identifier)
-    model: SBMLModel
-    model = model_class(path)  # call specific constructor
-
-    s += ("Model: {0} ({2}) at {1}".format(identifier, path, model_class.__name__))
-    s += "\n"
-    s += ("Number of species: {0}".format(len(model.species)))
-    s += "\n"
-    s += ("... with duplicate aliases: {0}".format(len(model.duplicate_aliases_ids)))
-    s += "\n"
-    s += ("Number of reactions: {0}".format(len(model.reactions)))
-    s += "\n"
-    rxn_without_id = len([rxn for rxn in model.reactions if rxn['id'] is None])
-    s += ("... without `id` attribute: {0}".format(rxn_without_id))
-    s += "\n"
-    return model, s
-
-
-def print_graph_summary(model: SBMLModel):
-    s = ""
-    # construct graph
-    from graphgym.contrib.loader.SBML import graph_from_model
-    graph: networkx.Graph
-    graph = graph_from_model(model)
-
-    s += ("Number of nodes: {0}".format(graph.number_of_nodes()))
-    # interesting because nielsen at al excluded species of complex type
-    # and with degree < 2 (unclear whether union or intersection of these criteria)
-    degrees = graph.degree(graph.nodes)  # (node, degree) tuples
-    s += ("... with degree >= 2: {0}".format(
-        len(
-            [node for (node, degree) in degrees if degree >= SBMLModel.min_node_degree]
-        )
-    ))
-    s += "\n"
-    # complex species are already disregarded
-    s += ("... with duplicate label (positive class) (after preproc):  {0}".format(len(
-        [node for (node, label) in
-            graph.nodes(data="node_label", default=False)
-            if label == 1
-         ]
-    )))
-    s += "\n"
-
-    return graph, s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    rxn_data = rxn.copy()
+    del rxn_data['listOfReactants']
+    del rxn_data['listOfProducts']
+    del rxn_data['listOfModifiers']
+    return rxn_data

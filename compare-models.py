@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 from sklearn import metrics
 
-from data.util import print_model_summary, print_graph_summary
+from data.summary import print_model_summary, print_graph_summary
 
 # experiment_name = "train-on-many"
 # config_name = "config"
-experiment_name = "gcn-projection"
+experiment_name = "AD-reorg-playground"
 config_name = "config-gnn"
 
 experiment_dir = os.path.join("GraphGym/run/", experiment_name)
@@ -29,17 +29,12 @@ def get_model_details(model_dir):
     """
 
     def find_stats(key):
-        try:
-            return json_to_dict_list(
-                # rely on GG aggregation across repeats and only consider "agg" directory
-                # (triggered at end of main.py)
-                # Read from stats.json which contains averages and stddev ↝ GraphGym/graphgym/utils/agg_runs.py:48
-                os.path.join(model_dir, "agg", key, "stats.json")
-            )[0]  # stats.json will always contain only a single line
-        except FileNotFoundError:
-            print("file not found")
-            # TODO we don't write val-graph results for GNNs yet
-            pass
+        return json_to_dict_list(
+            # rely on GG aggregation across repeats and only consider "agg" directory
+            # (triggered at end of main.py)
+            # Read from stats.json which contains averages and stddev ↝ GraphGym/graphgym/utils/agg_runs.py:48
+            os.path.join(model_dir, "agg", key, "stats.json")
+        )[0]  # stats.json will always contain only a single line
 
     d = {
         'name': os.path.basename(model_dir),
@@ -224,11 +219,11 @@ def data_summary(models):
     train_ids, test_ids = get_used_datasets(models)
     s += "Models used for training (internal):\n"
     for train_id in train_ids:
-        s += map_summary(train_id)
+        # s += map_summary(train_id)
         s += "\n"
     s += "Models used for validation (external):\n"
     for test_id in test_ids:
-        s += map_summary(test_id)
+        # s += map_summary(test_id)
         s += "\n"
     return s
 
