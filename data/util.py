@@ -1,6 +1,7 @@
 import itertools
 import os
 import os.path
+from enum import Enum
 
 import networkx as nx
 
@@ -80,3 +81,24 @@ def clean_rxn_data(rxn):
     del rxn_data['listOfProducts']
     del rxn_data['listOfModifiers']
     return rxn_data
+
+
+class SpeciesClass(Enum):
+    """
+    Species classes expected to appear in a given model. The value of these enum fields
+    corresponds to their string representation as given in the model and will be used for matching
+    when parsing (can be obtained with `value`).
+    ↝ cfg.dataset.possible_classes
+    ↝ https://docs.python.org/3/library/enum.html
+    """
+    protein = 'PROTEIN'
+    reaction = 'reaction'
+    rna = 'RNA'
+    degraded = 'DEGRADED'
+    unknown = 'UNKNOWN'
+    simple_molecule = 'SIMPLE_MOLECULE'
+    ion = 'ION'
+    gene = 'GENE'
+    phenotype = 'PHENOTYPE'
+    drug = 'DRUG'
+    complex = 'COMPLEX'

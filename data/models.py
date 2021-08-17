@@ -8,8 +8,7 @@ from deprecated.classic import deprecated
 from graphgym.config import cfg
 from lxml import etree
 from lxml.etree import _Element
-
-from data.util import attrib_or_none, groupby, upsert_dict
+from data.util import attrib_or_none, groupby, SpeciesClass
 
 SpeciesAliasId = NewType("SpeciesAliasId", str)
 SpeciesAliasInfo = NewType("SpeciesAliasInfo", dict)
@@ -18,7 +17,6 @@ SpeciesInfo = NewType("SpeciesInfo", dict)
 
 
 class SBMLModel:
-    # Minimal degree for a node (of any type), used during preprocessing.
     # Static property. This is not in GraphGym configuration files because it may also be accessed from outside the GG
     # pipeline, e.g. for printing dataset summaries.
     min_node_degree = 2
@@ -191,7 +189,7 @@ class SBMLModel:
         # TODO annotations from CellDesigner and RDF annotations ↝ read-annotations.ipynb
         return [{
                     'id': attrib_or_none(rxn_el, 'id'),
-                    'class': 'reaction',
+                    'class': SpeciesClass.reaction.value,
                 } | {  # https://stackoverflow.com/a/26853961/156884 ;)
                     key: self.extract_referenced_alias_ids(rxn_el, key)
                     for key in ['listOfReactants', 'listOfProducts', 'listOfModifiers']
