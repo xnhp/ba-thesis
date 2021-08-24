@@ -48,6 +48,10 @@ def upsert_dict(target, source):
 
 
 def add_edge_safely(G, source, target, fail: bool):
+    if (source, target) in G.edges:
+        # raise KeyError("edge already present")
+        print(f"{G.graph['name']} \t edge already present, skipping")
+        return
     if source not in G.nodes:
         if fail:
             raise KeyError("should have found source " + source)
@@ -64,7 +68,7 @@ def add_edge_safely(G, source, target, fail: bool):
 
 
 def init_empty_graph(model, name):
-    G = nx.Graph()
+    G = nx.DiGraph()  # needed for e.g. detection of duplicates
     G.graph['name'] = name if name is not None else model.path
     G.graph['model'] = model
     return G

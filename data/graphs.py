@@ -44,6 +44,11 @@ def construct_species_graph(model: SBMLModel, name=None) -> nx.Graph:
 
     return G
 
+def prep_res(g: nx.DiGraph) -> nx.Graph:
+    # G_undirected = nx.Graph(g)
+    G_undirected = g.to_undirected(as_view=False)
+    G_undirected.graph['nx_multidigraph'] = g
+    return G_undirected
 
 def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=True) -> nx.Graph:
 
@@ -55,6 +60,7 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
     # return G
 
     G = init_empty_graph(model, name)
+    G.graph['name'] += " (collapsed)"
 
     species_to_representative = {}
     # for each species, introduce exactly one speciesAlias (s.t. we have the same data structure)
@@ -70,14 +76,19 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
     for rxn in model.reactions:
         rxn_data = clean_rxn_data(rxn)
         G.add_node(rxn_data['id'], **rxn_data)
-        for neighbour_id in rxn['listOfReactants'] + rxn['listOfProducts'] + rxn['listOfModifiers']:
-            represented_species = model.aliases[neighbour_id]['species']
+
+        # for neighbour_id in rxn['listOfReactants'] + rxn['listOfProducts'] + rxn['listOfModifiers']:
+        for n in rxn['listOfReactants']:
+            represented_species = model.aliases[n]['species']
+            representative = species_to_representative[represented_species]
+            add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
+        for n in rxn['listOfProducts']:
+            represented_species = model.aliases[n]['species']
             representative = species_to_representative[represented_species]
             add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
 
-    G = prune_graph(G)
-
-    return G
+    # G = prune_graph(G)
+    return prep_res(G)
 
 
 def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=True) -> nx.Graph:
@@ -89,7 +100,7 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
     :param name:
     :return:
     """
-    G = init_empty_graph(model, name)
+    G: nx.MultiDiGraph = init_empty_graph(model, name)
 
     for alias_id, alias_info in model.aliases.items():
         G.add_node(alias_id, **alias_info)
@@ -102,12 +113,13 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
         # we use id as key and the entire dict (containing id) as additional attributes
         # do not need to explicitly denote here that this is a reaction node because we already set its `type` attribute
         #    ↓ speciesAlias IDs
-        for neighbour_id in rxn['listOfReactants'] + rxn['listOfProducts'] + rxn['listOfModifiers']:
+        for neighbour_id in rxn['listOfReactants']:
+            add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
+        for neighbour_id in rxn['listOfProducts']:
             add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
 
-    G = prune_graph(G)
-
-    return G
+    # G = prune_graph(G)
+    return prep_res(G)
 
 
 def prune_graph(G: networkx.Graph):
