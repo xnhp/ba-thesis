@@ -87,6 +87,11 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
             representative = species_to_representative[represented_species]
             add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
 
+        #     represented_species = model.aliases[n]['species']
+        #     representative = species_to_representative[represented_species]
+        #     add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
+        #     add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
+
     # G = prune_graph(G)
     return prep_res(G)
 
@@ -117,6 +122,9 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
             add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
         for neighbour_id in rxn['listOfProducts']:
             add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
+        # for neighbour_id in rxn['listOfModifiers']:
+        #     add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
+        #     add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
 
     # G = prune_graph(G)
     return prep_res(G)
