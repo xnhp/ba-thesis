@@ -29,22 +29,31 @@ def get_model_details(model_dir):
     """
 
     def find_stats(key):
-        return json_to_dict_list(
-            # rely on GG aggregation across repeats and only consider "agg" directory
-            # (triggered at end of main.py)
-            # Read from stats.json which contains averages and stddev ↝ GraphGym/graphgym/utils/agg_runs.py:48
-            os.path.join(model_dir, "agg", key, "stats.json")
-        )[0]  # stats.json will always contain only a single line
+        # rely on GG aggregation across repeats and only consider "agg" directory
+        # (triggered at end of main.py)
+        agg_path = os.path.join(model_dir, 'agg', key)
+        best_path =  os.path.join(agg_path, "best.json")
+        stats_path =  os.path.join(agg_path, "stats.json")
 
-    d = {
+        if os.path.exists(best_path):
+            # in case of SVM, stats.json contains a line for each eval epoch,
+            # and additionally, best.json is created, selecting the best line according to
+            # a configured metric
+            return json_to_dict_list(best_path)[0]
+        else:
+            # in case of SVM we only print stats.json, which contains a single line (only one "epoch")
+            # -- nothing to aggregate
+            stats = json_to_dict_list(stats_path)
+            assert len(stats) == 1
+            return stats
+
+    return {
         'name': os.path.basename(model_dir),
         'path': model_dir
-    }
-    d.update({
+    } | {
         key: find_stats(key)
         for key in ['train', 'val', 'val-graph']
-    })
-    return d
+    }
 
 
 def read_model_results(out_dir):
