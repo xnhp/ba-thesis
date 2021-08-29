@@ -105,6 +105,9 @@ def read_pd_csv(path):
 
 def roc_thresh(model, split):
     y_true, y_proba = get_prediction_and_truth(model, split)
+    return _roc_thresh(y_true, y_proba)
+
+def _roc_thresh(y_true, y_proba):
     fpr, tpr, thresholds = metrics.roc_curve(y_true, y_proba)
     optimal_idx = np.argmax(tpr - fpr)
     optimal_threshold = thresholds[optimal_idx]
@@ -124,11 +127,19 @@ def save_loss(model, split):
     plt.savefig(os.path.join(plot_out_dir, "loss_"+split))
     plt.close()
 
-def save_roc(model, split="train"):
+def save_roc(model, split="train", plot_random=True):
     fpr, tpr, _, _ = roc_thresh(model, split)
     roc_auc = metrics.auc(fpr, tpr)
     plt.title(f'Receiver Operating Characteristic ({split})')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+
+    if plot_random:
+        y_true, _ = get_prediction_and_truth(model, split)
+        y_score = np.random.random(len(y_true))
+        fpr, tpr, _, _ = _roc_thresh(y_true, y_score)
+        roc_auc = metrics.auc(fpr, tpr)
+        plt.plot(fpr, tpr, 'r', label='AUC (random cl.) = %0.2f' % roc_auc)
+    
     plt.legend(loc='lower right')
     plt.plot([0, 1], [0, 1], '--')
     plt.xlim([0, 1])
