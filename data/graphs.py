@@ -46,7 +46,7 @@ def construct_species_graph(model: SBMLModel, name=None) -> nx.Graph:
 
 def prep_res(g: nx.DiGraph) -> nx.Graph:
     # G_undirected = nx.Graph(g)
-    G_undirected = g.to_undirected(as_view=False)
+    G_undirected = g.to_undirected(as_view=True)
     G_undirected.graph['nx_multidigraph'] = g
     return G_undirected
 
@@ -86,11 +86,11 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
             represented_species = model.aliases[n]['species']
             representative = species_to_representative[represented_species]
             add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
-
-        #     represented_species = model.aliases[n]['species']
-        #     representative = species_to_representative[represented_species]
-        #     add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
-        #     add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
+        for n in rxn['listOfModifiers']:
+            represented_species = model.aliases[n]['species']
+            representative = species_to_representative[represented_species]
+            add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
+            add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
 
     # G = prune_graph(G)
     return prep_res(G)
@@ -122,9 +122,9 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
             add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
         for neighbour_id in rxn['listOfProducts']:
             add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
-        # for neighbour_id in rxn['listOfModifiers']:
-        #     add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
-        #     add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
+        for neighbour_id in rxn['listOfModifiers']:
+            add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
+            add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
 
     # G = prune_graph(G)
     return prep_res(G)
