@@ -1,4 +1,5 @@
 # directory containing dirs for each run (commonly called "config-{hyperparms}"
+import csv
 import os
 
 import numpy as np
@@ -193,6 +194,57 @@ def get_prediction_and_truth(model, split):
         return y_test, probas
 
 
+def read_identifier_mapping(model):
+    # cleanup
+    dir = os.path.join(model['path'], '1', 'val-graph')
+    id_mapping_path = os.path.join(dir, 'mapping_int_to_alias.csv')
+    identifier_mapping = {}
+    with open(id_mapping_path) as fp:
+        reader = csv.reader(fp, delimiter=",", quotechar='"')
+        # next(reader, None)  # skip the headers
+        for row in reader:
+            if len(row) == 2:
+                identifier_mapping.update({int(row[0]): row[1]})
+        # data_read = [row for row in reader]
+
+    node_label_index_path = os.path.join(dir, 'node_label_index.csv')
+    node_label_index = read_pd_csv(node_label_index_path)
+
+    return identifier_mapping, node_label_index
+
+
+def zip_safe(a, b, c):
+    assert len(a) == len(b) == len(c)
+    return zip(a, b, c)
+
+
+def conf_mat_aliases(model):
+    """
+    Returns aliases of true/false positives/negatives in shape confusion matrix
+    :param model:
+    :return:
+    """
+    class_preds, y_proba, y_true = get_class_preds(model, 'val-graph')
+    identifier_mapping, node_label_index = read_identifier_mapping(model)
+    y_proba = list(y_proba.get('0'))
+    y_true = list(y_true.get('0'))
+    node_label_index = list(node_label_index.get('0'))
+    ids_for_nodes = [identifier_mapping[ix] for ix in node_label_index]
+    # these should correspond
+    # ok nice so far, but also need node_label_index
+    preds_true_alias = list(zip_safe(class_preds, y_true, ids_for_nodes))
+
+    # assemble sth like a confusion matrix
+    tns = [alias for pred, true, alias in preds_true_alias if pred == 0 and true == 0]
+    fns = [alias for pred, true, alias in preds_true_alias if pred == 0 and true == 1]
+    fps = [alias for pred, true, alias in preds_true_alias if pred == 1 and true == 0]
+    tps = [alias for pred, true, alias in preds_true_alias if pred == 1 and true == 1]
+    print(
+        len(tps), len(tns), len(fps), len(fns)
+    )
+
+    return [[tns, fns], [fps, tps]]
+
 
 def save_conf_mat(model, tresh=None, split="train"):
     y_true, y_proba = get_prediction_and_truth(model, split)
@@ -210,6 +262,23 @@ def save_conf_mat(model, tresh=None, split="train"):
     plt.savefig(os.path.join(plot_out_dir, "confusion_" + split))
     # TODO instead, print identifiers of datasets in splits?
     plt.close()
+
+
+def get_class_preds(model, split, thresh=None):
+    """
+    Turn soft classifier confidence values into crisp class predictions based on threshold. If no threshold given,
+    determine it automatically based on maximum margin between TPR and FPR
+    :return:
+    """
+    y_true, y_proba = get_prediction_and_truth(model, split)
+    if thresh is None or thresh == "auto":
+        _, _, tresh, _ = roc_thresh(model, split)
+
+    def decision_function(prob):
+        return 0 if float(prob) < tresh else 1
+
+    class_preds = [decision_function(prob) for prob in y_proba.values]
+    return class_preds, y_proba, y_true
 
 
 def read_yaml(path):
