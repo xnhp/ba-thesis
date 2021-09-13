@@ -3,10 +3,10 @@ import copy
 import networkx
 import networkx as nx
 
-from data.models import SBMLModel
+from data.models import SBMLModel, CellDesignerModel
 from deprecated import deprecated
 
-from data.util import upsert_dict, add_edge_safely, init_empty_graph, clean_rxn_data
+from data.util import upsert_dict, add_edge_safely, init_empty_graph, clean_rxn_data, groupby, _add_edge_root
 
 
 @deprecated(reason="This interpretation is not considered ↝ [[^181948]]")
@@ -61,42 +61,48 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
 
     G = init_empty_graph(model, name)
     G.graph['name'] += " (collapsed)"
+    G.graph['is_collapsed'] = True
 
+    # dict speciesid → (complex) alias ids (top-level only)
+    top_level_aliases_by_species = groupby(model.top_level_aliases.values(), lambda e: e['species'])
+
+    top_level_alias_to_representative = {}
     species_to_representative = {}
-    # for each species, introduce exactly one speciesAlias (s.t. we have the same data structure)
-    for species_id, species_info in model.species.items():
-        some_real_alias = model.species_with_aliases[species_id][0]
-        species_to_representative[species_id] = some_real_alias
-        # what information/attributes to set on a dummy alias? let's set custom id and beyond that use the attribs
-        #   of any alias it is a dummy for
-        G.add_node(some_real_alias['id'], **some_real_alias)
+    for species_id, assoc_aliases in top_level_aliases_by_species.items():
+        representative = assoc_aliases[0]
+        for assoc_alias in assoc_aliases:  # construct map  cleanup: move to separate loop
+            top_level_alias_to_representative[assoc_alias['id']] = representative['id']
+        species_to_representative[species_id] = representative
+        G.add_node(representative['id'], **representative)
 
     # each reaction carries references to speciesAliases.
     # we need to look up what species these aliases point to and then use that to identify the proper dummy
+    # TODO also consider edges that go to aliases inside a csa (edges going to not-top-level elements)
+    #   should actually receive a KeyError here if so
     for rxn in model.reactions:
         rxn_data = clean_rxn_data(rxn)
         G.add_node(rxn_data['id'], **rxn_data)
-
-        # for neighbour_id in rxn['listOfReactants'] + rxn['listOfProducts'] + rxn['listOfModifiers']:
         for n in rxn['listOfReactants']:
-            represented_species = model.aliases[n]['species']
+            # have exactly one alias per sbml species
+            represented_species = model.top_level_aliases[n]['species']
             representative = species_to_representative[represented_species]
             add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
         for n in rxn['listOfProducts']:
-            represented_species = model.aliases[n]['species']
+            represented_species = model.top_level_aliases[n]['species']
             representative = species_to_representative[represented_species]
             add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
         for n in rxn['listOfModifiers']:
-            represented_species = model.aliases[n]['species']
+            represented_species = model.top_level_aliases[n]['species']
             representative = species_to_representative[represented_species]
             add_edge_safely(G, representative['id'], rxn['id'],  fail=fail_on_unknown_edge_end)
             add_edge_safely(G, rxn['id'], representative['id'], fail=fail_on_unknown_edge_end)
 
+    G.graph['top_level_alias_to_representative'] = top_level_alias_to_representative
     # G = prune_graph(G)
     return prep_res(G)
 
 
-def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=True) -> nx.Graph:
+def construct_alias_graph(model: CellDesignerModel, name=None, fail_on_unknown_edge_end=True) -> nx.Graph:
     """
     Construct a graph from the given Disease Map / SBML model in which nodes are speciesAliases, linked by reactions.
     :param fail_on_unknown_edge_end: Whether an exception/warning should be thrown if an edge points to something
@@ -105,13 +111,15 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
     :param name:
     :return:
     """
+
     G: nx.MultiDiGraph = init_empty_graph(model, name)
 
-    for alias_id, alias_info in model.aliases.items():
+    for alias_id, alias_info in model.top_level_aliases.items():
         G.add_node(alias_id, **alias_info)
 
     # add nodes for reactions and edges from/to reactions
     for rxn in model.reactions:
+        # TODO also consider edges that go to aliases inside a csa
         rxn: dict  # of info about this reaction
         rxn_data = clean_rxn_data(rxn)
         G.add_node(rxn['id'], **rxn_data)
@@ -119,12 +127,12 @@ def construct_alias_graph(model: SBMLModel, name=None, fail_on_unknown_edge_end=
         # do not need to explicitly denote here that this is a reaction node because we already set its `type` attribute
         #    ↓ speciesAlias IDs
         for neighbour_id in rxn['listOfReactants']:
-            add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
+            _add_edge_root(G,model, neighbour_id, rxn['id'], fail_on_unknown_edge_end=fail_on_unknown_edge_end)
         for neighbour_id in rxn['listOfProducts']:
-            add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
+            _add_edge_root(G, model, rxn['id'], neighbour_id, fail_on_unknown_edge_end=fail_on_unknown_edge_end)
         for neighbour_id in rxn['listOfModifiers']:
-            add_edge_safely(G, rxn['id'], neighbour_id, fail=fail_on_unknown_edge_end)
-            add_edge_safely(G, neighbour_id, rxn['id'], fail=fail_on_unknown_edge_end)
+            _add_edge_root(G, model, rxn['id'], neighbour_id, fail_on_unknown_edge_end=fail_on_unknown_edge_end)
+            _add_edge_root(G, model, neighbour_id, rxn['id'], fail_on_unknown_edge_end=fail_on_unknown_edge_end)
 
     # G = prune_graph(G)
     return prep_res(G)

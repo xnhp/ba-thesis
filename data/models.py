@@ -48,7 +48,7 @@ class SBMLModel:
         assert len(self.reaction_els) > 0
 
     @functools.cached_property
-    def get_species_alias_els(self):
+    def get_top_level_alias_els(self):
         raise NotImplementedError
 
     def get_alias_info(self, alias: _Element) -> SpeciesAliasInfo:
@@ -78,25 +78,16 @@ class SBMLModel:
 
             return some_real_alias['id'], some_real_alias
 
-        self.aliases = {
+        self.top_level_aliases = {
                 dummy_id: dummy_info
                 for dummy_id, dummy_info in map(get_dummy_alias, self.species.items())
             }
 
-
-
-
-
-
     @functools.cached_property
-    def aliases(self) -> dict[SpeciesAliasId, SpeciesAliasInfo]:
+    def top_level_aliases(self) -> dict[SpeciesAliasId, SpeciesAliasInfo]:
         return {
             alias.attrib['id']: self.get_alias_info(alias)
-            for alias in self.get_species_alias_els
-            if alias.attrib['species'] in self.species.keys()
-            # ↑ this applies to "top-level" species, i.e. normal and complex species that are not nested in
-            #    complex species. In that case, they appear in celldesigner:listOfIncludedSpecies
-            # TODO but still a reaction may point to such a contained ("included") species?
+            for alias in self.get_top_level_alias_els
         }
 
     @functools.cached_property
@@ -105,7 +96,7 @@ class SBMLModel:
         """
         :return: dict from species id to their speciesAliases
         """
-        grouped = groupby(self.aliases.values(), lambda x: x[self.alias_groupby_attrib])
+        grouped = groupby(self.top_level_aliases.values(), lambda x: x[self.alias_groupby_attrib])
         return {key: group for key, group in grouped.items()}
 
     @functools.cached_property
@@ -203,17 +194,64 @@ class CellDesignerModel(SBMLModel):
         # attribute key by which to group species aliases by (determining duplicates)
         self.alias_groupby_attrib = "species"  # or layout:species
 
+
     @functools.cached_property
-    def get_species_alias_els(self):
-        normal_alias_els = self.tree.findall(
+    def sa_root_map(self):
+        """
+        Map from speciesAlias id to complexSpeciesAlias id. For a given speciesAlias that is inside a complex species,
+        determine its root complex (if there is no nesting of complexAliases, that is the complexAlias the speciesAlias
+        lies in. Else it is lowest one).
+        ↝ [[^c75162]]
+        """
+        def find_root_of_alias(alias_el):  # -> csa_info of root
+            # find the csa that is referenced
+            csa_id = alias_el.attrib['complexSpeciesAlias']
+            csa_info = self.complex_aliases[csa_id]
+            return find_root_of_complex(csa_info)
+
+        def find_root_of_complex(csa_info):
+            if 'complexSpeciesAlias' not in csa_info:
+                return csa_info
+            else:
+                child = self.complex_aliases[csa_info['complexSpeciesAlias']]
+                return find_root_of_complex(child)
+
+        # speciesAliases that are contained in a complex are exactly those with an attribute "complexSpeciesAlias"
+        # pointing to the parent's id
+        return {
+            alias_el.attrib['id']: find_root_of_alias(alias_el)
+            for alias_el in self.normal_alias_els
+            if 'complexSpeciesAlias' in alias_el.attrib
+        }
+
+    def is_contained(self, alias_id):
+        return alias_id in self.sa_root_map
+
+    @functools.cached_property
+    def normal_alias_els(self):
+        return self.tree.findall(
             "/model/annotation/celldesigner:extension/celldesigner:listOfSpeciesAliases/celldesigner:speciesAlias",
             self.nsmap)
-        complex_alias_els = self.tree.findall(
+
+    @functools.cached_property
+    def complex_alias_els(self):
+        return self.tree.findall(
             "/model/annotation/celldesigner:extension/celldesigner:listOfComplexSpeciesAliases/celldesigner:complexSpeciesAlias",
             self.nsmap)
-        # I think we can distuingish between normal and complex species aliases by the class of the species they
-        # correspond to
-        return normal_alias_els + complex_alias_els
+
+
+    @functools.cached_property
+    def complex_aliases(self):
+        return {
+            csa.attrib['id']: {**csa.attrib}
+            for csa in self.complex_alias_els
+        }
+
+    @functools.cached_property
+    def get_top_level_alias_els(self):
+        top_level_alias_els = [e for e in self.normal_alias_els if not 'complexSpeciesAlias' in e.attrib]
+        top_level_complex_alias_els = [e for e in self.complex_alias_els if not 'complexSpeciesAlias' in e.attrib]
+        return top_level_alias_els + top_level_complex_alias_els
 
     def get_species_info(self, species_el) -> SpeciesInfo:
         d = super().get_species_info(species_el)
@@ -222,6 +260,15 @@ class CellDesignerModel(SBMLModel):
             self.nsmap).text
         # TODO annotations, ↝ read-annotations.ipynb ↝ [[exploit annotations for features]]
         return d
+
+    def extract_GO_annotations(self, species_el):
+        version_of_els = species_el.find(
+            "annotation/celldesigner:extension/rdf:RDF/rdf:Description/bqbiol:isVersionOf",
+            self.nsmap
+        )
+        for version_of_el in version_of_els:
+            li = version_of_el.find("rdf:Bag/rdf:li", self.nsmap)
+            go_term = li.attrib['rdf:resource']
 
     def get_alias_info(self, alias: _Element):
         # d = dict(alias.attrib)
@@ -281,6 +328,7 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
     """
     This is a convenience mapping so we do not have to copy/paste the syntax for loading files
     and remember the exact filename of a dataset.
+    ↝ ORIGIN.txt in data subdirectories
     :param identifier: An identifier for the dataset
     :return: The full path to the dataset
     """
@@ -291,11 +339,17 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
             CellDesignerModel
         ),
         "AlzPathway": (
+            # from [[mizuno_AlzPathwayComprehensiveMap_2021]]
             "alzpathway/CellDesigner SBML/12918_2012_896_MOESM1_ESM.xml",
             CellDesignerModel
         ),
         "PDMap": (
             "pd_map_spring_18/PD_180412_2.xml",
+            CellDesignerModel
+        ),
+        "PDMap19": (
+            # have GO/BP annotations for this one
+            "pd_map_autmn_19/PD_190925_1.xml",
             CellDesignerModel
         ),
         "NF-kB": (
