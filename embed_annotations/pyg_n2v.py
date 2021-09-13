@@ -129,4 +129,3 @@ def embed_GO_pyG(nxGO):
     #     '#ffd700'
     # ]
     # plot_points(colors)
-
