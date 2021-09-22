@@ -1,5 +1,7 @@
 # adapted from https://github.com/rusty1s/pytorch_geometric/
 # https://github.com/rusty1s/pytorch_geometric/blob/master/examples/node2vec.py
+import os
+from importlib.resources import files
 
 import networkx as nx
 import torch
@@ -53,6 +55,7 @@ def _from_networkx(G):
 
     return data
 
+
 def embed_GO_pyG(nxGO):
     # node ids are GO identifiers (strings)
     nxGO = nx.convert_node_labels_to_integers(nxGO, ordering="sorted", label_attribute="go_term")
@@ -61,15 +64,16 @@ def embed_GO_pyG(nxGO):
     # ↑ will contain data['go_term']: list of terms. guess we can assume these will map to ids.
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = Node2Vec(data.edge_index, embedding_dim=128, walk_length=16,
-                     context_size=4, walks_per_node=1,
-                     num_negative_samples=1, p=1, q=2, sparse=True).to(device)
-    # increase q from default 1 for more locality
+    model = Node2Vec(data.edge_index, embedding_dim=128, walk_length=80,
+                     context_size=10, walks_per_node=10,
+                     num_negative_samples=1, p=1, q=0.5, sparse=True).to(device)
+    # ↝ [[^e16bdc]]
 
     # set num workers to 0 because pytorch multiprocessors does not work on windows
     # ↝ https://github.com/fastai/fastbook/issues/85#issuecomment-614000930
     # seems to work
-    loader = model.loader(batch_size=128, shuffle=True, num_workers=0)
+    # set batch size 128 → 64 → 32 because getting out-of-memory errors
+    loader = model.loader(batch_size=32, shuffle=True, num_workers=0)
     optimizer = torch.optim.SparseAdam(list(model.parameters()), lr=0.01)
 
     def train():
@@ -94,7 +98,9 @@ def embed_GO_pyG(nxGO):
 
     print("starting train loop")
     # seems to converge to 0.75 after ~85 its
-    for epoch in range(1, 101):
+    # with updated hyperparams seemed to converge much faster
+    # 0.73 at epoch 06 seems to be best, only gets slightly worse after that
+    for epoch in range(1, 7):
         loss = train()
         # acc = test()
         # print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Acc: {acc:.4f}')
@@ -129,3 +135,54 @@ def embed_GO_pyG(nxGO):
     #     '#ffd700'
     # ]
     # plot_points(colors)
+
+
+cache_dir = files('computed')
+def load_GO_graph():
+    graph_file = os.path.join(cache_dir, "GeneOntology", "ontology-graph.gml")
+    if os.path.exists(graph_file):
+        # load picked (serialised) networkx graph. This is faster than parsing the .obo ontology file
+        # and constructing the networkx graph each time.
+        return nx.read_gml(graph_file)
+        print("read ontology graph")
+
+    path = os.path.join(files("data"), "GeneOntology", "go-basic.json.gz")  # load from data dir (not cache)
+    # can also load from remote resource
+    url = "http://release.geneontology.org/2021-02-01/ontology/go-basic.json.gz"
+    # TODO can we omit certain relations/edges? do we want to?
+    # ruiz et al consider only regulates, positively regulates, negatively regulates, part of, and is a
+    # but looking at a handful examples of this case shows that these all only have "involved in"
+    nxo = from_file(path)
+    # GO:0008150 is biological process root term/node
+    components = [nxo.graph.subgraph(c) for c in nx.weakly_connected_components(nxo.graph)]
+    bp_comp = [comp for comp in components if "GO:0008150" in comp][0]
+    bp_comp = bp_comp.to_undirected(reciprocal=False, as_view=True)
+    nx.write_gml(bp_comp, graph_file)
+    print("wrote ontology graph")
+    return bp_comp
+
+def embed_GO(force_recompute=False):
+    nxGO = load_GO_graph()
+    embedding_filename = os.path.join(cache_dir, "GeneOntology", "embedding.pt")
+    term_filename = os.path.join(cache_dir, "GeneOntology", "term_ids.pt")
+    if os.path.exists(embedding_filename) and not force_recompute:  # assume term_filename exists aswell
+        print("loading computed embedding from disk")
+        embs, terms = torch.load(embedding_filename), torch.load(term_filename)
+    else:
+        print("computing embedding and writing to disk")
+        # note that python-based implementations are prohibitively slow for graphs of this size.
+        embs, terms = embed_GO_pyG(nxGO)
+        torch.save(embs, embedding_filename)
+        torch.save(terms, term_filename)
+    # terms already is a list
+    term2emb = {
+        term: embedding
+        for term, embedding in zip(terms, embs)
+    }
+    return term2emb
+
+
+if __name__ == '__main__':
+    # regenerate embedding
+    embed_GO(force_recompute=True)
+

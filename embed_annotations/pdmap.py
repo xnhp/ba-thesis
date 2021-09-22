@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd  # from china
 from matplotlib import pyplot as plt
 
-from embed_annotations.embed_GO import embed_GO, aggregate_embeddings
+from embed_annotations.embed_GO import aggregate_embeddings
+from embed_annotations.pyg_n2v import embed_GO
 
 cache_dir = files('computed')
 db_path = os.path.join(cache_dir, "GeneOntology", 'mygene-cache.db')
@@ -114,6 +115,7 @@ if __name__ == '__main__':
     df = query_GO_terms(df)
     # analyze_queried_terms(df)
 
+    # GO term → its embedding
     term2emb = embed_GO()  # obtain embeddings of GO terms
 
     df['aggregated'] = df.apply(

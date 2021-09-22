@@ -338,8 +338,13 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
             "AlzPah_reorganisation_steps",  # is a directory
             CellDesignerModel
         ),
+        "AlzPathwayReorgLast": (
+            # single map, the last reorganisation step
+            "AlzPah_reorganisation_steps/406-alzpath_8APR.xml",  # is a directory
+            CellDesignerModel
+        ),
         "AlzPathway": (
-            # from [[mizuno_AlzPathwayComprehensiveMap_2021]]
+            # from [[mizuno_AlzPathwayComprehensiveMap_2012]]
             "alzpathway/CellDesigner SBML/12918_2012_896_MOESM1_ESM.xml",
             CellDesignerModel
         ),

@@ -9,7 +9,7 @@ from embed_annotations.pyg_n2v import embed_GO
 # extracting GO terms directly given in SBML
 
 cache_dir = files('computed')
-dataset_cache_dir = os.path.join(cache_dir, "mizuno_AlzpathwayComprehensiveMap_2012", )
+dataset_cache_dir = os.path.join(cache_dir, "pd_map_autumn_19")
 
 if __name__ == '__main__':
 
