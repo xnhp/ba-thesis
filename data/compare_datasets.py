@@ -22,6 +22,17 @@ def set_title_fancy(ax, title: str):
     }
     ax.set_title(title, fontdict=fontdict)
 
+def type_histogram(ax: Axes, graph:nx.Graph, nodes_requested):
+    node_data = [graph.nodes[n] for n in nodes_requested]
+    types = [n['class'] for n in node_data]
+    ax.hist(types)  # TODO pick from qualitative color map
+    ax.set_ylabel("number of aliases")
+    ax.set_xlabel("node type")
+    ax.tick_params(axis="x", labelrotation=60)
+    # TODO labels centered below bars
+    # TODO make this a horizontal bar chart
+    return ax
+
 def degree_histogram(ax: Axes, graph: nx.Graph, included):
     degrees = [deg for (node, deg) in graph.degree(included)]
     n, bins, patches = ax.hist(
@@ -73,7 +84,7 @@ def disease_map_summary(graph: nx.Graph):
     pos_nodes = [node for (node, label) in graph.nodes(data="node_label", default=False) if label==1]
     n_pos = len(pos_nodes)
 
-    fig, axs = init_fig(rows=2)
+    fig, axs = init_fig(rows=3)
 
     ax_degs_all = degree_histogram(axs[0], simple_nxG, non_rxn_nodes)
     # TODO set sizes globally
@@ -85,18 +96,25 @@ def disease_map_summary(graph: nx.Graph):
     ax_degs_positive = degree_histogram(axs[1], simple_nxG, pos_nodes)
     set_title_fancy(ax_degs_positive, f"aliases w/ positive ground-truth class")
 
+    ax_type_hist = type_histogram(axs[2], simple_nxG, non_rxn_nodes)
+    # make clear that this does not count proteins that are contained in a complex species
+
     fig.suptitle(f"{graph.graph['name']}")
     fig.tight_layout()
     return fig
 
 
 if __name__ == '__main__':
-    names = ["AlzPathwayReorgLast"]
+    names = [
+        "AlzPathwayReorgLast",
+        # "PDMap19"
+    ]
 
     graphs: list[deepsnap.graph.Graph] = load_graphs(
         names,
         loader_impl=sbml_single_bipartite_projection_impl
     )
+    # TODO cache this
 
     for graph in graphs:
         fig = disease_map_summary(graph)
