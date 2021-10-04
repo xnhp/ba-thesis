@@ -17,3 +17,36 @@
 
 
 \newcommand{\cupdot}{\mathbin{\mathaccent\cdot\cup}}
+
+
+\newcommand{\inlinedef}[1]{{\textit{{#1}}}}
+\newcommand{\ild}[1]{\inlinedef{#1}}
+
+
+\newenvironment{myalgo}[1]
+{
+  \begingroup
+  \removelatexerror
+  \begin{algorithm}[h]
+    \setstretch{1.2}
+    \caption{#1}
+  }
+  { 
+  \end{algorithm}
+  \endgroup
+}
+
+\newcommand{\celldesigner}{\textsc{CellDesigner}}
+\newcommand{\nfkb}{NF-$\kappa$B }
+
+\newcommand{\alzpathway}{\textsc{AlzPathway}}
+\newcommand{\pdmap}{\textsc{PDMap}}
+
+\newcommand{\toolname}[1]{\textit{#1}}
+
+
+% \newcommand{\dataset}[1]{\textsc{#1}}
+
+
+
+\endinput
