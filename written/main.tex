@@ -48,7 +48,7 @@
 % Load the package for hyperreferences
 \usepackage{kaorefs}
 
-\graphicspath{{images/}{./}} % Paths where images are looked for
+\graphicspath{{images/}{./}{../GraphGym/run/}} % Paths where images are looked for
 
 \makeindex[columns=3, title=Alphabetical Index, intoc] % Make LaTeX produce the files required to compile the index
 
@@ -557,6 +557,8 @@ briefly introduce in the following
 \cite{vapnik_PrinciplesRiskMinimization_,bronstein_geometric_2021}
 % TODO better-looking references?
 : We consider $n$ observations $\mathcal{T} = \{(\vec x_i, y_i)\}_{i=1}^n$ (also
+% TODO this would be saying we evaluate on data we trained with, lets phrase
+% this better.
 called \ild{training data}) to be drawn from an (unknown) distribution $P$ over
 $\mathcal{X} \times \mathcal{Y}$ where $\mathcal{Y}$ is the label domain and
 $\mathcal{X}$ is the feature domain. For the scope of this work, we restrict
@@ -1114,6 +1116,92 @@ larger values producing a more narrow shape.
 
 
 
+\section{Evaluation of classifiers}
+% TODO move this to methods (pretty sure we should)
+
+SVMs as well as GNNs are trained to optimise some specific function \wrt the
+training data. However, when comparing and selecting models, we need an unbiased
+performance measure that is based only on data and ground-truth labels.
+
+The classifiers considered here will output a probability (or \ild{confidence
+  score}) that a given data point will belong to the positive class.
+% TODO elaborate how SVM can output probas
+To obtain a concrete, binary classification, we have to draw a
+\ild{decision threshold} $\tau$. If the predicted confidence score of a
+given data point is greater than $\tau$, it will be assigned the positive class,
+else the negative class.
+%
+In \reftab{conf-names} we introduce some basic terminology for subsets of
+training data based on their true and predicted class.
+\begin{table}[h]
+  \centering
+  \begin{tabular}[h]{l | l l}
+    & Predicted Positive (\PP) & Predicted Negative (\PN) \\
+    \hline
+    Actually Positive (\P) & \ild{True Positives} (\TP) & \ild{False Negatives} (\FN) \\
+    Actually Negative (\N) & \ild{False Positives} (\FP) & \ild{True Negatives} (\TN)
+  \end{tabular}
+  \caption{Given a concrete, binary classification, the following terms describe
+  (sizes of) subsets of the predicted data, depending on its ground-truth and predicted class.}
+  \label{tab:conf-names}
+\end{table}
+
+Based on the terms in \reftab{conf-names}, we can define the following measures:
+% TODO reference for this
+\begin{itemize}
+\item \ild{Accuracy}, given by the ratio of
+  correctly classified examples $\nicefrac{\TP + \TN}{\P+\N}$. Note that for
+  class-imbalanced data, this is not a sufficient measure, because
+  misclassifications of the minority class will be underrepresented in the
+  overall score.
+\item  \ild{True Positive Rate} (\TPR), or \ild{Recall}, given by $\nicefrac{\TP}{\P}$ is
+  the probability that a positive example will be predicted as such by the classifier.
+\item \ild{False Positive Rate} (\FPR), given by $\nicefrac{\FP}{\N}$ is the
+  probability that a negative example will be predicted falsely as positive.
+  \item \ild{Precision}, given by $\nicefrac{\TP}{\PP} = 1 - \FPR$
+\end{itemize}
+
+A perfect classifier would yield a high True Positive Rate and a low False
+Positive Rate.
+%
+Note that it is possible to trade-off \FPR and \TPR
+by varying the decision threshold. If the threshold is very high, only examples
+for which the classifier has high confidence will be actually assigned positive
+class. This means that the \FPR will be low. However, then not all true
+positives may be picked up as such by the classifier, resulting in a low \TPR.
+Lowering the decision threshold will increase \TPR, but also potentially result
+in additionally picking up false positives, increasing the \FPR.
+
+The choice of the proper decision threshold, i.e. the tradeoff between Recall
+and Precision depends on the use-case since different importance may be assigned
+to either Precision or Recall.
+%
+The original use-case of \nielsen was to use a classifier trained for predicting
+node duplication to provide a low number of high-confidence examples as
+suggestions to the user. When considering only the few examples with the highest
+score, Precision is more important than Recall.
+
+To assess the trade-off between \FPR and \TPR \wrt possible choices of
+classification threshold $\tau$, we can plot \FPR and \TPR as a function of
+$\tau$, yielding the \ild{Receiver Operating Characteristic} (ROC curve).
+
+As a heuristic for choosing $\tau$, we can look for threshold with the greatest
+distance between \TPR and \FPR at $\tau$, i.e. $\tau_{\text{opt}} := \argmax_{\tau \in
+  (0,1)} \TPR(\tau) - \FPR(\tau)$.
+Generally, a classifier could be considered better
+if its ROC curve leans
+towards the upper left, i.e. the area under the curve is greater. As such, we
+can compute the \ild{Area Under Curve} (AUC) score given as
+\begin{align*}
+  \text{AUC}(\tau) = \nicefrac{1}{2} (\TPR(\tau) - \FPR(\tau) + 1)
+\end{align*}
+and define the optimal overall AUC score as $\text{AUC} := \text{AUC}(\tau_{\text{opt}})$.
+However, we acknowledge that reducing the performance of a classifier to a
+single number will hardly ever capture all characteristics and evaluation still
+depends heavily on the use-case.
+
+
+
 % ====================================
 \chapter{Related Work}
 \label{sec:related-work}
@@ -1401,6 +1489,23 @@ diagnostic test for MS based on scRNA-seq technology.
 
 % TODO manipur cancer stuff?
 
+% TODO-maybe write about GraphSMOTE in related work
+% For oversampling, we can either simply duplicate examples or synthetically
+% create new examples. We avoid simply duplicating minority class examples because
+% with respect to the classifiers used in this work, we deem this approach
+% analogous to supplying balancing class weight coefficients to the classifier.
+% When synthetically generating new examples, we of course have to settle on a
+% procedure to do so and trust in that it will supply realistic training examples.
+% A common technique for tabular data is \textsc{SMOTE}, in which, for a given
+% data point $\vec x$, one of its $k$-nearest neighbours $\vec x'$ is selected and
+% a new data point is generated by interpolating between $\vec x$ and $\vec x'$,
+% i.e. $\vec x_{\text{new}} = \vec x + \lambda (\vec x - \vec x')$  where
+% $\lambda$ is a random choice from $[0,1]$. However, note that this does not
+% suffice for graph structured data: In addition to attributes, we also have to
+% impute network connectivity. While there exist methods to achieve this (e.g. an
+% extension of \textsc{SMOTE} to network structured-data), we did not explore this
+% approach further due to time constraints and more promising alternatives.
+
 \paragraph{Graph-level tasks} Graph Neural Networks have found highly successful
 applications for the problem of molecular property prediction. This is a
 graph-level task where the input is a \ild{molecule graph} and we strive to
@@ -1538,7 +1643,10 @@ This sequence of reorganisation steps served as the basis for the
 work of \citeauthor{nielsen_MachineLearningSupport_2019} to train an SVM
 classifier to predict node duplication
 \cite{nielsen_MachineLearningSupport_2019}. In this work, we consider these
-reorganisaton steps for training data (\dataname{AlzPathwayReorg}). Further, we consider
+reorganisaton steps for training data (\dataname{AlzPathwayReorg}).
+Note that from the sequence of reorganisation steps, we exclude the steps that
+do not correspond to any duplication events.
+Further, we consider
 the last of the reorganisation steps, i.e. the final result as a single,
 independent map (\dataname{AlzPathwayReorgLast}).
 
@@ -1579,6 +1687,7 @@ to comprehensively model the human metabolism. It can be viewed at \url{https://
     \refsec{datasets}. }
   \label{fig:maps-summary}
 \end{figure}
+% TODO consistent ordering of bars!
 
 
 % TODO give table or overview or smth of how many data points we will have netto
@@ -2120,6 +2229,7 @@ The task at hand comes with a particular set of challenges:
 \end{itemize}
 
 
+% TODO somewhere here, mention how we determine where to stop when training GNN model
 
 
 
@@ -2215,6 +2325,18 @@ for now and hypothesize it has little practical impact in this use-case.
 
 % We assume that clusters are linearly separable. 
 % ... not even needed with linkage clustering?
+
+
+\section{Implementation}
+
+% features are cached...
+
+% learning on graphs, GNN:
+% PyTorch, PyTorch Geometric, GraphGym, Extensions
+
+% SVM: scikit-learn
+
+% 
 
 
 
@@ -2323,55 +2445,356 @@ for Graph Neural Networks for tasks such as node classification.
 \end{table}
 
 
-\section{Reproducing previous work}
-% compare etc
-
+\section{Reproducing previous work \& Comparison to GNN}
 % svm repro, svm-repro-reconmapolder
+
+In this section, we reproduce the original task from \nielsen using an SVM
+classifier. Additionally, we introduce a simple GNN classifier that operates on
+the same input data as the SVM, plus the bipartite projection of the disease map
+graph as described in \refsec{graph-interpretation}. Further variants and
+extensions of the GNN model will be evaluated in the following sections.
+
+\subsection{Evaluation on \PDMap}
+
+The models were trained on the AlzPathway reorganisation steps (\ADMap)
+and evaluated on the Parkinson's Disease Map (\PDMap). 
+
+% NOTE taking graphic from repeats experiment here
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro/results/config-svm/roc.png}
+    \caption{SVM classifier.}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-repeats/results/config-gnn/roc.png}
+    \caption{GNN classifier, 5 repeats.  }
+  \end{subfigure}
+  \caption{ROC Curves for SVM and GNN classifiers trained on \ADMap
+    and evaluated on the same dataset (\textit{training set}, dashed line) or on \PDMap
+    (\textit{testing set}, solid line).}
+  \label{fig:svm-repro-comparison}
+\end{figure}
+%
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-repeats/results/comparison/roc.png}
+    \caption{Comparison of ROC Curves of SVM and GNN classifiers.}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-repeats/results/comparison/cutoffs.png}
+    % TODO mention that this is randomly chosen repeat
+    \caption{Comparison of \FPR values at specific \TPR cutoff values (lower is better). These
+      values are specific points from the ROC curve.}
+  \end{subfigure}
+  \caption{Direct comparison of SVM and GNN classifier. The data
+    corresponds to the solid lines in \reffig{svm-repro-comparison}.}
+  \label{fig:svm-repro-roc-train-test}
+\end{figure}
+% TODO coalesce into single figure s.t. they dont split?
+
+% TODO discussion on ROC curves and on cutoffs
+% - In general, models able to generalise
+% - SVMs and GNNs pretty much the same for high precision, GNNs slightly better
+% in the middle
+% on cutoffs: compare to what is given in nielsen
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro/results/config-gnn/loss.png}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro/results/config-gnn/loss-25.png}
+  \end{subfigure}
+  \caption{Total loss value at each training epoch of the GNN model. The right-hand-side plot a
+    focussed view on the same data.}
+  \label{fig:svm-repro-loss}
+\end{figure}
+% TODO discussion on loss value -- maybe actually put this in discussion, since
+% this is a thing for all experiments/tasks?
+% TODO also show performance on train
+% -- will show that already sort of hard to overfit on training data?
+
+% TODO make plots less high? could save some space there...
+% (not a good idea for ROC plots because there width vs height ratio is
+% meaningful for visual interpretation)
+
+% TODO mention somewhere that we do not do batched training
+
+
+\subsection{Evaluation on \ReconMap}
+
+
+% DONE Comparison ROC curves between SVM, GNN (compare-experiments)
+% DONE cutoffs for SVM, GNN
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder-repeats/results/comparison/roc.png}
+    \caption{Comparison of ROC Curves of SVM and GNN classifiers.}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder-repeats/results/comparison/cutoffs.png}
+    \caption{Comparison of \FPR values at specific \TPR cutoff values (lower is better). These
+      values are specific points from the ROC curve.}
+  \end{subfigure}
+  \caption{Direct comparison of SVM and GNN classifier evaluated on \ReconMap. The data
+    corresponds to the solid lines in \reffig{svm-repro-comparison}.}
+  \label{fig:svm-repro-reconmapolder-roc-train-test}
+\end{figure}
+
+% DONE loss curves for GNN (compare-models)
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder/results/config-gnn/loss.png}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder/results/config-gnn/loss-25.png}
+  \end{subfigure}
+  \caption{Total loss value at each training epoch of the GNN model, evaluted on
+    \ReconMap. The right-hand-side plot a focussed view on the same data.}
+  \label{fig:svm-repro-reconmapolder-loss}
+\end{figure}
+
+\subsection{Discussion}
+
+As a first sanity check for the GNN approach, we verify whether the optimisation
+procedure is able to overfit the model on the training data. Indeed, the overall
+loss value converges to a stable minimum and the AUC score for evaluation on the
+training set at the last epoch is $0.989$, indicating a near-perfect fit (not
+shown in figures).
+
+To avoid actually overfitting, for overall performance evaluation, we consider
+the model state at the training epoch that performs best on the validation
+split. This is not necessarily the best epoch \wrt the training split, see
+\reffig{fig:svm-repro-loss}. The tradeoff can also be seen in shape of imperfect
+performance on the training split in the ROC curves.
+
+% TODO terminology: split
+%
+Note that, in practise, a ML model should be able to reliably generalise to data
+that was not observed during the process of finding and tuning a model. Usually,
+this is done by splitting the available data into three parts: one for training,
+one for evaluation during model tuning (such as identifying a reasonable maximum
+epoch like here) and, finally, a part that will only be used for validation once
+all decisions have been made, to assess the actual generalisation performance of
+the final model.
+%
+Here, we are technically still in the first stage. In the future, potentially,
+once a single, promising model has been identified and all decisions have been
+made, there must be anothe validation on completely unseen data.
+
+% TODO move this somewhere else, does not belong in Discussion
+The initialisation of neural network weights before the training depend on
+random values. To check whether our training procedure is robust \wrt random
+initialisation, we repeat each run several times with different seed values for
+the random number generators. Since this seems to be fairly stable, we omit this
+in future experiments for sake of simplicity.
+% NOTE order of training samples does not matter as we are doing full-batch training
+
+% TODO here, discussion on results
+% once we have confirmed that performance is consistent across random seeds
+For both evaluation on \PDMap and on \ReconMap, the GNN's ROC curve dominates
+the SVM's curve. This means that for a given \FPR deemed acceptable, the GNN
+model will provide a higher ratio of True Positives. This advantage grows as the
+decision threshold is lowered, i.e. the GNN model is better particularly when we
+aim to identify more than just the high-confidence examples. The difference
+between ROC curves is only slight on evaluation on \PDMap but strong on
+evaluation on \ReconMap. This may be due to a better ability of the GNN model to
+generalise, given different characterstics of \ReconMap.
+
+
+% TODO clarify what validation loss is here?
+Note how, for both \PDMap and \ReconMap as evaluation datasets, the validation
+loss reaches its minimum after just a handful of training epochs. We
+additionally ran the same experiment with a decreased learning rate ($0.01
+\rightarrow 0.001$). There, we can see a smoother decrease the loss value, but
+also note that the overall achieved minimum is worse than in case of a greater
+learning rate (see \reffig{svm-repro-lowlr-reconmapolder-loss}). This makes it
+very questionable, how robust model training actually is in this case if the
+same progress cannot be reliable replicated in a greater number of smaller steps.
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder-lowlr/results/config-gnn/loss.png}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\linewidth}
+    \pic{svm-repro-reconmapolder-lowlr/results/config-gnn/loss-100.png}
+  \end{subfigure}
+  \caption{Decreased learning rate. Total loss value at each training epoch of
+    the GNN model, evaluated on \ReconMap. The right-hand-side plot a focussed
+    view on the same data.}
+  \label{fig:svm-repro-lowlr-reconmapolder-loss}
+\end{figure}
+
+
+% TODO compare to nielsen
+
+
+\section{Importance of Reorganisation Steps}
+Recall that in case of Alzheimer's Disease Map, we are given a sequence of
+reorganisation steps. The original approach of \nielsen was train a model on the
+entire sequence of reorganisation steps s.t. the model would mimic the actions
+of a human curator as closely as possible. They would then evaluate the model on
+\textit{collapsed} versions of other disease maps.
+%
+A fully collapsed map potentially has vastly different characteristics than a
+partially curated map. For instance, a collapsed map is likely to contain
+species aliases of very high degree (maybe those that appeared often as
+independent aliases before collapse). In a reorganisation step, on the other
+hand, the map will already be in part curated and some nodes already duplicated.
+%
+So, we might effectively be training our models to do one task while testing
+them on a slightly different task.
+%
+This consideration is also relevant if we consider a slightly different
+use-case: one of the first steps in the construction of a disease map may be the
+semi-automatic concatenation of different pathways, during which species
+appearing in several pathways will be mapped to the same species alias, i.e.
+there will be exactly one alias per species. Such a map will very closely
+resemble a collapsed map in the sense we construct it here.
+%
+Additionally, a reorganisation sequence is likely to contain contradictory
+examples: An alias that is duplicated only in a later step will appear as
+negative example in all previous steps. Further, the concatenation of all
+reorganisation steps into one big, disconnected graph for training
+% TODO verify that we are indeed doing this and describe it earlier
+will further amplify the inherent class imbalance.
+%
+Thus, we deem it interesting to explore how a model will perform if trained not
+on the reorganisation steps but simply the collapsed version of the final map.
+%
+This has the additional advantage that in practise, reorganisation steps will
+rarely be available. The collapsed version, however, can be constructed from any
+published disease map.
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.48\linewidth}
+    \pic{svm-repro-adlast/results/comparison/roc.png}
+    % \pic{svm-repro-adlast/results/}
+    % \pic{svm-repro-reconmapolder-lowlr/results/config-gnn/loss.png}
+    \caption{(\ADLast $\rightarrow$ \PDMap)}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.48\linewidth}
+    \pic{svm-repro-reconmapolder-adlast/results/comparison/roc.png}
+    \caption{(\ADLast $\rightarrow$ \ReconMap)}
+  \end{subfigure}
+  \caption{todo}
+  \label{fig:importance-reorganisation-steps}
+\end{figure}
+
+The results are illustrated in \reffig{importance-reorganisation-steps}. Note
+how both SVM and GNN models do not degrade noticeably in performance (compare to
+figure \reffig{todo}). In fact, the SVM model performs \textit{better} when
+trained on the collapsed map, potentially due to fewer contradictory examples.
+The GNN models show similar performance.
+
+% TODO adress how there is no longer a performance gap between SVM and GNN
+% (G)NNs can handle the nasty case better?
+
+Another factor to consider here is that collapsed maps are constructed
+programmatically. When dealing with human-created reorganisation steps, it may
+be the case that there will be events that may intuitively be interpreted as
+duplication events but are not picked correctly up by our inferral of
+ground-truth labels. This is another advantage of the approach of considering
+only the collapsed version.
+% make it sound nicer -- why should our alg not pick it up? due to renaming,
+% different ids, ...?
+% TODO paragraph needs rewriting and should go somewhere else
+
+Another factor may be that reorganisation steps really are completely
+independent, as such considering the steps vs the collapsed map would not
+provide any advantages.
+
+% TODO introduce facets of use-case (predict few high-confidence examples AND
+% *during curation*) when talking about evaluation of classifiers
+
+% TODO-maybe make it even more clearer that this is a different use-case
+
+% TODO verify this insight (it's been late in the evening)
+% TODO if verified, mention this in introduction and discussion in end
+
+% TODO also shows that model is able to learn from 'little' data (719 for prediction).
+
+% TODO somewhere make clear that in this kind of node classification shit like
+% undersampling is more complicated to implement since we need to keep the
+% entire graph but cut&slice label and label index tensors
+
+% dont *need* reorganisation steps?
+% can train on more than one disease map?
+% train-on-many
+
+% [[importance of duplication steps vs ...]]
 
 
 \section{Handling unbalanced classes}
+% did this in undersampling-lossweight on GNN model
+% grid search over both
+% dont have recent plots
+% this is all fucked
+% possibilities
+% - report what we have (no plots, give some tables on grid search) -- means we
+% would miss out on possible observation where ROC is pushed to the left
+% - try to rerun what we have
+% - set up new experiment based on svm-repro -- only need to introduce flags --
+% evaluating grid search might suck -- lets just stick to ratios that would make
+% the dataset balanced, should be straightforward enough.
 
-% motivation:
-% - model sees more negative than positive examples.
-% - model aims to minimise the loss
-% - will naturally be a better 'strategy' to prefer predicting negatives because
-% they appear much more often
+% TODO at least *mention* that we did the grid search in undersampling-lossweight
 
-% cf undersampling-lossweight
-There are two simple ways to approach this problem. One is to modify the
-training data such that it is balanced. This can be done either by
-\ild{oversampling} the minory class (coming up with new examples for the
-minority class) or by \ild{undersampling} the majority class (dropping examples
-from the majority class) of the majority class from the training data.
-%
-For oversampling, we can either simply duplicate examples or synthetically
-create new examples. We avoid simply duplicating minority class examples because
-with respect to the classifiers used in this work, we deem this approach
-analogous to supplying balancing class weight coefficients to the classifier.
-When synthetically generating new examples, we of course have to settle on a
-procedure to do so and trust in that it will supply realistic training examples.
-A common technique for tabular data is \textsc{SMOTE}, in which, for a given
-data point $\vec x$, one of its $k$-nearest neighbours $\vec x'$ is selected and
-a new data point is generated by interpolating between $\vec x$ and $vec x'$,
-i.e. $\vec x_{\text{new}} = \vec x + \lambda (\vec x - \vec x')$  where
-$\lambda$ is a random choice from $[0,1]$. However, note that this does not
-suffice for graph structured data: In addition to attributes, we also have to
-impute network connectivity. While there exist methods to achieve this (e.g. an
-extension of \textsc{SMOTE} to network structured-data), we did not explore this
-approach further due to time constraints and more promising alternatives.
-% TODO move smote biz to related work
-% TODO make this sound a bit more professional, did not pursue this more because
-% undersampling and class weights did not give improvement so we dropped this
-% direction altogether
+% foootnote \footnote{
+%   We omit the evaluation on \ReconMap due to time constraints. In any case, this
+%   is still all about finding promising approaches and if it doesnt work for one
+%   case, it likely won't help in the other.
+% }
+
+% -> svm-repro-undersampling
+% -> svm-repro-lossweight
+
+
+As can be seen from \reffig{maps-summary}, we can expect to deal with unbalanced
+data. 
+% TODO name the numbers from the figure
+% TODO mention that this is particularly relevant for AD reorg *steps*
+A possible concern is that the model may become biased towards predicting
+the majority class during training since it is simply more likely to occur when
+evaluating the overall loss.
+% TODO risk
+
+We consider two simple ways to approach this problem. One is to modify the
+training data such that it is balanced. Another is to instruct the classifier to
+give more importance to examples from the minority class.
+
 
 % To be sure, that [this helps], it's reasonable to evaluate f1 metrics both for
 % the smaller and the larger classes on the validation data. It might show that
 % performance on the smaller class becomes better.
 % https://datascience.stackexchange.com/a/58739/44723
 
-\paragraph{Undersampling} ...
+\subsection{Undersampling}
+% cf undersampling-lossweight
+% TODO need to rerun experiment for plots
+This can be done either by
+\ild{oversampling} the minory class (coming up with new examples for the
+minority class) or by \ild{undersampling} the majority class (dropping examples
+from the majority class) of the majority class from the training data.
+%
 
-\paragraph{Weights} ...
+
+
+% TODO make this sound a bit more professional, did not pursue this more because
+% undersampling and class weights did not give improvement so we dropped this
+% direction altogether
+
+% TODO svm-repro-adlast-undersampling-sanity absurdly large value makes no difference...?
+% but e.g. removing features does impact AUC score (0.4 on only node class)
+
+
+\subsection{Weights} 
 If a high weight is specified, misclassifications of positive
 examples will be penalised more heavily than misclassificaitions of negative examples.
 
@@ -2390,17 +2813,42 @@ an extension of \refeq{bce-loss-basic}, given by
 % - mean reduction
 % - minimisation instead of maximisation (omitting sign)
 
+% TODO describe how weights work for SVMs
+
+We set the weight of the minority class to
+$\nicefrac{n_{\text{maj}}}{n_{\text{min}}}$ where $n_{\text{maj}}$ is the number
+of examples in the majority
+% TODO somewhere define 'examples', majority and minority class
+class and $n_{\text{min}}$ the number of examples in the minority class. In
+other words, if every example is counted according to its weight, the class
+counts are balanced.
+% TODO this sounds confusing, maybe put it in formula
+
+Experimental results show that this has very little effect on model performance
+(\ADLast $\rightarrow$ \PDMap: GNN-AUC$=0.83$; SVM-AUC$=0.83$). We omit
+visualisations here due to space constraints.
+% TODO maybe upload them to repo and link?
+
+% specifying absurdly high value yields AUC of 0.76, this is weird...
+
+
+
+
+
+
+
+
+
 \section{Graph interpretation for message-passing}
 
 \section{Attention mechanism}
+
 
 \section{Feature Selection}
 % experiment feature-importance (and others?)
 % cf [[feature-importance]]
 
-\section{Selection of training data}
-% train-on-many
-% dont *need* reorganisation steps?
+
 
 
 
@@ -2483,11 +2931,16 @@ situations like illustrated here occured.
 % ====================================
 \chapter{Discussion}
 
+% definition of train/test tasks, internal split, more data
 
 
 % ====================================
 \chapter{Outlook \& Future Work}
 \label{sec:outlook}
+
+% more training data...
+
+
 % positoning of duplicates
 
 % using layout information
