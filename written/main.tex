@@ -21,6 +21,8 @@
 \usepackage{hyperref}
 \usepackage{listings}
 
+\usepackage{amssymb} % for checkmarks
+
 % Load the bibliography package
 \usepackage[style=numeric,sorting=none]{kaobiblio}  
 % \usepackage[style=numeric,sorting=none]{biblatex}
@@ -177,6 +179,21 @@
 \chapter{Introduction}
 % see [[Writing Outline]]
 
+% have to deal with duplicates due to some species appearing often
+% and potentially involved in crosstalk
+
+% duplicates are problem because (rephrase from what i wrote in background)
+
+% tools already do support displaying or introducing duplicates
+
+% but decision of duplication still up to the curator
+
+% curating layout is insanely labour-intensive process
+
+% distinction of use-cases (identify *all*, or few high-confidence suggestions)?
+% how important is this even?
+
+
 \paragraph{Overview} ...
 % bit of background, where are we, what is the problem
 
@@ -185,28 +202,28 @@
 
 \paragraph{Motivation for Approach} ...
 % what do we want to contribute on top of this?
-% TODO this is more like motivation for our approach, not Background
+
+% (fragment)
 % As such, it is problematic to hinge the decision of duplication on the identitiy
 % of the node alone, since the same species may be a connector in some cases and
 % not in other cases. As elaborated above, we have to consider its neighbourhood.
-% % TODO rearrange s.t. I dont have to make this awkward reference
 
-% % TODO should go in introduction
+% (fragment)
 % Motivated by this, we seek to implicitly capture the criteria for node
 % duplication by training a machine learning model on a sequence of snapshots of a
 % diagram during a reorganisation process performed by an expert. The model is
 % trained to predict whether a node should be duplicated or not.
 
-% % TODO should go in introduction
+% (fragment)
 % Moreover, finding the exact number of duplicates to introduce and how to connect
 % them is not trivial and was commonly left to human curators. We provide a basic
 % approach to answer this.
 
-% % TODO should go in introduction?
+% (fragment)
 % Further, it remains an open to question where to position the newly introduced
 % duplicates in the layout. We leave this question to future work.
 
-% % TODO should go to motivation (introduction)
+% (fragment)
 % While structural features such as an extremely large node degree
 % immediately come to mind, such simple predictors often do not suffice to capture
 % all cases (see \nameref{sec:experiments-results}).
@@ -507,7 +524,7 @@ The question of if and when to represent a species by multiple different visual
 representations instead of a single one is exactly the focus of this work.
 
 
-\paragraph{Node Duplication}
+\section{Node Duplication \& Connectivity}
 % TODO make this more thorough, particularly why this is a problem?
 % TODO here should go, elaborately why node duplication is a problem
 
@@ -1309,16 +1326,19 @@ score, Precision is more important than Recall.
 
 To assess the trade-off between \FPR and \TPR \wrt possible choices of
 classification threshold $\tau$, we can plot \FPR and \TPR as a function of
-$\tau$, yielding the \ild{Receiver Operating Characteristic} (ROC curve).
+$\tau$, yielding the \ild{Receiver Operating Characteristic} (ROC curve). The
+curve of random classifier that flips an even coin for each given example would
+be close to the diagonal. 
+%
+Generally, a classifier could be considered better if its ROC curve leans
+towards the upper left, i.e. the area under the curve is greater.
 
 As a heuristic for choosing $\tau$, we can look for the threshold with the greatest
 distance between \TPR and \FPR at $\tau$, i.e. $\tau_{\text{opt}} := \argmax_{\tau \in
   (0,1)} \TPR(\tau) - \FPR(\tau)$.
 
-Generally, a classifier could be considered better
-if its ROC curve leans
-towards the upper left, i.e. the area under the curve is greater. As such, we
-can compute the \ild{Area Under Curve} (AUC) score given as
+As an indicator for overall quality, we can compute the \ild{Area Under Curve}
+(AUC) score given as
 \begin{align*}
   \text{AUC}(\tau) = \nicefrac{1}{2} (\TPR(\tau) - \FPR(\tau) + 1)
 \end{align*}
@@ -1335,59 +1355,86 @@ depends heavily on the use-case.
 
 % TODO chapter intro
 
-Of particular prominence is the work of
-\citeauthor{nielsen_MachineLearningSupport_2019}   
-\cite{nielsen_MachineLearningSupport_2019}. 
-% TODO describe what happens in that paper. describe the basic question and
-% describe results. Describe how we build on top of it.
-% TODO to the best of our knowledge only work considering node duplication in
-% disease maps
+We directly extend the work of \citeauthor{nielsen_MachineLearningSupport_2019}
+\cite{nielsen_MachineLearningSupport_2019}. In this work, the authors aim to
+train a classifier to predict node duplication in a ``human-like'' manner. They
+focus on features based on the graph structure. For the classification model,
+Support Vector Machines are chosen and the authors tune the model to find
+optimal choices of kernel and hyperparameters. The primary use-case considered
+in their work is to provide a small, human-digestible number of predictions as
+suggestions to the curator. Likewise, a similar approach is used to suggest
+de-duplication operations. The SVM model is trained on a sequence of curation
+snapshots provided by an expert working on \textit{AlzPathway}, a disease map
+describing processes related to Alzheimer's Disease (see \refsec{datasets}).
+Model hyperparameters were tuned and selected based on evaluation on
+\textit{PDMap}, a diagram on Parkinson's Disease. The final identified model was
+further validated on \textit{ReconMap}, a large diagram describing the human
+metabolism and a number of smaller pathway graphs obtained from Reactome
+\cite{joshi-tope_ReactomeKnowledgebaseBiological_2005}. Finally, a user study
+among domain experts was conducted on smaller networks, comparing the
+performance of the machine learning model
+% TODO captialisation?
+with the decisions of experts. We reproduce some of their main results in
+\refsec{experiments-results} and discuss them further here. In general, the
+identified model was able to make predictions well above random. However, the
+user study showed considerable variations even in expert decisions.
+
+
 
 \section{Drawing Biological Networks}
 
-% from a CS perspective, i.e. relevant methods and stuff..
+There are numerous general-purpose methods for laying out graphs. Examples are
+force-directed approaches \cite{kobourov_ForceDirectedDrawingAlgorithms_2013},
+stress-based approaches \cite{gansner_GraphDrawingStress_2005}, hierarchical or
+layered approaches \cite{healy_HierarchicalDrawingAlgorithms_2013} or orthogonal
+or grid-based drawings \cite{duncan_PlanarOrthogonalPolyline_2013}, to name just
+a few. Drawing biological networks, however, is often associated with
+domain-specific additional requirements. Some of these challenges are outlined
+in \refsec{draw-biol-netw}. To this end, there has been work done to develop
+methods specific methods for biological networks.
 
-% TODO need a little bit more here!
-% \cite{wu_MetabopolisScalableNetwork_2019}
+Early work focussed mainly on the drawing of process diagrams that contain up to
+several dozens of nodes, e.g. describing only a single biological pathway.
+\cite{becker_GraphLayoutAlgorithm_2001}
+\cite{schreiber_ComparisonMetabolicPathways_2003}.
+% Widely used online databases such as \toolname{KEGG} and \toolname{Reactome}
+% provide (semi-)automatic layouts of pathway diagrams.
 
-% TODO cite schreiber in related work for drawing stuff
+However, the networks we consider in this work are of the scale of several
+hundreds or even thousands of elements. This poses unique challenges such as
+respecting a given hierarchy or annotated categories (subsystems), representing semantic
+motifs (e.g. cyclic patterns) or keeping a uniform distribution of visual
+elements across the drawing.
 
+Recent work \cite{siebenhaller_HumanlikeLayoutAlgorithms_2020,
+  kieffer_HOLAHumanlikeOrthogonal_2016} has clarified the domain
+specific-requirements of drawing biological process diagrams and suggested
+specialised drawing algorithms for medium-scale diagrams.
 
-
-% TODO
-% Recent work
-% \cite{siebenhaller_HumanlikeLayoutAlgorithms_2020}\cite{bourqui_MetabolicNetworkVisualization_2007}\cite{kieffer_HOLAHumanlikeOrthogonal_2016}
-% aims to capture these requirements and provide algorithms that produce a
-% ``human-like'' layout (see \nameref{sec:related-work}).
-% \cite{siebenhaller_HumanlikeLayoutAlgorithms_2020}\cite{bourqui_MetabolicNetworkVisualization_2007}\cite{kieffer_HOLAHumanlikeOrthogonal_2016}
-
-% TODO
-% such as force-directed approaches
-% \cite{kobourov_ForceDirectedDrawingAlgorithms_2013}, stress-based approaches
-% \cite{gansner_GraphDrawingStress_2005}, hierarchical or layered approaches
-% \cite{healy_HierarchicalDrawingAlgorithms_2013} or orthogonal or grid-based
-% drawings \cite{duncan_PlanarOrthogonalPolyline_2013}, to name just a few.
-
-
-\paragraph{Tools} Several tools exist for the curation and exploration of
-biological process diagrams, including \toolname{CellDesigner}
-\cite{funahashi_CellDesignerVersatileModeling_2008}, \toolname{Minerva}
-\cite{gawron_MINERVAPlatformVisualization_2016}, and \toolname{Cytoscape}
-\cite{shannon_cytoscape_2003} and \toolname{VANTED}
-\cite{rohn_VANTEDV2Framework_2012}. We refer to TODO for a comprehensive
-comparison.
-% TODO also include Arcadia and Omix?
-% TODO use \toolname in this paragraph
-% TODO footnote for abbreviations
-% TODO citations for SBML, SBGN-ML
-
+There are two recent notable approaches which we highlight in more detail.
+With \toolname{Metabopolis}, \citeauthor{wu_MetabopolisScalableNetwork_2019}
+provide an approach based on the inherent hierarchies provided either by
+explicit subsystem annotations or related connected components
+\cite{wu_MetabopolisScalableNetwork_2019}.
+% TODO this is super vague
+%
+Shortly thereafter, \citeauthor{wu_MultilevelAreaBalancing_2020} work towards
+alleviating the uneven space space utilisation of \toolname{Metabopolis},
+focussing on obtaining a layout that has balanced space utilisation at multiple
+levels of detail \cite{wu_MultilevelAreaBalancing_2020}. Further, they
+explicitly consider node duplication as a tool to improve the layout.
+% TODO fuck I CBA to read these entire fucking papes, ill never be done....
 
 
 
 \section{Node Duplication}
 % TODO this section
 
-\paragraph{Related Notions} Several other terms appear in the literature that
+
+% TODO wu2020 (even cites nielsen) -- only preprint
+
+
+\paragraph{Related Notions} Several related terms appear in the literature that
 are relevant for the problem at hand. A \ild{currency metabolite}
 \cite{huss_CurrencyCommodityMetabolites_2007}
 % TODO also external/internal mtbs cf Schuster
@@ -1397,27 +1444,37 @@ supply energy (i.e. act as ``currency'' in the metabolism) or act as some other
 form of catalyst. Commonly, currency metabolites appear in abundance in an
 organism, and often it is assumed that two reactions involving the same currency
 metabolite are not in fact linked stoichiometrically, i.e. linking these
-reactions via a common node would imply false connectivity. Prominent examples
-are molecules such as ATP or H2O. Currency metabolites are commonly
-duplicated.
-% TODO typesetting with \ce{H20}
+reactions via a common node would imply false connectivity.
+% Prominent examples
+% are molecules such as ATP or H2O.
+% NOTE commenting this out since read in places that ATP can actually be a key connector
+Currency metabolites are commonly duplicated.
 % TODO  also consider direks_dynamic?
+
+In the context of decomposing a metabolic into subsystems,
+\citeauthor{schuster_exploring_2002} classify a given metabolite as
+\ild{external} if it can be considered in to be present in such abundance that
+its production or consumption has no meaningful effect on the surrounding
+concentration
+\cite{schuster_exploring_2002}.
+Note that this means that the connectivity is not meaningful
+(\ild{false}) in a stoichiometric sense. 
+
 The notion of true connectivity is also reflected in the concept of \ild{key
   connectors} \cite{kim_IdentificationCriticalConnectors_2019}: because pathways
 in a metabolic network seldomly work in isolation, there necessarily will be
 connections between different pathways. Determining whether a bridging node
 between two pathways is indeed a key connector or merely describes false
-connectivity and should be split is the tricky part.
-% TODO rephrase
+connectivity is not trivial and related to the problem at hand.
 
 \paragraph{General methods} While node duplication (also referred to as
 \ild{Vertex Splitting}) has been treated from a theoretical perspective
-\cite{liebers_PlanarizingGraphsSurvey_2001}
-\cite{abu-khzam_ClusterEditingVertex_2018},
+\cite{liebers_PlanarizingGraphsSurvey_2001,abu-khzam_ClusterEditingVertex_2018},
 to the best of our knowledge there are relatively few concrete, general-purpose
-algorithm that employ automatic node duplication.
+algorithms that employ automatic node duplication.
 
 Most notably, \citeauthor{eades_VertexSplittingTensionfree_1996} introduce a
+% TODO do not list all names in \citeauthor
 general graph drawing algorithm that applies node duplication to simplify the
 graph structure in order to find a better layout
 \cite{eades_VertexSplittingTensionfree_1996}. The method is an extension of the
@@ -1435,11 +1492,12 @@ possible split lines. In each iteration of the \textsc{Kamada-Kawai} algorithm,
 additionally, a vertex with tension greater than a given threshold is split
 into two duplicates according to its maximum tension split line. The choice of
 the threshold is left to the user.
-% TODO would be *much* easier to understand with a diagram
+% TODO this is a bit elaborate.
 
 Node Duplication has also been applied in the area of Electronic Circuit Design,
 for example to avoid edge crossings \cite{li_EliminateWireCrossings_2008} or
-paths exceeding a maximum length \cite{paik_VertexSplittingDags_1998} \cite{mayer_GeneticAlgorithmsVertex_1993}.
+paths exceeding a maximum length
+\cite{paik_VertexSplittingDags_1998, mayer_GeneticAlgorithmsVertex_1993}.
 
 \citeauthor{henr_ImprovingReadabilityClustered_2008}
  consider how to represent
@@ -1448,46 +1506,53 @@ represented by adjacency heatmaps
 \cite{henr_ImprovingReadabilityClustered_2008}.
 
 
-\paragraph{Metabolic Models}
-% TODO introduce somewhere what that is?
-% TODO some introduction text
-Because different instances of the same metabolite can participate in many
-different reactions, node duplication can be essential for working with
-metabolic models. While visualisation one possible motivation, node duplication
-also has to be considered for other tasks such as flux balance analysis
-% TODO really?
-or integration of secondary \textit{-omics} data \cite{manipur_clustering_2020}.
+\paragraph{In biological networks} We review related work which explicitly
+considered node duplication in biological networks. The following references
+mainly consider the drawing of metabolic networks. However, the referenced
+methods exclusively rely on structural criteria based on the graph structure.
 
-Node duplication in layout tasks potentially is a different problem from the
-general preprocessing since finding a good layout may come with particular
-constraints (such as considering edge crossings, stress etc.). However, the
-methods mentioned below do not take layout information into account when
-deciding node duplication and we thus make no explicit distinction here.
+% % \paragraph{Metabolic Models}
+% % TODO introduce somewhere what that is?
+% % TODO some introduction text
+% Because different instances of the same metabolite can participate in many
+% different reactions, node duplication can be essential for working with
+% metabolic models.
+% % not sure about this
+% % While visualisation is one possible motivation, node duplication
+% % also has to be considered for other tasks such as flux balance analysis
+% % % TODO really?
+% or integration of secondary \textit{-omics} data \cite{manipur_clustering_2020}.
 
-Since nodes and particular motifs carry semantic biological meaning, deciding
-node duplication in metabolic models poses additional challenges.
+% Node duplication in layout tasks potentially is a different problem from the
+% general preprocessing since finding a good layout may come with particular
+% constraints (such as considering edge crossings, stress etc.). However, the
+% methods mentioned below do not take layout information into account when
+% deciding node duplication and we thus make no explicit distinction here.
+%
 
-Any node $v$ with degree greater than two introduces a connectivity between any
-two subsets of $\neighb(v)$. It is not trivial to distuingish whether a
-connectivity is \ild{false}, i.e. only exists because participants in two reactions
-happen to be mapped to the same concrete node
-% TODO terminology, here we are arbitrarily shifting from maths to disease map lingo
-or \ild{true} in the sense that the connectivity represents actually meaningful
-biological information.
+% already saying this in Background
+% Any node $v$ with degree greater than two introduces a connectivity between any
+% two subsets of $\neighb(v)$. It is not trivial to distuingish whether a
+% connectivity is \ild{false}, i.e. only exists because participants in two reactions
+% happen to be mapped to the same concrete node
+% % TODO terminology, here we are arbitrarily shifting from maths to disease map lingo
+% or \ild{true} in the sense that the connectivity represents actually meaningful
+% biological information.
 
 
-\paragraph{Review} A common characterisation is that a node shall be duplicated if its
-neighbourhood is highly heterogenous w.r.t some measure. In other words, a
+A common intuition is that a node shall be duplicated if its
+neighbourhood is highly heterogenous \wrt some similarity measure. In other words, a
 node should be split if it is involved in many different, unrelated processes
 as then it is assumed that in reality there are independent instances of that
 species, involved in the different processes independently.
+% TODO what we are saying here is good, but sentence sounds pretty awkward
 
 One possible approach is to consider a graph-based centrality measure. If the
-target node has a very high centrality score, we make the assumption that then
-the node must necessarily be involved in different, unrelated processes, i.e.
+target node has a very high centrality score, we conclude that 
+the node must then necessarily be involved in different, unrelated processes, i.e.
 its neighbourhood is heterogeneous. For a concrete choice of centrality measure,
 early methods simply considered the node degree
-\cite{ma_ReconstructionMetabolicNetworks_2003} \cite{schuster_exploring_2002}.
+\cite{ma_ReconstructionMetabolicNetworks_2003,schuster_exploring_2002}.
 Further work uses the Eigenvector centrality \cite{manipur_clustering_2020}.
 
 Other approaches make the notion of neighbourhood heterogeneity more explicit by
@@ -1507,27 +1572,32 @@ describe the cellular compartment \cite{manipur_clustering_2020} or the pathway
 \cite{rohrschneider_NovelGridBasedVisualization_2010}
 \cite{joshi-tope_ReactomeKnowledgebaseBiological_2005} for a given node.
 
+Recently, in the context of visualising large-scale diagrams such as the disease
+maps considered herein, \citeauthor{wu_MultilevelAreaBalancing_2020} propose the
+following scheme for deciding whether to duplicate a node. Nodes are categorised
+as \ild{important} or \ild{unimportant} based on a whether their degree exceeds
+a certain degree threshold. Alternatively, the categorisation may be given by an expert.
+% 
+Important vertices are duplicated such that they appear at most once in each
+cluster. Unimportant vertices are duplicated such that each duplicate has degree
+of exactly one.
+%
+% additionally: 1. steiner tree vis connecting duplicates
+
 Apart from the work of \citeauthor{nielsen_MachineLearningSupport_2019}, we are
-not aware of any other previous work that investigates using a classifier for
-node duplication.
+not aware of any other previous work that investigates using a machine learning
+classifier for node duplication.
 
-
-% TODO link to investigated small-world property somewhere?
 
 \paragraph{Tools and Formats}
-There are several tools that
-provide functionality to easily introduce duplicates once the decision has been
-made.
-\toolname{Arcadia} \cite{villeger_ArcadiaVisualizationTool_2010}
-allows to split a node such that each copy has exactly unit degree.
-\toolname{Omix} \cite{droste_OmixVisualizationTool_2013} makes it easier to
-introduce duplicates with certain connectivity patterns by providing a
-\textit{motif stamp} tool.
+There are several tools that provide functionality to easily introduce
+duplicates once the decision has been made. \toolname{Arcadia}
+\cite{villeger_ArcadiaVisualizationTool_2010} allows to split a node such that
+each copy has exactly unit degree. \toolname{Omix}
+\cite{droste_OmixVisualizationTool_2013} makes it easier to introduce duplicates
+with certain connectivity patterns by providing a \textit{motif stamp} tool.
 % TODO description is lacking
-
-One of the most common formats used for describing disease maps is an extension to SBML
-Level 2 given by \toolname{CellDesigner}. Further, SBML Level 3 now allows to attach
-layout information. Another prominent format is SBGN-ML.
+%
 
 
 \section{Disease Maps}
@@ -1536,57 +1606,62 @@ To date, disease maps have been created for a number of diseases, including
 Alzheimer's Disease (\alzpathway \cite{ogishima_AlzPathwayUpdatedMap_2016}),
 Parkinson's Disease (\pdmap \cite{fujita_IntegratingPathwaysParkinson_2014}),
 and recently \textsc{COVID-19}
-% TODO remove names, keep only citations
-\cite{ostaszewski_COVID19DiseaseMap_2020}. Beyond serving as a platform for
+\cite{ostaszewski_COVID19DiseaseMap_2020}.
+
+Beyond serving as a platform for
 integrating existing knowledge, computational methods have been applied to,
 e.g., identify molecules and relations essential for the pathogenesis of Alzheimer's
 Disease \cite{mizuno_NetworkAnalysisComprehensive_2016}.
 
-% TODO look at
-\cite{sompairac_metabolic_2019}
+The \textit{Atlas of Cancer Signalling Network} (ACSN)
+\cite{kuperstein_AtlasCancerSignalling_2015} is a collection of diagrams
+describing signalling processes related to cancer. Recent work
+\cite{sompairac_metabolic_2019} has linked ACSN and \textit{ReconMap}, making
+the connections between common species in both networks explicit. This is of
+particular interest since ACSN focusses on signalling processes, while
+\textit{ReconMap} describes metabolic processes.
+Additionally, the information from \textit{ReconMap} is used to augment the ACSN diagram.
 
-% TODO include Atlas of Cancer Signalling Network, cited in
-% \cite{sompairac_metabolic_2019}
-% and how it is an example of a *signalling* network,
-% where reconMap is a *metabolic* network
-
-Detailed information on
-the disease maps considered in this work can be found in \refsec{datasets}.
 
 % TODO mention minerva?
 
 % TODO applications
 % cf Obsidian 'Alzheimers Disease Maps' Applications
-% cf sompairac2019
 
+
+
+Several specialized tools exist for the curation and exploration of large
+biological process diagrams, including \toolname{CellDesigner}
+\cite{funahashi_CellDesignerVersatileModeling_2008}, \toolname{Minerva}
+\cite{gawron_MINERVAPlatformVisualization_2016}, \toolname{NaviCell}
+\cite{kuperstein_NaviCellWebbasedEnvironment_2013} and \toolname{Cytoscape}
+\cite{shannon_cytoscape_2003} and \toolname{VANTED}
+\cite{rohn_VANTEDV2Framework_2012}.
+%
+One of the most common formats used for describing disease maps is an extension to SBML
+Level 2 given by \toolname{CellDesigner}. Further, SBML Level 3 now allows to attach
+layout information. Another prominent format is SBGN-ML.
+
+Detailed information on the disease maps considered in this work can be found in
+\refsec{datasets}.
+
+% TODO that one pape inferring ontology from disease map
 
 
 
 % -------------------------------------
-\section{Machine Learning on Biological Networks}
-\label{sec:machine-learning}
+\section{Graph Neural Networks in the Life Sciences}
+\label{sec:gnn-applications}
 
-% this is sort of pointless, can remove this sentence
-The life sciences offer countless applications for machine learning methods.
-Herein, we constrain ourselves to methods that directly or indirectly work with
-network-structured data and apply neural network techniques, or are particularly
-relevant for this work. Further, for sake of brevity, we omit edge-level tasks such as
-link prediction in biological networks.
 
 % TODO for related work on CNNs in Life Sciences, search in Obsidian for
 % 'Convolutional Nerual Network' have some nice ones there, including those
 % already quite similar to graph convolution
 
-% TODO application to Transformers on biological data, c.f. obsidian notes
+% MAYBE application to Transformers on biological data, c.f. obsidian notes
 
-\subsection{Applications of Graph Neural Networks}
-\label{sec:gnn-applications}
-
-Applications of GNNs on biological are diverse in the formulation of the task,
-the underlying data (network and attributes) and the applied methods.
-
-To the best of our knowledge, there is very little previous work that connects
-GNNs to graph drawing or even node duplication. 
+To the best of our knowledge there is no previous work that connects GNNs to
+node duplication.
 
 \citeauthor{tiezzi_GraphNeuralNetworks_2021} provide a method for layouting
 graphs using GNNs
@@ -1620,6 +1695,12 @@ the graph structure and positional encodings and no additional computation.
 % application to disease maps is novel
 
 
+
+GNNs can generally be applied for three different types of tasks:
+\ild{node-level} tasks in which the units of interest are individual nodes,
+\ild{edge-level} tasks in which edges are considered as the unit of interest and
+\ild{graph-level} tasks in which a statement about the entire graph is sought.
+
 \paragraph{Node-level tasks}
 \citeauthor{you_DeepGraphGOGraphNeural_2021}
 \cite{you_DeepGraphGOGraphNeural_2021} consider the problem of predicting the
@@ -1631,9 +1712,9 @@ suggest to consider each protein with respect to other proteins it is known to
 interact with. As such, they propose a GNN approach in which proteins are
 represented as nodes and connected based on information from Protein-Protein
 interaction databases. The function annotations here are in fact Gene Ontology
-terms (see TODO).
-%
-Once the biological function is known, another challenge is to assess the
+terms.
+
+Once the biological function of a protein is known, another challenge is to assess the
 functional similarity of two proteins. One way to approach this is to compare
 the (sets of) Gene Ontology terms of two given proteins. 
 \citeauthor{zhong_GO2VecTransformingGO_2020} compute an embedding for GO terms
@@ -1653,6 +1734,7 @@ connectivity is defined on a node's $k$ nearest neighbours. The goal is to
 predict whether a cell corresponds to a healthy or pathological disease state
 w.r.t to Multiple Sclerosis (MS). The motivation is to work towards developing a
 diagnostic test for MS based on scRNA-seq technology.
+% TODO more on GNNs in scRNA-seq?
 
 % TODO manipur cancer stuff?
 
@@ -1744,36 +1826,35 @@ applications can be found in the literature
 % costello_MachineLearningApproach_2018
 
 
-\section{Semantic Representations}
-% ontologies and fingerprints
+\section{Gene Ontology}
 
-\subsection{Gene Ontology}
+\citeauthor{henry_ConvertingDiseaseMaps_2021} extract the relationships such as
+reactions, links to phenotypes and genes or relationships to cellular components
+given in the \textit{AlzPathway} disease map and construct an ontology of it,
+aiming to obtain a more formalised, precise and less ambiguous description of
+the contained knowledge \cite{henry_ConvertingDiseaseMaps_2021}.
 
-\cite{henry_ConvertingDiseaseMaps_2021}
-\cite{ostaszewski_ClusteringApproachesVisual_2018}
 
 Work exists to develop similarity measures
 between two GO terms, or two sets of GO terms (see \refsec{related-work}).
 These are, by definition, pairwise similarity measures. These
 could be interpreted as distance measures and these distances could be
 considered directly in a machine learning model.
-% TODO in related work, make semantic similarity more explicit and mention that
-% it was use by that one paper by marek et al for clustering disease maps
-% (should mention that paper anyway)
 
 An alternative approach is to find a embeddings (vectors describing feature
 representations) of the given GO term s.t. the similarity of their embeddings is
 meaningful, i.e. reflects the similarities in the GO graph. In fact, some
-approaches for semantic similarity measures depend exactly on such embeddings.
-% TODO eg. GO2Vec, cite
-% TODO ontologies
+approaches for semantic similarity measures depend exactly on such embeddings
+\cite{zhong_GO2VecTransformingGO_2020}.
 
-\subsection{Embeddings}
+\citeauthor{ostaszewski_ClusteringApproachesVisual_2018} consider the
+species-level GO term annotations in \textit{AlzPathway} to automatically
+identify semantic clusters in the diagram, adopting a measure of semantic
+similarity between GO terms.
 
-% TODO notion of fingerprints / embeddings, some related work
-% then maybe GO2vec here
+% TODO maybe talk about fingerprints aswell (split into subsections)
 
-% relationships to knowledge graphs?
+
 
 
 
@@ -2112,6 +2193,12 @@ Additionally, we consider the directed degrees (\featname{in_degree},
 have a different biological meaning w.r.t node duplication if either in- our
 % TODO biological good word to use here?
 out-degree is higher, both are balanced or the node is a source or a sink.
+% TODO this is repeating to what we write in the results, where to leave it?
+% generally think the distance may be bit large and this section has a too fuzzy
+% distinction between nielsen features and our thoughts
+% TODO this is repeating to what we write in the results, where to leave it?
+% generally think the distance may be bit large and this section has a too fuzzy
+% distinction between nielsen features and our thoughts
 
 Because the input networks are of nontrivial size (see \refsec{datasets-used}),
 computation time has to be taken into account.
@@ -2453,6 +2540,8 @@ for now and hypothesize it has little practical impact in this use-case.
 \chapter{Experiments \& Results}
 \label{sec:experiments-results}
 
+% TODO section overview
+
 
 \section{Datasets used for training and evaluation}
 \label{sec:datasets-used}
@@ -2523,6 +2612,8 @@ to comprehensively model the human metabolism. It can be viewed at \url{https://
   \label{fig:maps-summary}
 \end{figure}
 % TODO consistent ordering of bars!
+% TODO assess&remove&mention-explicitly node degree outliers for ReconMapOlder
+% to make plot more informative
 
 
 % TODO give table or overview or smth of how many data points we will have netto
@@ -2568,7 +2659,8 @@ to comprehensively model the human metabolism. It can be viewed at \url{https://
 % cf [[tune or pick hyperparams]]
 
 The models were trained on the AlzPathway reorganisation steps (\ADMap)
-and evaluated on the Parkinson's Disease Map (\PDMap). 
+and evaluated on the Parkinson's Disease Map (\PDMap). We select the
+best-performing model \wrt AUC score.
 
 \subsection{Support Vector Machine}
 % - svm-repro
@@ -2719,6 +2811,9 @@ and evaluated on the Parkinson's Disease Map (\PDMap) and on \textit{ReconMap}.
 % meaningful for visual interpretation)
 
 % TODO mention somewhere that we do not do batched training
+
+% TODO mention that this is an advantage of NNs since it seems to be able to
+% handle messy data better?
 
 
 
@@ -3108,13 +3203,15 @@ since the message-passing itself does not make a real difference.
 % i.e. if performance improves if we add them on top of all other features?
 
 
-% stuff to re-run
+% just run constant-embed and constant-stddev and then conclude that information
+% is not meaningful, with a big asterisk that the generation of embeddings is
+% super lacking
+
 
 % DONE config-gat-baseline
 % DONE config-gat-constant-stddev
 % DONE config-gat-degree-stddev
 % DONE config-gat-stddev
-
 % TODO config-gcn-baseline
 % TODO config-gcn-embed
 % TODO config-gcn-stddev
@@ -3143,34 +3240,112 @@ since the message-passing itself does not make a real difference.
 % experiment feature-importance (and others?)
 % cf [[feature-importance]]
 
-% projection only
-% simple only
-% degrees (undirected)
-% degrees (directed)
+In their initial publication \cite{nielsen_MachineLearningSupport_2019},
+\nielsen used a set of features mainly based on different node centrality
+measures, as well as statistics on the centralities of a node's neighbours. They
+remark that elaborating the usefulness of different features is left open to
+future work. In this section, we aim to explore this direction.
 
-% rerun only on ADReorg*Last*
-% DONE config-gnn-basic-both
-% DONE config-gnn-basic-projection
-% DONE config-gnn-basic-simple
-% DONE config-gnn-degrees
-% DONE config-gnn-degrees-basic
+While there are sophisticated approaches to automatic feature selection  
+\cite{saeys_ReviewFeatureSelection_2007},
+for sake of simplicity we simply train and compare models on different subsets
+of the available features.
 
-% also on reconmap
+For each of the structural features defined in \refsec{feature-selection},
+\nielsen provide the same characteristic computed both on the simple graph
+interpretation and on the graph's bipartite projection. We aim to assess if
+indeed both variants are needed or if one alone works better.
+% TODO define term 'predictors' somewhere
+
+Further, we check the predictive value of information on node degrees.
+This interesting because node degree has been used as a heuristic for
+classifying currency metabolites in the context of the analysis of metabolic
+models (see \nameref{sec:related-work}). The basic idea is that if a node's
+degree is particularly large, it is likely that the connectivity it implies
+between its neighbours is not semantically meaningful (i.e. implies \ild{false
+  connectivity} as discussed in \refsec{draw-biol-networks}).
+
+Beyond the undirected degree, we additionally consider in- and out-degree. This
+is interesting, because directed degrees may have a biological interpretation: A
+species that occurs with high out-degree (resp. in-degree) may mainly appear as
+substrate or enabling factor (resp. product or result). A node with balanced in-
+and out-degree on the other hand may rather represent a central step or even a
+key connector.
+% TODO related to betweenness
+% TODO this is weakened by that we put edges in both directions for side products...
+
 
 \begin{figure}[h]
   \centering
   \begin{subfigure}{0.48\linewidth}
-    \pic{feature-importance/comparison/roc-pdmap-bak.png}
+    \pic{feature-importance/results/comparison/roc-pdmap-bak.png}
     \caption{(\ADLast $\rightarrow$ \PDMap)}
   \end{subfigure}
   \begin{subfigure}{0.48\linewidth}
-    \pic{feature-importance/comparison/roc-reconmap-bak.png}
+    \pic{feature-importance/results/comparison/roc-reconmap-bak.png}
     \caption{(\ADLast $\rightarrow$ \ReconMap)}
   \end{subfigure}
   \caption[Comparison of performance with different feature sets.]{Comparison of
-    performance with different feature sets.}
+    performance with different feature sets. \cd{config-gnn-basic-both} is the
+    feature set considered in earlier experiments and its curve shows the same
+    data as in \reffig{importance-reorganisation-steps}.}
   \label{fig:feature-importance}
 \end{figure}
+
+% TODO rotate column headers like here  https://tex.stackexchange.com/questions/32683/rotated-column-titles-in-tabular
+\begin{table}[h]
+  \centering
+\begin{tabular}[h]{r | c c c c c}
+  & \cd{basic-both} & \cd{basic-projection} & \cd{basic-simple} & \cd{degrees} & \cd{degrees-basic} \\
+  \hline
+  \cd{betweenness_centrality} & \chk & - & \chk & -  & -  \\
+  ...\cd{projection} & \chk & \chk & -  & -  & -  \\
+  \cd{closeness_centrality} & \chk & -  & \chk & -  &-  \\
+  ...\cd{projection} & \chk & \chk & -  & -  & -  \\
+  \cd{eigenvector_centrality} & \chk & - & \chk & -  &- \\
+  ...\cd{projection} & \chk & \chk & -  & -  & -  \\
+  \cd{neighbour_centrality_statistics} & \chk & - & \chk & -  & - \\
+  ...\cd{projection}  & \chk  & \chk & - & -  &- \\
+  \cd{distance_set_size}  & \chk & \chk  & \chk & - & - \\
+  \cd{clustering_coefficient}  & \chk & \chk & \chk & -  &- \\
+  \cd{node_class_onehot} & \chk & \chk & \chk & -  &- \\
+  \cd{node_degree} & \chk & - & \chk & \chk & \chk \\
+  ...\cd{projection} & \chk & \chk & - & \chk & \chk \\
+  \cd{node_in_degree} & - & - & -  & \chk & - \\
+  \cd{node_out_degree} & - & -  & -  & \chk & - \\
+\end{tabular}
+  \caption{Overview over the different feature sets.}
+  \label{tab:feature-importance-features}
+\end{table}
+
+Results are given in \reffig{feature-importance}. The used feature sets are
+elaborated in \reftab{feature-importance-features}. \cd{basic-both} represents the
+feature set considered in earlier experiments (similar to the one considered by
+\nielsen) and acts as a baseline to compare against.
+
+The results indicate that it makes little difference whether structural features
+based on the bipartite projection, the simple graph interpretation or both are
+used. Using both variants even seems to slightly hurt model performance. This is
+potentially because then the classifier has to deal with input of much higher
+dimensionality but little more useful information.
+%
+It seems it makes little difference which variant is used. The ROC curves for the simple
+and the bipartite projection variants almost coincide except for a handful of
+predictions.
+
+Most interestingly, we can see that the node degree alone is already a strong
+indicator for node duplication. Further, the different behaviour between
+evaluation on \PDMap and on \ReconMap is striking. 
+For evaluation on \PDMap, using only degrees as
+features provides only a relatively small disadvantage. On \ReconMap, however,
+using undirected degrees yields a significantly worse performance, while
+considering the directed degree actually matches the AUC score of the models
+using the full feature sets. This hints at that \PDMap and \ReconMap show
+different characteristics in network structure. We discuss this further in (TODO
+ref either Discussion or Future Work).
+% TODO future work: looking at examples would be interesting here
+% TODO future work: much more simple classifier on node degree, or see if not
+% simply threshold would do.
 
 
 
@@ -3178,6 +3353,8 @@ since the message-passing itself does not make a real difference.
 \section{Additional Training Data}
 
 ...
+% seems hard to find other maps that are somewhat comparable...
+% TODO mention this in outlook?
 
 
 \section{Attachment of Edges}
@@ -3188,14 +3365,16 @@ since the message-passing itself does not make a real difference.
 
 % TODO maybe plot number of duplicates for given disease maps
 
+% TODO make clear that this could be used with other distances measures like on ostaszwewski_clustering
+
 We provide some examples for successful and problematic cases in
 \reffig{fig:neighb-clust-examples}. From manual inspection, the vast majority of
 results seemed to be reasonable clusterings, and in rare cases, ambiguous
 situations like illustrated here occured.
 
-% TODO maybe like comparison to *real* split?
+% TODO maybe do comparison to *real* split? (or future work)
 
-% TODO alignment, lay out with minipages?
+% TODO vertical alignment
 \begin{figure}[h]
   \centering
   \begin{subfigure}{0.48\linewidth}
@@ -3207,6 +3386,7 @@ situations like illustrated here occured.
     }
     % sa40
   \end{subfigure}
+  ~~~
   \begin{subfigure}{0.48\linewidth}
     % example where 2nd derivative is better than 1st (obs)
     % 220
@@ -3219,6 +3399,7 @@ situations like illustrated here occured.
     }
     % or 856
   \end{subfigure}
+  \linebreak
       \begin{subfigure}{0.48\linewidth}
         % example where distributions are tricky (obs)
         \includegraphics[width=\textwidth]{dendrograms/sa982.png}
@@ -3231,6 +3412,7 @@ situations like illustrated here occured.
         }
         % or sa77
       \end{subfigure}
+      ~~~
       \begin{subfigure}{0.48\linewidth}
         \includegraphics[width=\textwidth]{dendrograms/sa77-variance.png}
         \caption{Another example where large intra-cluster variance is
@@ -3251,7 +3433,7 @@ situations like illustrated here occured.
     clusters and thus a concrete clustering, determing the merge node in the
     dendrogram where the ``cut'' should be made.
     % TODO reverse step size, should not be plotted as minimum here.
-    All examples are from \ADMap.}
+    All examples are from \ADLast with positive ground-truth label.}
   \label{fig:neighb-clust-examples}
 \end{figure}
 
@@ -3259,7 +3441,11 @@ situations like illustrated here occured.
 % ====================================
 \chapter{Discussion}
 
-% definition of train/test tasks, internal split, more data
+% musings on definition of train/test tasks, internal split, more data
+
+% ambuigity, difficulty
+% (make sure we dont mention that too often...)
+% - user study in nielsen et all even shows disagreement between experts
 
 
 % ====================================
@@ -3278,6 +3464,12 @@ situations like illustrated here occured.
 
 
 %  model learns while user is duplicating?
+
+%  more data
+%  - more disease maps
+% - other kinds of networks (metabolic models)
+
+% \citeauthor{tiezzi_GraphNeuralNetworks_2021} for node dup?
 
 
 
@@ -3310,10 +3502,12 @@ situations like illustrated here occured.
   they have a common neighbour in $B$.
 \item A \ild{species} is an actor in a biological system. Examples for species
   are proteins, smaller molecules, but also drugs or phenotypes. A \ild{species
-    alias} is a visual representation of a species in a drawing. There can be
-  multiple species aliases corresponding to the same species. A \ild{complex
-    species alias} represents a collection of species aliases, commonly
-  representing protein complexes.
+    alias} is a visual representation of a species in a drawing. If disease map
+  is interpreted as a graph, a species alias can be thought of as a node in the
+  graph, see \refsec{graph-interpretation}. There can be multiple species
+  aliases corresponding to the same species. A \ild{complex species alias}
+  represents a collection of species aliases, commonly representing protein
+  complexes.
 \end{itemize}
 
 % TODO vertex splitting alias to node duplication
@@ -3322,7 +3516,12 @@ situations like illustrated here occured.
 
 
 \section{Acknowledgements}
-% sune, marek for answering questions
+
+Special thanks go to Sune S. Nielsen and Marek Ostaszewski for kindly
+answering questions and being available for discussion. I also thank Karsten
+Klein, Matthias Rupp and particularly Michael Aichem for providing me with
+valuable feedback, guiding me through the process and being great people to work with.
+% TODO bit much?
 
 
 
