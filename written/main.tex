@@ -102,16 +102,19 @@
 % - systems biology, complex interplay, biological networks
 % can do more specific with disease maps i think, we are more general in
 % background
-Diseases such as Alzheimer's Disease or Parkison's Disease are thought to arise
-through complex interactions of biological processes and genetic or
-environmental factors.
+Many diseases are thought to arise through complex interactions of biological
+processes or genetic and environmental factors.
+% Two examples are Alzheimer's Disease and Parkinson's Disease.
 % (not sure if this sentence is needed)
 Knowledge on related processes and contributing factors
 is often scattered throughout individual publications.
 %
-\ild{Disease Maps} are large-scale digital diagrams that describe all processes
-relevant for a given disease in a formalised manner and thus serve as a
-knowledge base for visual exploration as well as computational analysis.
+The set of biological entitites and the processes linking them naturally yields
+a network.
+Disease Maps are large-scale digital diagrams of such networks that
+describe all processes relevant to a given disease in a formalised manner.
+They serve as a
+knowledge base for visual exploration and computational analysis.
 % augmented with additional information such as
 % links to individual publications or biological database entries.
 % Two to three sentences of more detailed background, comprehensible to
@@ -127,28 +130,33 @@ knowledge base for visual exploration as well as computational analysis.
 % -- layout (bunch of methods rely on that decision)
 %
 % curation and layout still commonly done by expert, very labor-intensive
-Although automatic methods are being developed, a considerable amount of manual
-curation by experts is still required to find a layout of high quality.
-A possible device for improving a preliminary layout is \ild{duplicating} an
-% TODO 'device' probably not good term here
-existing node and re-destributing its incident edges among its duplicates.
+% Although automatic methods are being developed, a
+To date, finding a high-quality layout requires considerable manual
+curation by experts.
+% a considerable amount of manual
+% curation by experts is still required to find a layout of high quality.
+A possible means for improving a preliminary layout is to duplicate an
+existing node and re-destribute its incident edges among the duplicates.
 % The decision whether to duplicate a node hinges on its biological meaning
 % layout factors
 % semantic factors
 The decision of whether to duplicate a node is commonly still left to the
-expertise of the curator.
+expertise of a human curator. Previous work
+\cite{nielsen_MachineLearningSupport_2019} suggests to employ a Machine Learning
+% TODO cap. of ML
+model trained on a set of already laid-out diagrams to predict node duplication.
 
-Here, we explore the usefulness of Graph Neural Networks (GNNs) for predicting node
-duplication based on known, already curated diagrams.
+In this work, we explore the usefulness of Graph Neural Networks (GNNs) for
+predicting node duplication.
 %
-Further, we assess which
+We assess which
 of the features suggested in previous work
-\cite{nielsen_MachineLearningSupport_2019} are useful to a classifier,
+\cite{nielsen_MachineLearningSupport_2019} serve well as predictors,
 %
 and explore approaches to integrate biologically meaningful information in the
-feature set.
+form of Gene Ontology term annotations.
 %
-Additionally, we consider some variants of the basic GNN model and
+Furthermore, we consider some variants of the basic GNN model and
 additional techniques such as addressing class imbalance.
 %
 Finally, once a prediction has been made, we propose an approach to determine
@@ -158,17 +166,20 @@ among the duplicates.
 Our results show that GNNs provide little immediate advantage compared to the
 Support Vector Machine approach of previous work. 
 %
-Further, we show that when evaluating the classifier on a disease map in which
-every species has only a single visual representation, using a series of
-snapshots taken during incremental reorganisation of a disease map by an expert
-as training data is in fact not beneficial compared to simply using the final,
-fully curated map as training input.
+Further, we show that, in some tasks, using a sequence of reorganisation
+snapshots taken during manual curation as training data is not beneficial
+compared to simply using a single, fully laid-out diagram.
+% Further, we show that when evaluating the classifier on a disease map in which
+% every species has only a single visual representation, using a series of
+% snapshots taken during incremental reorganisation of a disease map by an expert
+% as training data is in fact not beneficial compared to simply using the final,
+% fully curated map as training input.
 %
 We see that it makes little difference whether structural features such as node
 centralities are calculated based on the bipartite graph interpretation of the
 disease map or on its bipartite projection.
 %
-Further, we show that directed node degree is already a strong indicator for
+Next, we show that directed node degree is already a strong indicator for
 node duplication in the considered data. However, using additional structural
 features still marginally increases classification performance.
 %
@@ -176,8 +187,7 @@ Exploiting Gene Ontology annotations remains challenging due to the complexity
 and ambiguity of the provided information.
 %
 Our approach to determine the number of duplicates and attachment of incident
-edges seems promising.
-% TODO thats too little.
+edges appears promising.
 
 
 
@@ -298,27 +308,27 @@ approach in several directions.
 \paragraph{Problem Statement} 
 % what is the concrete problem we are tying to solve?
 % state in a formal, precise manner
-In order to support the curation of disease map diagrams, we aim to train a
-machine learning model that, given a species alias that is part of some disease
-map, is able to make a prediction whether that alias should be duplicated or
-not.
+Our aim is to support the curation of disease map diagrams using a Machine
+Learning model. Given a node in a diagram, the model predicts whether that node
+should be duplicated.
 %
 We interpret a disease map as a directed, bipartite attributed graph in which
 species aliases and reactions constitute the bipartite node sets. Nodes are
 associated with annotations providing additional domain-specific information.
-Further, structural characteristics such as centrality scores can be computed
-for each node.
+The graph representation also allows to compute structural characteristics such
+as centrality scores.
 %
-Disease maps for training can be given in two variants: Either as a single
-disease map, or as a sequence of reorganisation steps, i.e. intermediate
-snapshots of a disease map taken during the curation process. For evaluation, we
-always have the variant of a single disease map.
+For training the model, disease maps can be given in two variants: Either as a
+single disease map, or as a sequence of reorganisation steps. Such a sequence is
+made up of intermediate snapshots of a disease map taken during the curation
+process. For evaluation, we always consider the variant of a single disease map.
+% TODO motivate somewhere why --- not much data available
 %
-Additionally, nodes in the graphs in the training dataset are associated with
-a ground-truth label indicating whether the node should be duplicated or not.
-Given one or several such training graphs, we aim to train a classifier for
-\ild{binary node classification}, i.e. for making a prediction for previously unseen
-nodes in previously unseen graphs indicating whether the node should be duplicated.
+Additionally, nodes of the graphs in the training dataset are associated with
+ground-truth labels indicating whether the node should be duplicated. Given one
+or several such training graphs, we aim to train a classifier for \ild{binary
+  node classification}, i.e. for making a prediction for nodes in previously
+unseen graphs.
 %
 Moreover, assuming we are given the knowledge that a node should be duplicated,
 we seek to find the number of duplicates to introduce, as well as how to
@@ -336,10 +346,11 @@ distribute the edges incident to the original node among its duplicates.
 
 A layout can always be improved in terms of edge crossings, edge lengths or node
 positions by duplicating nodes. However, duplicating a node and re-attaching its
-incident edges potentially removes a path running through that node. That path
-may be semantically meaningful and should be represented explicitly in the
-network structure. The decision on whether a node should be duplicated hinges on
-assessing whether such paths are meaningful or not, i.e. whether the linkage via
+incident edges potentially removes a path through that node. That path
+may be semantically meaningful and in that case it should be represented
+explicitly in the network structure.
+The decision of whether a node should be duplicated hinges on
+assessing whether such paths are meaningful or not, \ie whether the linkage via
 a node establishes \ild{true} or \ild{false connectivity} of its neighbourhood.
 Thus, the decision of node duplication ultimately depends on the context
 (neighbourhood) of the node.
@@ -356,27 +367,26 @@ beneficial for capturing and generalising the decisions in the training dataset.
 
 \paragraph{Motivation for using Gene Ontology annotations}
 We hypothesize that, in general, a node should be duplicated if its
-neighbourhood is highly heterogeneous, i.e. the species alias establishes false
+neighbourhood is highly heterogeneous, which case it establishes false
 connectivity between actually unrelated processes.
 Previous approaches commonly focus on structural or layout-based features.
-However, these facets involve domain knowledge only implicitly, if even.
+However, these facets involve domain knowledge only implicitly, if at all.
 As a characterisation of neighbourhood heterogeneity, we seek
 to explicitly include domain knowledge about what biological processes a species
-is involved in. To this end, we consider the Gene Ontology terms linked to each
-species in the given disease map. In particular, we consider those terms of the
-\textit{biological process} subtree of the GO graph (see \refsec{background}).
+is involved in. To this end, we consider the Gene Ontology (GO) terms linked to each
+species in a given disease map. In particular, we consider the terms of the
+\textit{biological process} subtree of the GO graph.
 %
-We represent a GO term by an \ild{embedding vector} representing its position in
-the GO graph, and thus its semantics. If a species alias corresponds to more
-than one GO term, we aggregate their embeddings into a single vector. We explore
-two approaches for using that information:
+We represent a GO term by an embedding vector representing its position -- and
+thus its semantics -- in the GO graph. We explore two approaches for using that
+information:
 \begin{itemize}
 \item We simply use the embeddings as node features. We hypothesize that a Graph
   Neural Network may be able to capture characteristic neighbourhood patterns
   that induce duplication.
-\item For a given node alias, we compute a measure of ``spread'' similar to the
-  standard deviation of the embeddings of its neighbours. The idea is that
-  the diversity of the neighbour's embeddings may be an indicator for node duplication.
+\item For a given node alias, we compute a measure of spread of the embeddings
+  of its neighbours. The idea is that the diversity of the neighbour's
+  embeddings may be an indicator for node duplication.
 \end{itemize}
 
 
@@ -406,7 +416,7 @@ We describe the actual methods employed for preprocessing, model training and
 classification in \refsec{methods}. Additionally, we give a short overview over
 our technical implementation of these methods. In \refsec{experiments-results},
 we describe and discuss the performance of different approaches. Finally, we
-conclude with a high-level discussion of results (\refsec{discussion}) and
+conclude with a general discussion of results (\refsec{discussion}) and
 possible directions for future work (\refsec{future-work}).
 
 
@@ -907,22 +917,26 @@ $\theta$.
 A possible family of models that can be employed for classification are
 \textit{neural networks}. We introduce neural networks by example of one of its
 simples variants, the \ild{multilayer perceptron}, or \ild{fully-connected
-  neural network}
+  neural network}.
 \footnote{A comprehensive introduction can be found in
   \citeauthor{zhang_dive_nodate} \cite{zhang_dive_nodate}
-}. We then introduce the notion of convolutions on grid-structured data and
+}
+We then introduce the notion of convolutions on grid-structured data and
 proceed to generalise the intuition to graph-structured data, yielding the class
 of Graph Neural Network models. We proceed to describe how GNN models can be
-used for node classification.
+used for node classification. The derivations are based on 
+\citeauthor{zhang_dive_nodate} \cite{zhang_dive_nodate}
+and
+\citeauthor{bronstein_geometric_2021} \cite{bronstein_geometric_2021}.
 
 
 \paragraph{Neural Networks}
 
 The most basic building block of any neural network is a single
-\ild{neuron}, which is given as the composition of a linear transformation with
+\ild{neuron}, which is defined as the composition of a linear transformation with
 a nonlinear \ild{activation function} $\sigma$. Formally, for a single input
 vector $\vec x_i$, the output of a single neuron is given by $\sigma(\vec x_i^T
-\vec w + \vec b_i)$ where $\vec w$ are called the \ild{weights} of the linear
+\vec w + \vec b)$ where $\vec w$ are called the \ild{weights} of the linear
 transformation and $\vec b$ is the \ild{bias}. The stacking of multiple neurons,
 of which each takes $\vec x_i$ as input, constitutes a \ild{fully-conntected} or
 \ild{dense} \ild{layer} in a neural network. If inputs and weights are stacked
@@ -930,13 +944,13 @@ in matrices $\mat X$ and $\mat W$, respectively, the output of a single layer is
 given by $\sigma(\mat X^T \mat W + \vec b)$ where $\sigma$ is applied
 element-wise.
 %
-A neural network is obtained by stacking multiple layers sequentially such that
-the output of one layer is the input of the next layer. The output of an
-intermediate layer is often called \ild{latent} or \ild{hidden}
+A neural network is obtained by stacking multiple layers sequentially, such that
+the output of one layer is the input to the next layer. The output of an
+intermediate layer is commonly called \ild{latent} or \ild{hidden}
 \ild{representation}. Formally, if $\mat H^{(i)}$ is the output of the $i$-th layer,
-then the output of the $i+1$-th layer is given as
+then the output of the $(i+1)$-th layer is given as
 \begin{align}
-\mat H^{(i+1)} = \sigma(\mat (H^{(i)})^T \mat W^{(i+1)} + \vec b^{(i+1)}).
+\mat H^{(i+1)} = \sigma((\mat H^{(i)})^T \mat W^{(i+1)} + \vec b^{(i+1)}).
 \label{eq:fully-connected}
 \end{align}
 % TODO sounds too much like what I wrote in the report?
@@ -948,24 +962,24 @@ of the supervised learning framework described in \refsec{supervised-learning}.
 We aim to find a set of parameters such that the empirical risk is minimised.
 % TODO empirical risk vs BCE loss function
 This objective can be
-optimised by \ild{Gradient Descent}: We iteratively adjust the weights $\mat
-W^{(i)}$ such that the model prediction is improved with respect to the
-empirical risk $\Remp$ \footnote{In the context of neural networks, $\Remp$ is
-  also sometimes called the total \ild{loss}. This should not be confused with
-  the loss function $\mathcal{L}$.} . More precisely, we consider the partial
-derivative of $\Remp$ with respect to each weight matrix, which can be
-determined via the chain rule, and iteratively update the weights for a maximum
-number of steps or until the risk no longer improves. We can additionally
-specify the step size by a given \ild{learning rate} $\eta$. Formally, in each
-step, also called \ild{epoch}, we set
+optimised by \ild{Gradient Descent}: We iteratively adjust the weights
+% $\mat W^{(i)}$
+such that the model prediction is improved with respect to the empirical risk
+$\Remp$. In the context of neural networks, $\Remp$ is also sometimes called the
+total \ild{loss}, not to be confused with the loss function $\mathcal{L}$. More
+precisely, we consider the partial derivative of $\Remp$ with respect to each
+weight matrix, and iteratively update the weights for a maximum number of steps
+or until the risk no longer improves. We can additionally specify the step size
+by a given \ild{learning rate} $\eta$. Formally, in each step, also called
+\ild{epoch}, we set
 \begin{align*}
 \mat W^{(i)}' \gets
 \mat W^{(i)} - \eta \frac{\partial \mathcal{R}_{\text{emp}}}{\partial \mat W^{(i)}}.
 \end{align*}
 
 \paragraph{Hyperparameters} Characteristics such as the number of layers, the
-number of neurons in each layer, the choice of loss function and learning rate
-determine the \ild{model architecture} and are sometimes called
+number of neurons in each layer, or the choice of loss function and learning rate
+determine the \ild{model architecture} and are called
 \ild{hyperparameters}. The proper choice of hyperparameters is essential to the
 performance of the model and often determined empirically via search techniques.
 
@@ -980,9 +994,9 @@ image of dimensions $(w, h)$, classifies the image based on whether it depicts a
 dog or a cat. It is not trivial how to manually extract features (criteria) from
 the image that are predictive of the target class. A straightforward approach
 would be to consider the brightness value of each input pixel as a feature, i.e.
-$\vec x_i \in \mathbb{R}^{w \cdot h}$. However, intuitively, looking at each
+$\vec x_i \in \mathbb{R}^{w \cdot h}$. However, looking at each
 pixel in isolation is unlikely to be useful since certainly the target class
-depends on the values of pixels \textit{in their context}.
+depends on the values of pixels in their context.
 % TODO moreover, extremely expensive if using MLP
 Further, note that the hidden representation of some input (e.g. given by
 \refeq{fully-connected}) may be considered an alternate feature representation
@@ -993,13 +1007,14 @@ of this input. In this sense, neural networks can be thought to perform
 
 \paragraph{Convolutions on Grids}
 For sake of intuitive appeal, let us further entertain the example of
-classifying pixel graphics
-\footnote{
-  Analogous formulations can be used for other kinds of structured data,
-  including 1-dimensional grids (sequences) such as RNA and DNA sequence alignments
-  \cite{flagel_UnreasonableEffectivenessConvolutional_2019}\cite{aoki_ConvolutionalNeuralNetworks_2018}.
-}. It is important to note that we have additional
-information on the structure of the input,
+classifying pixel graphics. We assume each pixel contains only one channel of
+information and denote an image of size $(w,h)$ as a $w \times h$ matrix $\mat
+X$. Analogous formulations can be used for other kinds of structured data,
+including 1-dimensional grids (sequences) such as RNA and DNA sequence
+alignments
+\cite{flagel_UnreasonableEffectivenessConvolutional_2019}\cite{aoki_ConvolutionalNeuralNetworks_2018}.
+It is important to note that we have additional information on the structure of
+the input,
 % (also called \ild{inductive bias}),
 % TODO that term is not relevant here? would just sound fancy
 namely that its pixel values are arranged in a grid. This means there is a
@@ -1009,12 +1024,12 @@ Aggregating information across a local neighbourhood may enable
 a model to capture not only characteristics of individual pixels but
 higher-order patterns. To faithfully extract local patterns, the aggregation
 operation should be \ild{local} (the aggregation considers only a part of the
-input image) and \ild{translation invariant} (the aggregation should respond
-similarly to the same input patch, regardless to where it is positioned in the
+input image) and \ild{translation invariant} (the aggregation responds
+similarly to the same input patch, regardless to where the patch is positioned in the
 entire grid). In the context of neural networks, such an aggregation is called a
 \ild{convolution} \cite{zhang_dive_nodate}. In the case of linear aggregation
-and grid-structured data, we can express a convolution operation on pixel $\mat
-H_{i,j}$ as
+and grid-structured data, we can express a convolution operation centered on pixel $\mat
+X_{i,j}$ as
 \begin{align}
   \mat H_{i,j} = u + \sum_{a= -\Delta}^\Delta \sum_{b = -\Delta}^\Delta \mat V_{a,b} \mat X_{i+a,j+b}
   \label{eq:convolution}
@@ -1037,8 +1052,12 @@ to each pixel.
 %
 Successive application of convolutional layers,
 potentially with different kernels can be thought to aggregate increasingly
-higher-order patterns in the input data. The extracted patterns can be
-considered intermediate, higher-order feature representations and the successive
+higher-order patterns in the input data. Additionally, the information of a
+local neighbourhood can be aggregated into a lower-dimensional value by
+\ild{pooling} operations.
+%
+The extracted patterns can be
+considered intermediate, higher-order feature representations and successive
 convolution operations extract increasingly higher-order features.
 %
 Since a kernel computes a value for a given pixel based on the features of
@@ -1051,11 +1070,11 @@ final output.
 % TODO note somewhere that 'spectral' GNNs have been around for a while, but
 % GNNs have only become quite popular recently with these simplified formulations
 \paragraph{Convolutions on Graphs} We extend the notion of a convolution
-quite from grid-structured graphs to arbitrary graphs. We will see that
+from grid-structured graphs to arbitrary simple graphs. We will see that
 the convolutions considered here are trivially local and translation invariant.
 The key differences are that the order and the size of the neighbourhood is no
 longer fixed. As such, a potential aggregation must be \ild{node-order
-  equivariant}.
+  invariant}.
 
 Let us consider an attributed graph
 $G$ with node set $V$.
@@ -1064,28 +1083,29 @@ $G$ with node set $V$.
 %   d}$.
 % TODO somewhere maybe 'GNNs for Node Classification', make clearer that in NC,
 % an input is a single node
-Let $\vec h_i$ be the (intermediate) feature representation of vertex
-$v_i \in V$. Let $\mathcal{N}(v)$ be some neighbourhood of $v \in V$. Typically,
+Let $\vec h_i$ be the (intermediate) feature representation of vertex $v_i \in
+V$. Let $\mathcal{N}(v)$ be some neighbourhood of $v \in V$. Typically,
 $\neighb(v)$ is chosen as the 1-hop adjacency in $G$. However, note that
 different notions of neighbourhood can also be applied, so the input graph must
 not necessarily correspond directly to the computation graph that defines how
-messages are passed \footnote{ For instance, \textsc{GraphSAGE}
-  \cite{hamilton_InductiveRepresentationLearning_2018} samples a fixed number of
-  adjacent nodes. }. We can describe a simple convolution operation on
-attributed graphs as follows: the new latent representation $\vec h_i'$ of $v_i$
-is based on messages received by its neighbours. Each neighbour encodes its
-features by means of a function \textsc{Msg}. These messages are
-aggregated using a permutation-invariant aggregation function \textsc{Agg}.
+messages are passed. or instance, \textsc{GraphSAGE}
+\cite{hamilton_InductiveRepresentationLearning_2018} samples a fixed number of
+adjacent nodes. We can describe a simple convolution operation on $G$ as
+follows: the new latent representation $\vec h_i'$ of $v_i$ is based on messages
+received by its neighbours. Each neighbour encodes its attributes by means of a
+function \textsc{Msg}. These messages are aggregated using a
+permutation-invariant aggregation function \textsc{Agg}.
 % TODO invariant or equivariant?
 Finally, the neighbours' input and the node's own features $\vec h_i$ are
 coalesced via an update function \textsc{Update} into the new latent
-representation $\vec h_i'$. To summarise:
+representation $\vec h_i'$. If we consider each node to be part of its own
+neighbourhood, this can be summarised as:
 \begin{align}
-  & \vec h_i' \gets \textsc{Update}(\vec{msg}_{ii}, \textsc{Agg}(\{\textsc{Msg}(\vec h_j, \vec h_i) ~|~ j \in \mathcal{N}_i\}))
+  & \vec h_i' \gets \textsc{Update}(\textsc{Agg}(\{\textsc{Msg}(\vec h_j, \vec h_i) ~|~ j \in \mathcal{N}_i\}))
     \label{eq:gnn-framework}
 \end{align}
 Concrete choices of \textsc{Msg}, \textsc{Agg} and \textsc{Update} give
-implementations of \ild{graph convolution layers}. A neural network containg
+implementations of \ild{graph convolution layers}. A neural network containing
 such layers is commonly called a \ild{graph neural network} (GNN)
 or \ild{graph convolutional network} (GCN).
 
@@ -1093,9 +1113,8 @@ In simple GNN architectures, \textsc{Msg} is a linear feature extraction and dep
 only on the sending node, i.e. $\textsc{Msg}(\vec h_j, \vec h_i) = 
 \mat W \vec h_j =: \msg_j$ for some learnable weight matrix $\mat W$. Note that
 like the kernel parameters $\mat V$ in \refeq{convolution}, these weights are
-shared among message-passing steps.
-% TODO should this be a matrix or a vector? pretty sure matrix but doesnt hut to check
-
+shared among the message-passing operations of different nodes.
+% 
 \textsc{Update} is the application of a non-linear activation function and
 \textsc{Agg} is given by
 \begin{align*}
@@ -1104,119 +1123,102 @@ shared among message-passing steps.
 $\vec{msg}_{j}$.
 
 
-The framework of \refeq{gnn-framework} produces a hidden feature
-representation for each node. This is the basis for solving node-level tasks
-such as the classification of clustering of individual nodes. Another common use
-case is to make a prediction for the entire input graph, the most prominent
-example in context of life sciences being molecule graphs. In this case, we want
-to aggregate all node features to produce a single value describing the input
-graph. Such an aggregation is called a \ild{pooling} layer. This can be done
-either by application of a simple permuation-invariant
-% TODO check lingo here
-aggregation function such as minimum, maximum, etc. or by iteratively coarsening
-the graph together with its node-level feature representations \cite{ying_hierarchical_2019}.
+The framework of \refeq{gnn-framework} produces a hidden feature representation
+for each node. This is the basis for solving node-level tasks such as the
+classification of clustering of individual nodes. Another common use case is to
+make a prediction for the entire input graph, the most prominent example in
+context of life sciences being molecule graphs. In this case, we want to
+aggregate all node features to produce a single value describing the input
+graph. Like in CNNs, such an aggregation is called a \ild{pooling} layer. This
+can be done either by application of a simple permuation-invariant aggregation
+function or by iteratively coarsening the graph together with its node-level
+feature representations \cite{ying_hierarchical_2019}.
 
 % TODO also mention edge-level tasks and computation over edges,
 % see https://distill.pub/2021/understanding-gnns/#modern-gnns > modern GNNs >
 % thoughts for some references
 
-\paragraph{Simple GNN} The \ild{GCN layer} \footnote{The naming here is unfortunately ambiguous.} as
+\paragraph{Simple GNN} The \ild{GCN layer}, as
 proposed by \citeauthor{kipf_semi-supervised_2017}
-\cite{kipf_semi-supervised_2017} defines $\alpha_{ij}$ as a constant depending
+\cite{kipf_semi-supervised_2017}, defines $\alpha_{ij}$ as a constant depending
 on the degrees of $v_i$ and $v_j$, namely $\alpha_{ij} := \nicefrac{1}{\sqrt{d_i
     d_j}}$.
-% TODO elaborate?
 
 \paragraph{GNNs with Attention} The \ild{Graph Attentional Layer} (GAT)
-\cite{velickovic_graph_2018} allows the importance score to be learnable, i.e.
+\cite{velickovic_graph_2018} allows the importance score $\alpha_{ij}$ to be learnable, i.e.
 adjusted via backpropagation and gradient descent during network training. An
-attention mechanism $A$ determines the importance $e_{ji}$ of $\vec{msg}_{ji}$.
+attention mechanism $A$ determines the importance $e_{ij}$ of $\vec{msg}_{ij}$.
 If the neighbourhood $\mathcal{N}_i$ is defined as the 1-hop-neighbourhood in
 the input graph, this can also be interpreted as the importance of edge $(v_i,
 v_j)$. In its prototypical formulation, $A$ is a single-layer fully-connected
 neural network with learnable weights $\vec a$ and activation function
-$\sigma_{\text{att}}$, as described in \refeq{fully-connected}. $A$ receives
+$\sigma_{\text{att}}$. $A$ receives
 both the feature representations of $v_i$ and $v_j$ as input, combined by
 concatenation:
 \begin{align}
   e_{ij} := A(\msg_i, \msg_j) = \sigma_{\text{att}}(\vec a^T( \msg_i \concat \msg_j))
 \end{align}
-Importance scores $e_{ij}$ are then normalised via the \ild{softmax} function:
+Importance scores $e_{ij}$ are obtained by normalisation with the \ild{softmax} function:
 \begin{align}
   \alpha_{ij} := \softmax_{j \in \mathcal{N}_i}(e_{ij}) := \frac{\exp(e_{ij})}{\sum_{k \in \mathcal{N}_i} \exp(e_{ik})}.
   \label{eq:softmax}
 \end{align}
-% TODO: mention multi-head attention?
+% NOPE: mention multi-head attention?
 Attention is a technique that has previously been used successfully in other
 neural network architectures. In particular, Graph Attention Networks are
 analogous to the Transformer architecture \cite{vaswani_AttentionAllYou_2017}
-that has achieved great popularity particularly in areas of Natural Language
-Processing such as machine translation. For translation from a source language
+that has achieved great popularity in areas of Natural Language
+Processing such as machine translation.
+% TODO capitalisation
+For translation from a source language
 to a target language, text input is typically given as two sequences of tokens.
 The key idea behind the Transformer architecture in NLP is to apply an attention
 mechanism to assess the importance of other words in the source or target
 sequence with respect to the current word.
-% TODO diagram like in https://docs.dgl.ai/tutorials/models/4_old_wines/7_transformer.html
+% NOPE diagram like in https://docs.dgl.ai/tutorials/models/4_old_wines/7_transformer.html
 %   to illustrate message-passing of transfomer?
 Note that while the Transformer architecture relies heavily on the attention
 mechanism, it also directly implements the idea of message-passing based on
 known relationships between atomic inputs.
 
-% TODO inherent advantages of GNNS:
-% - work with graph structure -- two notions:
-%   - explicit relationships between data points
-%   - 'data points' themselves are graph-structured, can capture this and is
-%   naturally invariant of order, rotation, etc, not like winter2018
-%   - (graph-level tasks): independent of size of input graph (no fixed-length encoding)
-%      - naturally does not consider rotations etc.
-
+Graph Neural Networks allow us to apply common Deep Learning techniques to
+graph-structured data. For node-level learning tasks, this allows us to consider
+the explicit relationships between individual nodes. For graph-level tasks such
+as graph classification, GNNs are able to process the entire graph without
+relying on a fixed-length encoding. Furthermore, the aggregations are invariant
+to permutation and rotation.
 
 % TODO GNNs relatively low complexity, seem to not need super-deep convolutions like w/images
 
-
-% TODO dont go into polynomial filters for graphs here but mention them in
+% NOPE dont go into polynomial filters for graphs here but mention them in
 % related work, the distill article gives a nice journey there that we can
 % transcribe: https://staging.distill.pub/2021/understanding-gnns/
 
-\begin{figure}[h]
-  \centering
-  (diag-surfaces) on paper
-  % TODO diagram:
-  % -- features in isolation
-  % — convolution on grid (like in dive 6.2.1)
-  % — 'convolution on sequence' (like in Transformer)
-  % can we find biological sequence here?
-  % — convolution on graph
-  % — neighbourhood on some other shape (maybe 3D shape)
-  % see (diag-surfaces) on paper
-  \caption{Including known structure into the ML model as predictive bias.}
-  \label{fig:diag-surfaces}
-\end{figure}
+% NOPE
+% \begin{figure}[h]
+%   \centering
+%   (diag-surfaces) on paper
+%   % -- features in isolation
+%   % — convolution on grid (like in dive 6.2.1)
+%   % — 'convolution on sequence' (like in Transformer)
+%   % can we find biological sequence here?
+%   % — convolution on graph
+%   % — neighbourhood on some other shape (maybe 3D shape)
+%   % see (diag-surfaces) on paper
+%   \caption{Including known structure into the ML model as predictive bias.}
+%   \label{fig:diag-surfaces}
+% \end{figure}
 
-
-
-
-% TODO are we mentioning this?
-% successive layers of different convolution kernels detect features of
-% increasingly higher order (edges, simple features, complex features)
-% approach relies on a notion of neighbourhood. a pattern is specific
-% configuration *in a specific neighbourhood*
 
 % having this geometry is an additional information/bias we give to the network/model
 
 % can consider more complex geometries/surfaces → gauge-equivariant models
-% allow to properly rotations etc (``respect underlying symmetries''')
+% allow to properly model rotations etc (``respect underlying symmetries''')
 
-% the task is usually
-% defined on the entire geometric object (image)
-% — but possibly also 'node'-scale, like saliency maps?
+% are saliency maps an example for node-level task in image processing?
 % starting point: https://medium.com/stellargraph/https-medium-com-stellargraph-saliency-maps-for-graph-machine-learning-5cca536974da
 
-% in case of graphs, this geometry, notion of neighbourhood, is given by graph
-% adjacency.
-% - images can be considered grid graphs
-% - task can be defined on whole graph, nodes or even edges or intermediate scales.
-% - node-level, edge-level, graph-level; or on intermediate scale, finding
+% TODO or on intermediate scale, finding
 % communities, subgraphs, motifs, ... 
 
 \paragraph{Neural Networks as Classifiers} Intermediate layers of neural
@@ -1241,7 +1243,8 @@ Generally speaking, we seek to estimate parameters $\Theta$ of an assumed
 probability distribution $P$ given some observed data $X$. The method of
 \ild{maximum-likelihood estimation} postulates that we should pick the
 parameters such that the observed data is most likely (i.e. occurs with highest
-probability) under $P$. The likelihood \wrt parameters $\Theta$ is measured by
+probability) under $P$. The likelihood with respect to parameters $\Theta$ is measured by
+% TODO fix: no space after \wrt, replace all occurences
 a \ild{likelihood function} $L(\Theta)$.
 Formally, we aim for
 % TODO use underset (change \argmax command)
@@ -1264,15 +1267,12 @@ distributed, we have
 % TODO check where else we can use align* instead of align
 \begin{align*}
   -\log L(\Theta)  &= -\log \prod_{i=1}^n (\pi_i)^{y_i} \cdot (1-\pi_i)^{1-y_i} \\
-  &= - \sum_{i=1}^n y_i \log(\pi_i) + (1-y_i) \log(1-\pi_i) \\
-  &= \sum_{(\vec x,y) \in \mathcal{T}} \text{CE}(f(\vec x), y)
+                   &= - \sum_{i=1}^n \underbrace{y_i \log(\pi_i) + (1-y_i) \log(1-\pi_i)}_{:=~ \text{CE}(f(\vec x), y)}
+  % &= \sum_{(\vec x,y) \in \mathcal{T}} \text{CE}(f(\vec x), y)
     \label{eq:bce-loss-basic}
 \end{align*}
-where $\text{CE}$ is the cross entropy loss and $\mathcal{T}$ is the
-set of training data. In summary, minimising the cross entropy loss is
-equivalent to maximising the likelihood.
-% TODO other theta than model parameters -- confusing
-
+where $\pi_i = f(\vec x)$, $f$ is some classifier and $\text{CE}$ is the binary
+cross-entropy loss.
 
 \section{Support Vector Machines}
 % TODO define what a SVM is 
@@ -1286,15 +1286,14 @@ equivalent to maximising the likelihood.
 Support Vector Machines (SVMs) are a family of supervised machine learning
 models typically used for binary classification. In this section, we present the
 basic derivation of SVMs with the motivation of providing intuition behind the
-\textit{cost} hyperparameter and choice of kernel functions and their parameters. We
-refer to
+\textit{cost} hyperparameter and choice of kernel functions and their
+parameters. The derivations are based on
 \citeauthor{tibshirani_ElementsStatisticalLearning_2017}
-\cite{tibshirani_ElementsStatisticalLearning_2017} for a more rigorous
-and thorough treatment.
+\cite{tibshirani_ElementsStatisticalLearning_2017}.
 
 Support Vector Machines are linear classifiers: 
 The basic idea is to find a hyperplane in the (possibly transformed) feature
-space $\mathcal{X}$ that best separates the training data \wrt its
+space $\mathcal{X}$ that best separates the training data with respect to its
 ground-truth class assignments.
 
 % TODO mention what this derivation is based on
@@ -1321,11 +1320,11 @@ hyperplane. Doing so by gradient descent yields the \ild{perceptron training
   algorithm}. However, we are not guaranteed a unique solution. Further, if
 $\mat X$ is not linearly separable, the algorithm will not converge at all.
 Another possible approach is to search for a hyperplane that maximises the
-\ild{margin} $\gamma(L)$ \wrt $\mat X$, i.e. the distance from the hyperplane to the
+\ild{margin} of $L$ $\gamma(\vec \beta, \beta_0)$ with respect to $\mat X$, i.e. the distance from the hyperplane to the
 closest point:
-\begin{align}
+\begin{align*}
   \gamma(L) := \min_{x \in \mat X} \nicefrac{1}{\norm\beta} \abs{ \vec x^T \vec \beta + \beta_0 }.
-\end{align}
+\end{align*}
 The maximum-margin separating hyperplane is unique. Further, it seems reasonable
 to assume that a maximum-margin separating hyperplane will do well in
 generalising to unseen points. We aim to find a hyperplane $L(\vec \beta,
@@ -1334,6 +1333,8 @@ generalising to unseen points. We aim to find a hyperplane $L(\vec \beta,
 \begin{maxi}{\vec \beta, \beta_0}{\gamma(\vec \beta, \beta_0)} {\label{eq:svm-1}}{}
   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 0; i = 1, \ldots, n}
 \end{maxi}
+where the constraint expresses that each example should lie on the side of the
+hyperplane accoridng to its class.
 
 Since $L$ and $\gamma$ are scale invariant, i.e. $\gamma(\vec \beta, \beta_0) =
 \gamma(\lambda \vec \beta, \lambda \beta_0)$ for any $\lambda \not= 0$, we can
@@ -1347,17 +1348,17 @@ $\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1$.
   \addConstraint{\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1}
 \end{maxi}
 and can simplified further to
-\begin{mini}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-3}}{}
+\begin{mini*}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-3}}{}
   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 1; i = 1, \ldots, n}
-\end{mini} 
+\end{mini*} 
 
 
 \paragraph{General case} Let us now consider the case that $\mat X$ is not
-linearly separable. In this case, there is no solution to the optimisation
-problems given above. However, we can relax the constraints so that some
-data points are allowed to lie inside the margin. We achieve this by introducing
-\ild{slack variables} $(\xi_1, ..., \xi_n)$ to the optimisation constraints
-that express the allowed violation:
+linearly separable. In this case, we are not guaranteed a solution to the
+optimisation problems given above. However, we can relax the constraints so that
+some data points are allowed to lie inside the margin. We achieve this by
+introducing \ild{slack variables} $(\xi_1, ..., \xi_n)$ that express the allowed
+violation to the optimisation constraints:
 
 \begin{mini}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-slack}}{}
   \addConstraint{y_i(\vec x_i^T \vec \beta + \beta_0)}{\geq 1 - \xi_i}
@@ -1423,14 +1424,16 @@ transformed feature space:
 \end{align*}
 $K$ is a valid kernel function if its Gram matrix is positive semidefinite.
 
-One popular choice is the \ild{radial basis function} (RBF) kernel\footnote{This
-  is in fact an example where the transformed feature space is of infinite
-  dimension: It can be seen via Taylor expansion that \Krbf is based on an
-  infinite sum of polynomial kernels.
-  % TODO to include this, need to cite
-  % http://pages.cs.wisc.edu/~matthewb/pages/notes/pdf/svms/RBFKernel.pdf
-  % or similar and define polynomial kernels (but as <x, x'>^n would suffice?)
-}, also called \ild{Gaussian} kernel. Recall that a kernel function can be
+One popular choice is the \ild{radial basis function} (RBF) kernel
+% \footnote{This
+%   is in fact an example where the transformed feature space is of infinite
+%   dimension: It can be seen via Taylor expansion that \Krbf is based on an
+%   infinite sum of polynomial kernels.
+%   % TODO to include this, need to cite
+%   % http://pages.cs.wisc.edu/~matthewb/pages/notes/pdf/svms/RBFKernel.pdf
+%   % or similar and define polynomial kernels (but as <x, x'>^n would suffice?)
+% }
+, also called \ild{Gaussian} kernel. Recall that a kernel function can be
 interpreted as a measure of similarity between its two arguments $\vec x$ and
 $\vec x'$. The RBF kernel implements this notion as a decaying function of their
 distance. If $\vec x$ and $\vec x'$ are similar, their distance will be small and $-
@@ -1458,9 +1461,9 @@ larger values producing a more narrow shape.
 \section{Evaluation of classifiers}
 % TODO move this to methods (pretty sure we should)
 
-SVMs as well as GNNs are trained to optimise some specific function \wrt the
-training data. However, when comparing and selecting models, we need an unbiased
-performance measure that is based only on data and ground-truth labels.
+SVMs as well as GNNs are trained to optimise some specific function with respect
+tothe training data. However, when comparing and selecting models, we need an
+unbiased performance measure that is based only on data and ground-truth labels.
 
 The classifiers considered here will output a probability (or \ild{confidence
   score}) that a given data point will belong to the positive class.
@@ -1486,7 +1489,7 @@ training data based on their true and predicted class.
 \end{table}
 % TODO formatting (space after command)
 
-Based on the terms in \reftab{conf-names}, we can define the following measures:
+Based on the terms in \reftab{conf-names}, we define the following measures:
 % TODO reference for this
 \begin{itemize}
 \item \ild{Accuracy}, given by the ratio of
@@ -1512,21 +1515,22 @@ positives may be picked up as such by the classifier, resulting in a low \TPR.
 Lowering the decision threshold will increase \TPR, but also potentially result
 in additionally picking up false positives, increasing the \FPR.
 
-The choice of the proper decision threshold,
+The choice of the proper decision threshold
 % i.e. the tradeoff between Recall
 % and Precision
 depends on the use-case since different importance may be assigned
 to either Precision or Recall.
 %
 The original use-case of \nielsen was to use a classifier trained for predicting
+% TODO space after command
 node duplication to provide a low number of high-confidence examples as
 suggestions to the user. When considering only the few examples with the highest
 score, Precision is more important than Recall.
 
-To assess the trade-off between \FPR and \TPR \wrt possible choices of
+To assess the trade-off between \FPR and \TPR with respect to possible choices of
 classification threshold $\tau$, we can plot \FPR and \TPR as a function of
 $\tau$, yielding the \ild{Receiver Operating Characteristic} (ROC curve). The
-curve of random classifier that flips an even coin for each given example would
+curve of a random classifier that flips an even coin for each given example would
 be close to the diagonal. 
 %
 Generally, a classifier could be considered better if its ROC curve leans
@@ -1535,7 +1539,6 @@ towards the upper left, i.e. the area under the curve is greater.
 As a heuristic for choosing $\tau$, we can look for the threshold with the greatest
 distance between \TPR and \FPR at $\tau$, i.e. $\tau_{\text{opt}} := \argmax_{\tau \in
   (0,1)} \TPR(\tau) - \FPR(\tau)$.
-
 As an indicator for overall quality, we can compute the \ild{Area Under Curve}
 (AUC) score given as
 \begin{align*}
@@ -1735,7 +1738,7 @@ methods exclusively rely on structural criteria based on the graph structure.
 
 
 A common intuition is that a node shall be duplicated if its
-neighbourhood is highly heterogenous \wrt some similarity measure. In other words, a
+neighbourhood is highly heterogenous with respect to some similarity measure. In other words, a
 node should be split if it is involved in many different, unrelated processes
 as then it is assumed that in reality there are independent instances of that
 species, involved in the different processes independently.
@@ -2073,6 +2076,58 @@ describe our approach for redistributing incident edges after duplication.
 \label{sec:datasets}
 
 % TODO mention here that datasets used are described in ch. 5
+We begin by describing how we transform a given disease map into an input
+suitable for a Machine Learning model. The main steps are to interpret the
+Disease Map as a graph, to infer ground-truth labels and to determine node
+features. An overview is given in \reffig{diag-pipeline}.
+
+\begin{figure}[h]
+  \centering
+  \pic{pipeline.png}
+  \caption{Illustration of the basic data flow up to model training. For a given
+    disease map, we construct a corresponding graph. Additionally, for each node
+    in the graph, we obtain node features and a ground-truth label. Some nodes are
+    excluded from prediction. The SVM classifier acts on the node features alone,
+    while the GNN classifier additionally performs message-passing over the graph structure.}
+  \label{fig:diag-pipeline}
+\end{figure}
+
+In order to train any supervised classifier, we require a set of examples for
+which the class is already known. Although several disease maps are publicly
+available, to the best of our knowledge, none are explicitly annotated with a
+per-alias label. Thus, in order to obtain usable training data, we first have to
+infer such class labels. Concretely, given a single disease map or a sequence of
+reorganisation steps, we need to determine which species aliases are duplicates.
+
+The determination of ground-truth labels is based on comparing a disease map to
+a next curation step. Concretely, given maps $D_1$ and $D_2$, and $D_2$ is
+created from $D_1$ through some reorganisation, we can infer ground-truth
+labels for $D_1$ (but not for $D_2$). See \refsec{determining-labels} for details.
+
+A Disease Map can be given in two different variants. On the one hand, we may be
+given a sequence of reorganisation steps of a Disease Map, i.e. a series of intermediate
+snapshots of a Disease Map taken during manual curation. On the other hand, we
+may simply consider a single, fully laid-out Disease Map.
+% TODO check cap of Disease Map
+
+In case we consider a single Disease Map $D$ and not a reorganisation sequence,
+we interpret $D$ as the result of some reorganisation. However, as input for a
+classifier we actually require the ``previous'' step before reorganisation.
+Since this is not explicitly given, we construct a \ild{collapsed} version $D_0$
+of $D$ by merging all species aliases that correspond to the same species into a
+single representative alias.
+
+In case we are given a reorganisation sequence, we interpret each snapshot as a
+single graph. Since the determination of ground-truth labels is based on the
+next graph in the sequence, a given sequence $(D_1, ..., D_k)$ of disease maps
+results in a sequence of graphs $(G_0, ..., G_{k-1})$, where $G_i$ is the graph
+interpretation of $D_i$. Additionally, $G_0$ is the graph corresponding to the
+collapsed version of $D_1$.
+% TODO this means the entire experiment on importance of reorganisation steps
+% may be weird since it also includes step G_0 -> G_1 which may already be most.
+% Let's exclude that and try again. Would then be at least a nice finding.
+
+
 
 \subsection{Graph construction}
 \label{sec:graph-interpretation}
@@ -2089,23 +2144,30 @@ species aliases (visual representations of species).
 %
 An entry in the list of reactions carries references to species taking part in
 that reaction. Since different occurences of a species can be visualised as
-duplicate species aliases, each entry for a participating species additionally
+separate species aliases, each entry for a participating species additionally
 contains a reference to a specific species alias. Participating species are
 distuingished by the role they play in that reaction. Herein, we consider the
-basic roles defined by standard SBML: products, modifiers and reactants
-\footnote{ \toolname{CellDesigner} provides an even more fine-grained
-  distinction of species participating in a reaction. Species can be \ild{main}
-  reactants or products, \ild{modifiers} or \ild{additional} reactants or
-  products. We omit this for simplicity. See
-  \cite{_CellDesignerExtensionTag_2010}, ch. 2.4.
-}.
-% TODO check if footnote is needed
+basic roles defined by standard SBML: products, modifiers and reactants.
+In fact, \toolname{CellDesigner} provides an even more fine-grained
+distinction of species participating in a reaction. Species can be \ild{main}
+reactants or products, \ild{modifiers} or \ild{additional} reactants or
+products. We omit this for simplicity, see
+\cite{_CellDesignerExtensionTag_2010}, ch. 2.4.
+
+Each species alias is represented as a node. Complexes of species aliases are
+represented as a single node.
 We create directed edges for reactants and products in the
 direction of the reaction. A modifier is attached by two edges, one in either
-direction. For computing structural node features and for message-passing, we
-sometimes also consider the
-% TODO has this been defined before?
-bipartite projection. Herein, we compute the bipartite projection based on the
+direction. An example is given in \reffig{graph-construction}. This yields a
+directed, bipartite graph, with the bipartite node sets being the set of
+(complex) species aliases and the set of reactions, respectively.
+
+For computing structural node features and for message-passing, we sometimes
+also consider the bipartite projection onto the set of species aliases. The
+\ild{bipartite projection onto $A$} of a bipartite graph whose node set is the
+disjoint union of sets $A$ and $B$ contains all nodes in $A$. Two nodes in the
+bipartite projection are linked if and only if they have a common neighbour in
+the original graph. Herein, we compute the bipartite projection based on the
 undirected interpretation of the graph.
 
 \begin{figure}[h]
@@ -2113,12 +2175,16 @@ undirected interpretation of the graph.
   \includegraphics[width=0.7\linewidth]{graph-interpretation.png}
   \caption[Illustration how a rich SBML model is interpreted as a
   graph.]{Illustration of how a rich SBML model is interpreted as bipartite,
-    directed graph. Complexes are represented as single nodes. Secondary
-    reaction partners are attached similarly to primary reaction partners. In
-    case a secondary reaction partner is not associated with a directionality,
-    we add edges in either direction.}
-  % TODO lingo
+    directed graph. The left graphic describes the given CD-SBML model. Green
+    boxes represent species aliases, small white boxes represent reactions.
+    Complexes of species aliases are represented by gray boxes. A species alias
+    can be involved in a reaction through different kinds of relationship: As
+    primary input or output (laid out horizontally to the reaction), as
+    secondary in- or output (indicated by curved arcs) or as byproduct without
+    directionality (laid out directly below the reaction)}
+  \label{fig:graph-construction}
 \end{figure}
+% TODO extend with example for bipartite projection
 
 % \begin{figure}[h]
 %   \centering
@@ -2142,12 +2208,12 @@ represents a container for other species aliases. This is used to represent e.g.
 biological complexes of proteins. Simple and complex species aliases are
 arranged in an arbitrarily nested hierarchy. For the graph structure, we
 consider only top-level elements, that is, we consider complex species aliases
-as single nodes and omit their contents \footnote{ Contents of complex species
-  aliases will be taken into account when considering GO annotations, see TODO
-}. A reaction may involve an entire complex species alias (CSA) or only a
+as single nodes and omit their contents.  Contents of complex species
+aliases will be taken into account when considering GO annotations, see
+\ref{sec:feature-selection}.
+A reaction may involve an entire complex species alias (CSA) or only a
 species alias contained in the CSA. Since we interpret the CSA as a single node,
 an edge will be attached to it in either case.
-% TODO formatting of footnotes (numbers, not unicode symbols pls)
 
 Species aliases can also be contained in \ild{compartments} representing
 biological cellular compartments or broader notions of spatial relationship. We
@@ -2164,9 +2230,13 @@ An overview over the datasets used in this work is given in \refsec{datasets-use
 
 
 \subsection{Determining ground-truth Labels}
-Although numerous disease maps are publicly available, to the best of our
-knowledge none are explicitly annotated with a per-alias label indicating node
-duplication. In case we are given a sequence of reorganisation steps $(G_1, ...,
+\label{sec:determining-labels}
+
+Given two graphs $G_t$ and $G_{t+1}$, we want to infer which species aliases
+were duplicated in the step from $G_t$ to $G_{t+1}$. Note that we do not want to
+identify nodes in $G_{t+1}$ that were duplicated, but nodes in $G_t$ that will
+be duplicated. We refer to these as \ild{duplication parents}.
+In case we are given a sequence of reorganisation steps $(G_1, ...,
 G_k)$ , we infer node labels by comparing successive steps $G_t$ and $G_{t+1}$.
 In
 % TODO % define reorganisation steps
@@ -2199,14 +2269,14 @@ in detail for clarity.
 % % TODO does not make much sense to include this list if there are only two
 % % points. Its basically saying the same thing as in the sentence above.
 
-A simple approach that comes to mind is to consider nodes newly introduced in
-$G_{t+1}$ and look for a subset $W \subset V(G_{t+1})$ whose neighbourhood
-completely covers the neighbourhood of some node in $G_{t}$, i.e. $\bigcup_{w
-  \in W} \mathcal{N}_{t+1}(w) = \mathcal{N}_t(v)$ for some $v \in G_{t+1}$.
-However, this does not suffice. It is important to note that we can make no
-assumptions about what manipulations were made to create $G_{t+1}$ from $G_t$.
-In particular, nodes may have been removed, added or duplicated and edges may
-have been added, removed or re-wired.
+A simple approach to identify duplication parents that comes to mind is to
+consider nodes newly introduced in $G_{t+1}$ and look for a subset $W \subset
+V(G_{t+1})$ whose neighbourhood completely covers the neighbourhood of some node
+in $G_{t}$, i.e. $\bigcup_{w \in W} \mathcal{N}_{t+1}(w) = \mathcal{N}_t(v)$ for
+some $v \in G_{t+1}$. However, this does not suffice. It is important to note
+that we can make no assumptions about what manipulations were made to create
+$G_{t+1}$ from $G_t$. In particular, nodes may have been removed, added or
+duplicated and edges may have been added, removed or re-wired.
 %
 To deal with this, instead of finding the duplicates of a given node in
 $G_{t}$, the algorithm seeks to identify a possible \ild{duplication parent} of
@@ -2258,18 +2328,18 @@ to be among these nodes.
 % TODO terminology aliases vs graph nodes
 
 The procedure is given in pseudocode in \ref{alg:identify-duplicates}. For
-directed graphs, let the \ild{positive neighbourhood} of $v$ in $G_k$ $\neighb_k^+(v)$ be
-given as $\{w ~|~ (v,w) \in E(G_{k})\}$ an the \ild{negative neighbourhood}
-$\neighb_k^-(v)$ as $\{w ~|~ (w,v) \in E(G_k)\}$.
-The set operations identify nodes solely based on their alias ID. This means that
+directed graphs, let the \ild{positive neighbourhood} of $v$ in $G_k$
+$\neighb_k^+(v)$ be given as $\{w ~|~ (v,w) \in E(G_{k})\}$ an the \ild{negative
+  neighbourhood} $\neighb_k^-(v)$ as $\{w ~|~ (w,v) \in E(G_k)\}$. We abuse set
+notation to identify nodes solely based on their alias ID. This means that
 $V(G_t)$ and $V(G_{t+1})$ may potentially have nonempty intersection (indeed,
 the algorithm relies on it).
 
 Line \ref{line:ambig-cap} states that a valid duplication parent must be
 reachable from both positive and negative direction. This is only relevant if
 there is no positive (resp. negative) neighbourhood shared between the
-reorganisation steps (which is also the case if the target node is a sink, 
-resp. source). Line \ref{line:ambig-cup} takes this into account. Then, a
+reorganisation steps. This is also the case if the target node is a sink, 
+respectively source. Line \ref{line:ambig-cup} takes this into account. Then, a
 duplication parent may still be uniquely identified if there is a single shared
 neighbour in the opposite direction.
 % (see \reffig{fig:ex-no-neighb}).
@@ -2279,6 +2349,8 @@ parents exist and we cannot infer a unique single one.
 The algorithm is able to identify duplication parents even if edges have been
 removed.
 % (see example \reffig{fig:ex-remove-edge}).
+
+
 
 % TODO maybe later, drawing these cleanly is *so* much effort
 % \begin{figure}[h]
@@ -2320,7 +2392,7 @@ for the contained species aliases whether they should be duplicated or not. To
 this end, we need to find a representation (description) of a species alias to
 be used as input to the classifier. Naturally, the representation should express
 the characteristics of the species alias that are relevant to its class.
-Coming with such a representation is called \ild{feature engineering}.
+Designing such a representation is called \ild{feature engineering}.
 Classifiers such as SVMs and NNs commonly expect their input in the form of a
 numerical vector.
 %
@@ -2336,7 +2408,9 @@ can be defined. The first is the \ild{structural} aspect in which we use
 graph-theoretical measures to characterise species aliases (graph nodes) based
 on their connectivity in the network. This was considered in detail in the
 feature engineering step in the work of
-\citeauthor{nielsen_MachineLearningSupport_2019} and was used in numerous
+\citeauthor{nielsen_MachineLearningSupport_2019}
+\cite{nielsen_MachineLearningSupport_2019}
+and was used in numerous
 approaches for metabolic networks (see \refsec{related-work}).
 
 The second aspect is \ild{semantic}: species are annotated with biological
@@ -2366,7 +2440,7 @@ layout information may lead to interesting approaches (see
 
 
 \paragraph{Structural Features} The following structural features were defined
-and used by \citeauthor{nielsen_MachineLearningSupport_2019} and we re-implement
+and used by \citeauthor{nielsen_MachineLearningSupport_2019}. We re-implement
 them for comparability. Let $\sigma_{st}(v)$ denote the number of shortest paths
 from $s$ to $t$ passing through $v$ and $\sigma_{st}$ is the number of shortest
 paths from $s$ to $t$. Since in the following, we always consider the graph to
@@ -2416,7 +2490,7 @@ neighbourhood, the following secondary features are computed:
   grid graph via $k$ hops.
 \end{itemize}
 
-Except for the clustering coefficient, additionally all characteristics are also
+Except for the clustering coefficient, all characteristics are also
 computed on the bipartite projection and included as separate features.
 Except for \featname{distance_set_sizes}, all features are min-max-normalised
 w.r.t all given training graphs.
@@ -2441,7 +2515,7 @@ computation time has to be taken into account.
 % 
 Particularly attributes relying on global information (such as e.g. closeness
 centrality) can provide a challenge for high-level graph libraries such as
-\toolname{networkx} and may not complete in a reasonable amount of time. More
+\toolname{networkx} and may not be computable in a reasonable amount of time. More
 sophisticated implementations working with a lower-level language such as those
 provided by the \toolname{igraph} library used herein show a significant speedup.
 % TODO cite both -- by website?
@@ -2574,20 +2648,10 @@ Further, excluded nodes will still participate in the message-passing steps of
 GNN models.
 % TODO cite to previous secs
 
-The set of thus constructed input graphs is partitioned into training and
+The set of constructed input graphs is partitioned into training and
 testing graphs. For the concrete choice of training and testing partitions, we
 explore different settings, see \nameref{sec:experiments-results}.
 
-\begin{figure}[h]
-  \centering
-  \pic{pipeline.png}
-  \caption{Illustration of the basic data flow up to model training. For a given
-  disease map, we construct a corresponding graph. Additionally, for each node
-  in the graph, we obtain node features and a ground-truth label. Some nodes are
-excluded from prediction. The SVM classifier acts on the node features alone,
-while the GNN classifier additionally performs message-passing over the graph structure.}
-  \label{fig:diag-pipeline}
-\end{figure}
 
 
 
@@ -2618,7 +2682,7 @@ The task at hand comes with a particular set of challenges:
   % (NOTE which is the entire motivation for a ML
   % approach with very complex models).
   Thus, it may be the case that some
-  training examples are contradictory in label \wrt their feature
+  training examples are contradictory in label with respect to their feature
   representation. Further, considering several reorganisation steps is likely to
   introduce contradictory examples if a node is duplicated in some step but not
   in an earlier one.
@@ -2642,8 +2706,30 @@ The task at hand comes with a particular set of challenges:
   data to fit all parameters.
 \end{itemize}
 
-Experiments and results are given in \refsec{experiments-results}.
 
+\section{Evaluation}
+
+% TODO some blah on ROC etc. (move motivation down from Background)
+
+To avoid overfitting, for overall performance evaluation, we consider
+the model state at the training epoch that performs best on the validation
+split. This is not necessarily the best epoch with respect to the training split, see
+\reffig{fig:svm-repro-loss}. The tradeoff can also be seen in shape of imperfect
+performance on the training split in the ROC curves.
+% 
+% TODO terminology: split
+%
+Note that, in practise, a ML model should be able to reliably generalise to data
+that was not observed during the process of finding and tuning a model. Usually,
+this is done by splitting the available data into three parts: one for training,
+one for evaluation during model tuning (such as identifying a reasonable maximum
+epoch like here) and, finally, a part that will only be used for validation once
+all decisions have been made, to assess the actual generalisation performance of
+the final model.
+%
+Here, we are technically still in the first stage. In the future, potentially,
+once a single, promising model has been identified and all decisions have been
+made, there must be anothe validation on completely unseen data.
 
 \section{Attachment of edges}
 \label{sec:edge attachment}
@@ -2766,14 +2852,15 @@ for now and hypothesize it has little practical impact in this use-case.
 \chapter{Experiments \& Results}
 \label{sec:experiments-results}
 
-% TODO section overview
-
+We motivate and describe the experiments that were carried out and discuss their
+results. A general discussion follows in \refsec{discussion}. The applied
+methods and features are described in detail in \refsec{methods}.
 
 \section{Datasets used for training and evaluation}
 \label{sec:datasets-used}
 
 A visual overview of the disease maps considered in this work is provided in
-\reffig{fig:maps-summary}.
+\reffig{maps-summary}.
 
 The \ild{AlzPathway} map describes signaling pathways related to Alzheimer's
 Disease. Since its initial publication
@@ -2853,7 +2940,6 @@ to comprehensively model the human metabolism. It can be viewed at \url{https://
 
 
 
-% TODO motivate reporting ROC curves, cutoffs etc
 % TODO do numerical scores beyond AUC make sense?
 
 % TODO mention discrepancy between sequence and collapsed
@@ -2886,7 +2972,7 @@ to comprehensively model the human metabolism. It can be viewed at \url{https://
 
 The models were trained on the AlzPathway reorganisation steps (\ADMap)
 and evaluated on the Parkinson's Disease Map (\PDMap). We select the
-best-performing model \wrt AUC score.
+best-performing model with respect to AUC score.
 
 \subsection{Support Vector Machine}
 % - svm-repro
@@ -2895,13 +2981,17 @@ best-performing model \wrt AUC score.
 For the choice of kernel function, we pick the RBF kernel (see
 \refeq{rbf-kernel}) as a heuristic choice since
 \citeauthor{nielsen_MachineLearningSupport_2019} showed that a generally
-best-performing kernel cannot easily be determined and showed that the RBF
+best-performing kernel cannot easily be determined and that the RBF
 kernel generally achieves good performance.
 %
 Since we use a different SVM implementation than \nielsen, that might
-potentially interpret the parameters slightly differently, for the choice of
-\cd{C} and $\gamma$, we additionally perform grid search over the same ranges
-of values.
+potentially interpret the parameters slightly differently.
+
+Since no previous implementation was publicly available, we may be using a
+different SVM implementation that originally applied by \nielsen. Different
+implementations may interpret parameters slightly differently. Thus, for the
+choice of \cd{C} and $\gamma$, we additionally perform grid search over the same
+ranges of values.
 %
 The results are given in
 \reftab{tab:svm-hyperparams}.
@@ -3075,25 +3165,6 @@ and evaluated on the Parkinson's Disease Map (\PDMap) and on \ReconMap.
   \label{fig:svm-repro-reconmapolder-loss}
 \end{figure}
 
-To avoid actually overfitting, for overall performance evaluation, we consider
-the model state at the training epoch that performs best on the validation
-split. This is not necessarily the best epoch \wrt the training split, see
-\reffig{fig:svm-repro-loss}. The tradeoff can also be seen in shape of imperfect
-performance on the training split in the ROC curves.
-% 
-% TODO terminology: split
-%
-Note that, in practise, a ML model should be able to reliably generalise to data
-that was not observed during the process of finding and tuning a model. Usually,
-this is done by splitting the available data into three parts: one for training,
-one for evaluation during model tuning (such as identifying a reasonable maximum
-epoch like here) and, finally, a part that will only be used for validation once
-all decisions have been made, to assess the actual generalisation performance of
-the final model.
-%
-Here, we are technically still in the first stage. In the future, potentially,
-once a single, promising model has been identified and all decisions have been
-made, there must be anothe validation on completely unseen data.
 
 As a first sanity check for the GNN approach, we verify whether the optimisation
 procedure is able to overfit the model on the training data. Indeed, the overall
@@ -3105,7 +3176,7 @@ the validation set.
 
 % TODO move this somewhere else, does not belong in Discussion
 The initialisation of neural network weights before the training depend on
-random values. To check whether our training procedure is robust \wrt random
+random values. To check whether our training procedure is robust with respect to random
 initialisation, we repeat each run several times with different seed values for
 the random number generators. The separate runs are illustrated as multiple
 lines in the figures in this section. Since this seems to be fairly stable, we omit this
@@ -3149,6 +3220,8 @@ same progress cannot be reliable replicated in a greater number of smaller steps
 
 
 % TODO compare to nielsen
+
+% TODO DAVID: regularisation? smaller model? low data?
 
 
 \section{Importance of Reorganisation Steps}
