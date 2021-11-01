@@ -1,1 +1,1 @@
-# Node Duplication in Metabolic Networks
+# Node Duplication in Disease Maps using Graph Neural Networks
