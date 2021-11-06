@@ -38,6 +38,8 @@
 \newcommand\mycommfont[1]{\footnotesize \textcolor{teal}{#1}}
 \SetCommentSty{mycommfont}
 
+\usepackage[super]{nth}
+
 % ======
 
 % Load packages for testing
@@ -57,18 +59,55 @@
 \makeindex[columns=3, title=Alphabetical Index, intoc] % Make LaTeX produce the files required to compile the index
 
 
+\begin{titlepage}
+  \pagelayout{wide} % No margins
+  \begin{center}
+    {\LARGE \textbf{Node Duplication in Disease Maps \\[0.7em] using Graph Neural Networks}}
+    \\[2em]
+    {\Large \textbf{Bachelor Thesis}}
+    \\[5.5em]
+    {\Large submitted by}
+    \\[1.5em]
+    {\LARGE \textbf{Benjamin Moser}}
+    \\[1.5em]
+    {\Large at the}
+    \\[1.2em]
+    {\Large \textbf{University of Konstanz}}
+    \\[1.0em]
+    {\Large \textbf{Department of Computer and Information Science}}
+    \\[4em]
+    \begin{align*}
+      \text{\large {\nth{1} Supervisor}:~} &  \text{ \large Dr. Karsten Klein } \\
+      \text{\large {\nth{2} Supervisor}:~} &  \text{ \large Dr. Matthias Rupp } \\
+    \end{align*}
+    \vfill
+    {\Large {Konstanz, 2021}}
+  \end{center}
+\end{titlepage}
+
+
+
+
 \begin{document}
+
+
+\pagelayout{wide} % No margins
 
 %----------------------------------------------------------------------------------------
 %	BOOK INFORMATION
 %----------------------------------------------------------------------------------------
 
 % \titlehead{Document Template}
-\title[Node Duplication in Disease Maps using Graph Neural Networks]{Node
-  Duplication in Disease Maps \\ using Graph Neural Networks}
-\author[BM]{Benjamin Moser}
-\date{\today}
+% \title[Node Duplication in Disease Maps using Graph Neural Networks]{Node
+%   Duplication in Disease Maps \\ using Graph Neural Networks}
+
+% \author[BM]{Benjamin Moser}
+
+% \date{\today}
 % \publishers{An Awesome Publisher}
+
+
+
 
 %----------------------------------------------------------------------------------------
 
@@ -89,11 +128,13 @@
 %----------------------------------------------------------------------------------------
 
 % Note that \maketitle outputs the pages before here
-\maketitle
+% \maketitle
 
 %----------------------------------------------------------------------------------------
 %	PREFACE
 %----------------------------------------------------------------------------------------
+
+
 
 \chapter*{Abstract}
 
@@ -254,14 +295,14 @@ edges appears promising.
 
 % TODO include?
 % if so, set up short captions.
-\listoffigures % Output the list of figures
+% \listoffigures % Output the list of figures
 
 % Comment both of the following lines to have the LOF and the LOT on different pages
-\let\cleardoublepage\bigskip
-\let\clearpage\bigskip
+% \let\cleardoublepage\bigskip
+% \let\clearpage\bigskip
 
 % TODO include? probably not.
-\listoftables % Output the list of tables
+% \listoftables % Output the list of tables
 
 \endgroup
 
@@ -274,8 +315,8 @@ edges appears promising.
 
 \setchapterstyle{plain} % Choose the default chapter heading style
 
-\pagelayout{wide} % No margins
 
+\pagelayout{wide} % No margins
 
 
 
@@ -1291,7 +1332,8 @@ distributed, we have
     \label{eq:bce-loss-basic}
 \end{align*}
 where $\pi_i = f(\vec x)$, $f$ is some classifier and $\text{CE}$ is the binary
-cross-entropy loss.
+cross-entropy loss. The terms corresponding to either positive and negative
+class can be weighted with additional coefficients to account for class imbalance.
 
 \section{Support Vector Machines}
 
@@ -1299,17 +1341,19 @@ Besides neural networks, another class of models that we consider for node
 classification is that of Support Vector Machines (SVMs). SVMs have no inherent
 way to explicitly consider the graph structure. Commonly, structural
 characteristics are encoded as node features
-(see~\reftab{feature-importance-features}). Support Vector Machines are a family
-of supervised machine learning models typically used for binary classification.
-In this section, we present the basic derivation of SVMs with the motivation of
-providing intuition behind the \textit{cost} hyperparameter and choice of kernel
-functions and their parameters. The derivations are based on
+(see~\reftab{feature-importance-features}). In this section, we present the
+basic derivation of SVMs with the motivation of providing intuition behind the
+\textit{cost} hyperparameter and choice of kernel functions and their
+parameters. The derivations are based on
 \citeauthor{tibshirani_ElementsStatisticalLearning_2017}
 \cite{tibshirani_ElementsStatisticalLearning_2017}.
 
 Support Vector Machines are linear classifiers. The basic idea is to find a
 hyperplane in the (possibly transformed) feature space $\mathcal{X}$ that best
 separates the training data with respect to its ground-truth class assignments.
+Note that, thus the prediction output of a SVM is binary. One can obtain a
+confidence score alike to the output of NNs via cross-validation.
+
 
 \paragraph{Preliminaries} For sake of notational convenience, let $\mathcal{Y} =
 \{-1, 1\}$. A \ild{hyperplane} is an affine set of points $L := \{\vec x~|~ \vec
@@ -1324,19 +1368,17 @@ on $L$, we can define a linear classifier
 
 $\mat X$ is \ild{linearly separable} if there exists a hyperplane
 $L$ such that $h_L(\vec x_i) = y_i$ for all $\vec x_i \in \mat X$. $L$ is then
-called a \ild{separating} hyperplane, or \ild{decision boundary}. Note that,
-thus the prediction output of a SVM is binary. One can obtain a confidence score
-alike to the output of NNs via cross-validation.
+called a \ild{separating} hyperplane, or \ild{decision boundary}.
 
 \paragraph{Linearly separable case} For now, assume that $\mat X$ is linearly
 separable. We wish to find a suitable separating hyperplane. One possible
 approach would be to minimise the distance of misclassified points to the
 hyperplane. Doing so by gradient descent yields the \ild{perceptron training
-  algorithm}. However, we are not guaranteed a unique solution. Further, if
+  algorithm}. However, that does not guarantee a unique solution. Further, if
 $\mat X$ is not linearly separable, the algorithm will not converge at all.
 Another possible approach is to search for a hyperplane that maximises the
-\ild{margin} of $L$ $\gamma(\vec \beta, \beta_0)$ with respect to $\mat X$, i.e. the distance from the hyperplane to the
-closest point:
+\ild{margin} of $L$, denoted by $\gamma(L)$ with respect to
+$\mat X$, i.e. the distance from the hyperplane to the closest point:
 \begin{align*}
   \gamma(L) := \min_{x \in \mat X} \nicefrac{1}{\norm\beta} \abs{ \vec x^T \vec \beta + \beta_0 }.
 \end{align*}
@@ -1347,21 +1389,21 @@ generalising to unseen points. We aim to find a hyperplane $L(\vec \beta,
 \begin{maxi}{\vec \beta, \beta_0}{\gamma(\vec \beta, \beta_0)} {\label{eq:svm-1}}{}
   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 0; i = 1, \ldots, n}
 \end{maxi}
-where the constraint expresses that each example should lie on the side of the
-hyperplane accoridng to its class.
+where the constraint expresses that each example $\vec x_i \in \mat X$ should
+lie on the side of the hyperplane according to its class.
 
 Since $L$ and $\gamma$ are scale invariant, i.e. $\gamma(\vec \beta, \beta_0) =
 \gamma(\lambda \vec \beta, \lambda \beta_0)$ for any $\lambda \not= 0$, we can
 assume $\gamma(\vec \beta, \beta_0) = \nicefrac{1}{\norm \beta}$, i.e. 
 $\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1$.
-\refeq{svm-1} is then equivalent to
-
-\begin{maxi}{\vec \beta, \beta_0}{\nicefrac{1}{\norm{\vec \beta}}}
-  {\label{eq:svm-2}}{}
-  \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 0; i = 1, \ldots, n}
-  \addConstraint{\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1}
-\end{maxi}
-and can simplified further to
+%
+% is then equivalent to
+% \begin{maxi}{\vec \beta, \beta_0}{\nicefrac{1}{\norm{\vec \beta}}}
+%   {\label{eq:svm-2}}{}
+%   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 0; i = 1, \ldots, n}
+%   \addConstraint{\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1}
+% \end{maxi}
+\refeq{svm-1} can then be simplified to
 \begin{mini*}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-3}}{}
   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 1; i = 1, \ldots, n}
 \end{mini*} 
@@ -1372,19 +1414,18 @@ linearly separable. In this case, we are not guaranteed a solution to the
 optimisation problems given above. However, we can relax the constraints so that
 some data points are allowed to lie inside the margin. We achieve this by
 introducing \ild{slack variables} $(\xi_1, ..., \xi_n)$ that express the allowed
-violation to the optimisation constraints:
-
-\begin{mini}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-slack}}{}
-  \addConstraint{y_i(\vec x_i^T \vec \beta + \beta_0)}{\geq 1 - \xi_i}
-  \addConstraint{\xi_i > 0}
-  \addConstraint{\sum_{i=1}^{n} \xi_i \leq K}
-\end{mini} 
-where $K$ is some constant.  
-
-This optimisation is effectively solved by first transforming it into an
+violation to the optimisation constraints.
+%
+% \begin{mini}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-slack}}{}
+%   \addConstraint{y_i(\vec x_i^T \vec \beta + \beta_0)}{\geq 1 - \xi_i}
+%   \addConstraint{\xi_i > 0}
+%   \addConstraint{\sum_{i=1}^{n} \xi_i \leq K}
+% \end{mini} 
+% where $K$ is some constant.  
+%%
+Additionally, the optimisation is effectively solved by first transforming it into an
 equivalent problem known as its $\ild{Langrangian Dual}$. To this end, it is
-convenient to express \refeq{svm-slack} as
-
+convenient to slightly reformulate the problem, resulting in
 \begin{mini}{\vec \beta, \beta_0}{\nicefrac{1}{2} \norm{\beta}^2 + C \sum_{i=1}^n \xi_i} {\label{eq:svm-slack-2}}{}
   \addConstraint{y_i(\vec x_i^T \vec \beta + \beta_0)}{\geq 1 - \xi_i}
   \addConstraint{\xi_i > 0}
@@ -1407,22 +1448,22 @@ negative class separately. \refeq{svm-slack-2} then becomes:
   \addConstraint{y_i(\vec x_i^T \vec \beta + \beta_0)}{\geq 1 - \xi_i}
   \addConstraint{\xi_i > 0}
 \end{mini} 
-where $P$ and $N$ are the sets of indices or positive and negative training
+where $P$ and $N$ are the sets of indices of positive and negative training
 examples, respectively. $C_P$ and $C_N$ are the misclassification weights of the
 positive and negative training examples, respectively.
 
 
 \paragraph{The Kernel Trick} For most non-trivial classification problems, the
 classification function $f$ we seek to approximate is not linear. A method to
-move beyond linearity but nevertheless use linear classifiers is to
-transform the input features $\mat X$ into a higher-dimensional space
-$\mathcal{X}'$ via some transformation $\Phi$. Depending on the choice of
-$\Phi$, $\mathcal{X'}$ may be of very high or even infinite dimensionality.
-Thus, computing $\Phi$ explicitly is sometimes not an option. Luckily, we will
-see that in case of Support Vector Machines, all we need is an inner product
-$\inner{\cdot}{\cdot}$ in $\mathcal{X}'$. In the following, instead of some
-feature vector $\vec x \in \mathcal{X}$, we consider a transformed feature
-vector $\Phi(\vec x) \in \mathcal{X} '$.
+move beyond linearity but nevertheless use linear classifiers is to transform
+the input features $\mat X$ into a higher-dimensional space $\mathcal{X}'$ via
+some transformation $\Phi$. Depending on the choice of $\Phi$, $\mathcal{X'}$
+may be of very high or even infinite dimensionality. Thus, computing $\Phi$
+explicitly is sometimes not an option. However, for the computations of a
+Support Vector Machine, only an inner product $\inner{\cdot}{\cdot}$ in
+$\mathcal{X}'$ is required. In the following, instead of some feature vector
+$\vec x \in \mathcal{X}$, we consider a transformed feature vector $\Phi(\vec x)
+\in \mathcal{X} '$.
 %
 Let's inspect the most central equations for computing SVMs. First, in practise,
 we do not solve the optimisation problem derived above directly, but instead
@@ -1445,19 +1486,24 @@ x_i$ and $\vec x_j$ only appear when taking their inner product.
 Further, the decision function $h_L$ (see \refeq{linear-classifier}) can be
 rewritten as
 \begin{align*}
-  h_L(\Phi(\vec x)) & = \sign\left( \Phi(\vec x)^T \vec \beta + \beta_0  \right)  \\
-                    & = \sign\left(  \Phi(\vec x)^T \left[ \sum_{i=1}^n \alpha_i y_i \Phi(\vec x_i) \right] + \beta_0  \right)\\
-  &  = \sign\left( \sum_{i=1}^n \alpha_i y_i \inner{\Phi(\vec x)}{\Phi(\vec x_i)} ~~ + \beta_0 \right).
+  h_L(\Phi(\vec x)) & = \sign\left( \sum_{i=1}^n \alpha_i y_i \inner{\Phi(\vec x)}{\Phi(\vec x_i)} ~~ + \beta_0 \right).
 \end{align*}
-
-The key point here to note is that $\Phi$ appears only in the context of inner
-products. This means we can avoid even specifying $\Phi$ explicitly and instead
-use a \ild{kernel function} $K$ that expresses the inner products in the
-transformed feature space:
-\begin{align*}
-  \inner{\Phi(\vec x)}{\Phi(\vec x')} = K(\vec x, \vec x').
-\end{align*}
-
+% \begin{align*}
+%   h_L(\Phi(\vec x)) & = \sign\left( \Phi(\vec x)^T \vec \beta + \beta_0  \right)  \\
+%                     & = \sign\left(  \Phi(\vec x)^T \left[ \sum_{i=1}^n \alpha_i y_i \Phi(\vec x_i) \right] + \beta_0  \right)\\
+%   &  = \sign\left( \sum_{i=1}^n \alpha_i y_i \inner{\Phi(\vec x)}{\Phi(\vec x_i)} ~~ + \beta_0 \right).
+% \end{align*}
+In this context, the particular choice of inner product is also called a
+$\ild{kernel function}$.
+%
+% The key point here to note is that $\Phi$ appears only in the context of inner
+% products. This means we can avoid even specifying $\Phi$ explicitly and instead
+% use a \ild{kernel function} $K$ that expresses the inner products in the
+% transformed feature space:
+% \begin{align*}
+%   \inner{\Phi(\vec x)}{\Phi(\vec x')} = K(\vec x, \vec x').
+% \end{align*}
+%
 % $K$ is a valid kernel function if its Gram matrix is positive semidefinite.
 One popular choice for $K$ is the \ild{radial basis function} (RBF) kernel,
 % \footnote{This
@@ -2682,7 +2728,7 @@ Generally, a classifier could be considered better if its ROC curve leans
 towards the upper left, i.e. the area under the curve is greater.
 
 As a heuristic for choosing $\tau$, we can look for the threshold with the greatest
-distance between \TPR and \FPR at $\tau$, i.e. $\tau_{\text{opt}} := \argmax_{\tau \in
+distance between \TPR{} and \FPR{} at $\tau$, i.e. $\tau_{\text{opt}} := \argmax_{\tau \in
   (0,1)} \TPR{}(\tau) - \FPR{}(\tau)$.
 As an indicator for overall quality, we can compute the \ild{Area Under Curve}
 (AUC) score given as
@@ -2695,26 +2741,36 @@ single number will hardly ever capture all characteristics and evaluation still
 depends heavily on the use-case.
 
 
-% TODO rephrase this sentence
-\paragraph{On evaluation of NNs} To avoid overfitting, for overall performance
-evaluation, we consider the model state at the training epoch that performs best
-on the validation split. This is not necessarily the best epoch with respect to
-the training split, see \reffig{fig:svm-repro-loss}. The tradeoff can also be
-seen in shape of imperfect performance on the training split in the ROC curves.
-% 
-% TODO terminology: split
-%
-Note that, in practise, a ML model should be able to reliably generalise to data
+\paragraph{Training- and Validation subsets}
+Note that, in practise, a machine learning model should be able to reliably generalise to data
 that was not observed during the process of finding and tuning a model. Usually,
 this is done by splitting the available data into three parts: one for training,
 one for evaluation during model tuning (such as identifying a reasonable maximum
 epoch like here) and, finally, a part that will only be used for validation once
-all decisions have been made, to assess the actual generalisation performance of
-the final model.
+all decisions have been made.
 %
-Here, we are technically still in the first stage. In the future, potentially,
-once a single, promising model has been identified and all decisions have been
-made, there must be anothe validation on completely unseen data.
+However, in this work we only consider a partition into two parts, a
+\ild{training} and a \ild{validation} split. This is primarily motivated by the
+low amount of available data. Since we wish to evaluate generalisation
+performance on an unseen disease map, we cannot split disease maps internally on
+an unseen disease map, we cannot split disease maps internally.
+% 
+In the future, potentially, once a single, promising model has been identified
+and all decisions have been made, there should be further validation on completely
+unseen data.
+
+Neural Networks are trained iteratively. It is a common phenomenon that with
+increasing number of training epochs, the model will be fit more and more
+tightly to the training dataset, sacrificing generalisation ability to the
+validation dataset. This is referred to as \ild{overfitting}. Thus, the choice
+of the point at which to stop training the network potentially has an impact on
+generalisation performance. In this work, for performance evaluation, we
+consider the model state at the training epoch that performs best on the
+validation split. Note that this information is not available in a real-world
+use case. However, based on the results in~\refsec{reproducing}, a maximum epoch
+can be inferred heuristically (see~\refsec{reproducing}).
+
+
 
 \section{Attachment of edges}
 \label{sec:edge-attachment}
@@ -2802,7 +2858,7 @@ discrete derivative. In case of $k < 8$, we fall back to the first derivative
 %
 As special cases, since the decision to duplicate is assumed to be already given
 by the classifier, we exclude the possibility of returning only a single
-cluster. If $\norm{\neighb(v)}=2$, then we always trivially split. 
+cluster. If~$\norm{\neighb(v)}=2$, then we always trivially split. 
 
 Note that thus we characterise the procedure to identify the number of clusters
 independently of the concrete scale of the data. However,
@@ -2818,29 +2874,21 @@ for now and hypothesize it has little practical impact in this use-case.
 
 The experiments in this work were realised mainly using Python. For deep
 learning on graphs, we use the library \toolname{PyTorch Geometric}
-\cite{fey_FastGraphRepresentation_2019}
-which
-provides implementations for most popular message-passing layers. It is based on
-the deep learning framework \toolname{PyTorch}
-\cite{paszke_PyTorchImperativeStyle_2019}. We use the SVM implementation
-provided by \toolname{scikit-learn}
+\cite{fey_FastGraphRepresentation_2019} which provides implementations for most
+popular message-passing layers. It is based on the deep learning framework
+\toolname{PyTorch} \cite{paszke_PyTorchImperativeStyle_2019}. We use the SVM
+implementation provided by \toolname{scikit-learn}
 \cite{pedregosa_ScikitlearnMachineLearning_}.
 
 Data preprocessing such as loading from SBML files, constructing the graph and
 identifying duplicates was mostly done in standard Python using core libraries.
-
-For the computation of structural features, we used either \toolname{networkx}
-\cite{hagberg_ExploringNetworkStructure_2008}
-or the Python frontend of \toolname{igraph}
-\cite{csardi_IgraphSoftwarePackage_}
-if computation speed was relevant.
-Because the input networks are of nontrivial size (see \refsec{datasets-used}),
-computation time has to be taken into account.
-Particularly attributes relying on global information (such as e.g. closeness
-centrality) can provide a challenge for high-level graph libraries such as
-\toolname{networkx} and may not be computable in a reasonable amount of time. More
-sophisticated implementations working with a lower-level language such as those
-provided by the \toolname{igraph} library used herein show a significant speedup.
+Specialises Python libraries for working with SBML data do exist. The most
+prominent examples are \toolname{libsbml}
+\cite{bornstein_LibSBMLAPILibrary_2008} and, building on top of it,
+\toolname{cobrapy} \cite{ebrahim_COBRApyCOnstraintsBasedReconstruction_2013}.
+However, most of the datasets considered in this work are given in an extension
+of SBML as defined by the tool \toolname{CellDesigner}. The \toolname{libsbml}
+library does not support this extension.
 
 The pipeline of preprocessing and model training is based on \toolname{GraphGym}
 \cite{noauthor_snap-stanfordgraphgym_2021}, an open-source project that offers a
@@ -2860,16 +2908,59 @@ exploring the design space of GNNs \cite{you_design_2020}. We extend
   experiment run.
 \end{itemize}
 
+For the computation of graph-structural features, we used either
+\toolname{networkx} \cite{hagberg_ExploringNetworkStructure_2008} or the Python
+frontend of \toolname{igraph} \cite{csardi_IgraphSoftwarePackage_}.
+\toolname{networkx} provides Python implementations of most common network
+analysis methods and is already tightly integrated into \toolname{GraphGym}.
+However, for the datasets considered herein, \toolname{networkx} implementations
+would require unfeasible computation time. \toolname{igraph} merely provides
+bindings in Python while the core algorithms are implemented in \cd{C}. The
+speedup is particularly relevant for characteristics of nontrivial complexity
+such as those relying on global information like, for example, closeness
+centrality.
+% While \toolname{networkx} has an intuitive interface and is already
+% tightly integrated into \toolname{GraphGym}, particularly
+% attributes relying on global information (such as e.g. closeness
+% centrality) would require infeasible amounts of computation time.
+% \toolname{igraph}, on the other hand, merely provides bindings in Python while
+% the core algorithms are implemented in \cd{C}. Using \toolname{igraph} yields a
+% significant speedup.
+
 GO term annotations were extracted and handled using the \toolname{KNIME
-  Analytics Platform}
-\cite{gesellschaftfurklassifikation_DataAnalysisMachine_2008}
-as well as as Python with libraries such as
-\toolname{pandas}
-\cite{reback_PandasdevPandasPandas_2021}
-and \toolname{numpy}
-\cite{harris_ArrayProgrammingNumPy_2020}. For the computation of embedding
-vectors, we used the \ild{node2vec} implementation provided by \toolname{PyTorch
-Geometric}.
+  Analytics
+  Platform}~\cite{gesellschaftfurklassifikation_DataAnalysisMachine_2008} (KAP)
+as well as Python with libraries such as
+\toolname{pandas}~\cite{reback_PandasdevPandasPandas_2021} and
+\toolname{numpy}~\cite{harris_ArrayProgrammingNumPy_2020}. For this use-case,
+KAP has the advantage that a pipeline can be constructed visually and
+intermediate results can be evaluated and displayed at any step, facilitating
+incremental development and data exploration. This is particularly useful if the
+data has to be re-shaped several times as was the case here. KAP is primarily
+suited for tabular data and support for network-structured data is only
+rudimentary. For the computation of embedding vectors, we used the
+\ild{node2vec} implementation provided by \toolname{PyTorch Geometric}. 
+
+The given \toolname{CellDesigner}-SBML files are essentially large XML files.
+Some common text or XML editors may struggle with large file sizes. Tools that
+have proven particularly useful were
+\toolname{XMLExplorer}~\cite{_XmlexplorerWindows_2021} and \toolname{GNU
+  Emacs}~\cite{_GNUEmacsGNU_}.
+
+We deliberately refrained from using Jupyter Notebooks
+\cite{kluyver_JupyterNotebooksPublishing_2016}, which seem to be very common in
+the fields of machine learning and data science. This decision is motivated by
+several factors. First, the notebook approach makes it much harder to apply a
+debugger, which was needed here since the \toolname{GraphGym} framework had to
+be customised for our needs. Second, notebooks lack development ergonomics such
+as advanced keybindings and code navigation as it is provided by modern IDEs
+such as \ild{PyCharm}. Finally, the key idea of notebooks is to keep code and
+output next to each other. For the scope of this project, this would have proven
+issues with code encapsulation, performance, analysis of results and version
+control.
+Visualisations were facilitated with
+\ild{matplotlib}~\cite{caswell_MatplotlibMatplotlibREL_2021}. This means that
+any plots could be generated dynamically from the resulting data.
 
 
 % what did I spend time on programming?
@@ -3029,7 +3120,7 @@ feature. This suggests that this feature is not essential here.
   ...\cd{projection} & \chk & \chk & -  & -  & -  \\
   \cd{eigenvector_centrality} & \chk & - & \chk & -  &- \\
   ...\cd{projection} & \chk & \chk & -  & -  & -  \\
-  \cd{neighbour_centrality_statistics} & \chk & - & \chk & -  & - \\
+  \cd{neighbour_centrality_stat.} & \chk & - & \chk & -  & - \\
   ...\cd{projection}  & \chk  & \chk & - & -  &- \\
   \cd{distance_set_size}  & \chk & \chk  & \chk & - & - \\
   \cd{clustering_coefficient}  & \chk & \chk & \chk & -  &- \\
@@ -3039,7 +3130,9 @@ feature. This suggests that this feature is not essential here.
   \cd{node_in_degree} & - & - & -  & \chk & - \\
   \cd{node_out_degree} & - & -  & -  & \chk & - \\
 \end{tabular}
-  \caption{Overview over the different feature sets.}
+\caption{Overview over the different feature sets used as input to a
+  classification model in this work. The feature sets are defined
+  in~\refsec{feature-engineering}.}
   \label{tab:feature-importance-features}
 \end{table}
 
@@ -3047,6 +3140,17 @@ feature. This suggests that this feature is not essential here.
 \section{Basic hyperparameter search}
 \label{sec:hyperparameter-search}
 % cf [[tune or pick hyperparams]]
+
+Neural Networks as well as Support Vector Machines rely on the choice of
+particular hyperparameters. The optimal choice is not immediately clear and a
+common strategy is to search the hyperparameter space by training and evaluating
+a candidate model for each combination of hyperparameters. There are different
+search techniques of varying complexity such as Bayesian Optimisation
+\cite{snoek_PracticalBayesianOptimization_2012} or Random Search
+\cite{bergstra_RandomSearchHyperParameter_}. Arguably the simplest approach is
+Grid Search, in which the search space is sampled by a regular grid of points.
+In this work, we use grid search for sake of simplicity.
+
 
 The models were trained on the AlzPathway reorganisation steps (\ADMap) and
 evaluated on the Parkinson's Disease Map (\PDMap). The considered features in
@@ -3073,15 +3177,9 @@ implementations may interpret parameters slightly differently. Thus, we perform
 grid search over a similar range of values to determine a best-performing set of
 hyperparameters.
 
-The weight hyperparameter specifies the weight of the minority class. Here, this
-is the positive class. It corresponds to the value $C_P$ in \refeq{svm-imbalanced}.
-
-% for the
-% choice of \cd{C} and $\gamma$, we additionally perform grid search over the same
-% ranges of values.
-%
 The results are given in \reftab{svm-hyperparams}. The choices of \cd{C},
 $\gamma$ and weight roughly agree with the results of \nielsen{}.
+% TODO too vague
 
 \begin{table}[h]
   \begin{tabular}[h]{| l | l | l |}
@@ -3092,10 +3190,12 @@ $\gamma$ and weight roughly agree with the results of \nielsen{}.
     Weight & \cd{[1,2,3,5,7,10]} & 3
   \end{tabular}
   \caption{Considered SVM hyperparameters, value range searched via grid search and
-    best identified combination of values.}
+    best identified combination of values.
+    The weight hyperparameter specifies the weight of the minority class. Here, this
+    is the positive class. It corresponds to the value $C_P$ in \refeq{svm-imbalanced}.
+  }
   \label{tab:svm-hyperparams}
 \end{table}
-
 
 
 \subsection{Graph Neural Network}
@@ -3131,12 +3231,23 @@ for Graph Neural Networks for tasks such as node classification.
   \label{tab:gnn-hyperparams}
 \end{table}
 
+The identified hyperparameters are not particularly surprising compared to
+previous work. One thing that may be of interest here is the low number of
+message-passing layers. There is no general rule of thumb since the proper
+number of layers may differ between tasks \cite{you_design_2020}. Here, the
+lowest considered value was deemed to perform best. Indeed, we show that, in our
+experiments, message-passing does not have a substantial effect. Dropout not
+providing a large advantage has already been hinted at in previous work
+\cite{you_design_2020}.
+
+
 % TODO elaborate on hidden layer size
 
-% TODO explain dropout, skipsum
+% TODO explain/define dropout, skipsum
 
 
 \section{Reproducing previous work \& Comparison to GNN}
+\label{sec:reproducing}
 % svm repro, svm-repro-reconmapolder
 
 In this section, we reproduce the original task from \nielsen{} using an SVM
@@ -3181,7 +3292,7 @@ in future experiments for sake of simplicity.
   \end{subfigure}
   \begin{subfigure}[h]{0.49\linewidth}
     \pic{svm-repro-repeats/results/comparison/cutoffs.png}
-    \caption{Comparison of \FPR values at specific \TPR cutoff values (lower is better). These
+    \caption{Comparison of \FPR{} values at specific \TPR{} cutoff values (lower is better). These
       values are specific points from the ROC curve.}
   \end{subfigure}
   \caption{(\ADMap{} $\rightarrow$ \PDMap) Direct comparison of SVM and GNN classifier. The data
@@ -3227,7 +3338,7 @@ in future experiments for sake of simplicity.
   \end{subfigure}
   \begin{subfigure}[h]{0.49\linewidth}
     \pic{svm-repro-reconmapolder-repeats/results/comparison/cutoffs.png}
-    \caption{Comparison of \FPR values at specific \TPR cutoff values (lower is better). These
+    \caption{Comparison of \FPR{} values at specific \TPR{} cutoff values (lower is better). These
       values are specific points from the ROC curve.}
   \end{subfigure}
   \caption{(\ADMap{} $\rightarrow$ \ReconMap).
@@ -3270,7 +3381,7 @@ the validation set.
 
 For both evaluation on \PDMap and on
 \ReconMap{}, the GNN's ROC curve dominates the SVM's curve. This means that for a
-given \FPR deemed acceptable, the GNN model will provide a higher ratio of True
+given \FPR{} deemed acceptable, the GNN model will provide a higher ratio of True
 Positives. This advantage grows as the decision threshold is lowered, i.e. the
 GNN model is better particularly when we aim to identify more than just the
 high-confidence examples. The difference between ROC curves is only slight on
@@ -3541,9 +3652,10 @@ consider those computed on the simple graph.
 
 \paragraph{Results \& Discussion} Results are summarised in
 \reffig{fig:importance-message-passing}. It is evident that on this dataset,
-using these features \footnote{ We will consider a different feature set in
-  \refsec{feature-selection}. }, message-passing does not provide a big
+using these features, message-passing does not provide a big
 advantage in overall performance.
+% \footnote{ We will consider a different feature set in
+%   \refsec{feature-selection}. }
 
 However, note that the development of the overall validation loss reaches a
 lower value sooner than in the fully-connected variant. With more training
@@ -3592,7 +3704,7 @@ explore the usefulness of another flavour of message passing, namely \ild{Graph
   \pic{svm-repro-adlast-attention-reconmapolder/results/config-gnn/roc.png}
   \caption{(\ADLast $\rightarrow$ \ReconMap{})}
 \end{subfigure}
-\caption{Attention}
+\caption{Attention TODO more text}
 \label{fig:results-attention}
 \end{figure}
 
