@@ -59,6 +59,13 @@
 \makeindex[columns=3, title=Alphabetical Index, intoc] % Make LaTeX produce the files required to compile the index
 
 
+
+
+
+
+\begin{document}
+
+
 \begin{titlepage}
   \pagelayout{wide} % No margins
   \begin{center}
@@ -84,11 +91,6 @@
     {\Large {Konstanz, 2021}}
   \end{center}
 \end{titlepage}
-
-
-
-
-\begin{document}
 
 
 \pagelayout{wide} % No margins
@@ -400,7 +402,7 @@ incident edges potentially removes a path through that node. That path
 may be semantically meaningful and in that case it should be represented
 explicitly in the network structure.
 The decision of whether a node should be duplicated hinges on
-assessing whether such paths are meaningful or not, \ie whether the linkage via
+assessing whether such paths are meaningful or not, that is, whether the linkage via
 a node establishes \ild{true} or \ild{false connectivity} of its neighbourhood.
 Thus, the decision of node duplication ultimately depends on the context
 (neighbourhood) of the node.
@@ -903,7 +905,7 @@ that the DNA repair process occurs in the Mitochondrion.
 Our goal is to predict whether a species alias in a disease map
 should be duplicated or not. For each species alias, we extract 
 \textit{features}, which we deem to be characteristic for the target label of
-the node (see \refsec{feature-selection}).
+the node.
 Additionally, we are given training
 data in the form of one or several disease maps and a binary label for each
 species alias describing whether it was duplicated during manual curation. We
@@ -1037,7 +1039,7 @@ or until the risk no longer improves. We can additionally specify the step size
 by a given \ild{learning rate} $\eta$. Formally, in each step, also called
 \ild{epoch}, we set
 \begin{align*}
-\mat W^{(i)}' \gets
+\mat W^{(i)\prime} \gets
 \mat W^{(i)} - \eta \frac{\partial \mathcal{R}_{\text{emp}}}{\partial \mat W^{(i)}}.
 \end{align*}
 
@@ -1062,7 +1064,7 @@ pixel in isolation is unlikely to be useful since certainly the target class
 depends on the values of pixels in their context.
 % TODO moreover, extremely expensive if using MLP
 Further, note that the hidden representation of some input (e.g. given by
-\refeq{fully-connected}) may be considered an alternate feature representation
+Equation~\ref{eq:fully-connected}) may be considered an alternate feature representation
 of this input. In this sense, neural networks can be thought to perform
 \ild{automated feature extraction}. 
 
@@ -1102,7 +1104,7 @@ where $u$ is the bias, and $\Delta$ is the (window) \ild{size} of the
 Note that the kernel can be any
 computation adhering to the constraints of locality and translation invariance.
 %
-\refeq{convolution} describes a
+Equation~\ref{eq:convolution} describes a
 \ild{convolutional layer} and a neural network containing such layers is called
 a \ild{convolutional neural network} (CNN).
 
@@ -1169,7 +1171,7 @@ or \ild{graph convolutional network} (GCN).
 In simple GNN architectures, \textsc{Msg} is a linear feature extraction and depends
 only on the sending node, i.e. $\textsc{Msg}(\vec h_j, \vec h_i) = 
 \mat W \vec h_j =: \msg_j$ for some learnable weight matrix $\mat W$. Note that
-like the kernel parameters $\mat V$ in \refeq{convolution}, these weights are
+like the kernel parameters $\mat V$ in Equation~\ref{eq:convolution}, these weights are
 shared among the message-passing operations of different nodes.
 % 
 \textsc{Update} is the application of a non-linear activation function and
@@ -1180,7 +1182,7 @@ shared among the message-passing operations of different nodes.
 $\vec{msg}_{j}$.
 
 
-The framework of \refeq{gnn-framework} produces a hidden feature representation
+The GNN framework of Equation~\ref{eq:gnn-framework} produces a hidden feature representation
 for each node. This is the basis for solving node-level tasks such as the
 classification of clustering of individual nodes. Another common use case is to
 make a prediction for the entire input graph, the most prominent example in
@@ -1189,7 +1191,7 @@ aggregate all node features to produce a single value describing the input
 graph. Like in CNNs, such an aggregation is called a \ild{pooling} layer. This
 can be done either by application of a simple permuation-invariant aggregation
 function or by iteratively coarsening the graph together with its node-level
-feature representations \cite{ying_hierarchical_2019}.
+feature representations \cite{ying_hierarchical_2019}. 
 
 % TODO also mention edge-level tasks and computation over edges,
 % see https://distill.pub/2021/understanding-gnns/#modern-gnns > modern GNNs >
@@ -1214,6 +1216,7 @@ both the feature representations of $v_i$ and $v_j$ as input, combined by
 concatenation:
 \begin{align}
   e_{ij} := A(\msg_i, \msg_j) = \sigma_{\text{att}}(\vec a^T( \msg_i \concat \msg_j))
+  \label{eq:graph-attention}
 \end{align}
 Importance scores $e_{ij}$ are obtained by normalisation with the \ild{softmax} function:
 \begin{align}
@@ -1293,7 +1296,7 @@ however, is to design the network such that the last layer contains one ouput
 neuron for each target class. Given some input $\vec x$, the output value of the
 $i$-th neuron expresses the estimated probability that $\vec x$ is of class
 $c_i$. To produce values in $[0,1]$, the results of the final layer are
-normalised, e.g. with the \textit{softmax} function (see \refeq{softmax}).
+normalised, e.g. with the \textit{softmax} function (see Equation~\ref{eq:softmax}).
 %
 In order to train the neural network for classification, we need a loss function
 $\mathcal{L}$ to assess the quality of the prediction. We introduce the
@@ -1325,12 +1328,12 @@ classification, we have $P_\Theta(y_i=0~|~\vec x_i) = 1 - P_\Theta(y_i=1~|~\vec
 x_i)$. Under the assumption that input samples are independent and identically
 distributed, we have
 % TODO check where else we can use align* instead of align
-\begin{align*}
+\begin{align}
   -\log L(\Theta)  &= -\log \prod_{i=1}^n (\pi_i)^{y_i} \cdot (1-\pi_i)^{1-y_i} \\
                    &= - \sum_{i=1}^n \underbrace{y_i \log(\pi_i) + (1-y_i) \log(1-\pi_i)}_{:=~ \text{CE}(f(\vec x), y)}
   % &= \sum_{(\vec x,y) \in \mathcal{T}} \text{CE}(f(\vec x), y)
     \label{eq:bce-loss-basic}
-\end{align*}
+\end{align}
 where $\pi_i = f(\vec x)$, $f$ is some classifier and $\text{CE}$ is the binary
 cross-entropy loss. The terms corresponding to either positive and negative
 class can be weighted with additional coefficients to account for class imbalance.
@@ -1403,7 +1406,7 @@ $\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1$.
 %   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 0; i = 1, \ldots, n}
 %   \addConstraint{\min_{x \in X} \abs{\vec x^T \vec \beta + \beta_0} = 1}
 % \end{maxi}
-\refeq{svm-1} can then be simplified to
+Equation~\ref{eq:svm-1} can then be simplified to
 \begin{mini*}{\vec \beta, \beta_0}{\norm \beta} {\label{eq:svm-3}}{}
   \addConstraint{y_i (\vec x_i^T \beta + \beta_0) \geq 1; i = 1, \ldots, n}
 \end{mini*} 
@@ -1440,7 +1443,7 @@ decision boundary.
 For classification in class-imbalanced datasets, a common approach is to
 increase the misclassification of the minority class. We can incorporate this in
 the SVM formulation by specifying a \textit{cost} parameter for the positive and
-negative class separately. \refeq{svm-slack-2} then becomes:
+negative class separately. Equation~\ref{eq:svm-slack-2} then becomes:
 \begin{mini}{\vec \beta, \beta_0}{
     \nicefrac{1}{2} \norm{\beta}^2 + C_{P} \sum_{i \in P} \xi_i +
     C_{N} \sum_{i \in N} \xi_i
@@ -1483,7 +1486,7 @@ x_i$ and $\vec x_j$ only appear when taking their inner product.
 % TODO what is y_i here?
 % TODO omitting KKT conditions, is this a problem?
 %
-Further, the decision function $h_L$ (see \refeq{linear-classifier}) can be
+Further, the decision function $h_L$ (see Equation~\ref{eq:linear-classifier}) can be
 rewritten as
 \begin{align*}
   h_L(\Phi(\vec x)) & = \sign\left( \sum_{i=1}^n \alpha_i y_i \inner{\Phi(\vec x)}{\Phi(\vec x_i)} ~~ + \beta_0 \right).
@@ -1786,8 +1789,8 @@ with certain connectivity patterns by providing a \textit{motif stamp} tool.
 
 \section{Disease Maps}
 To date, disease maps have been created for a number of diseases, including
-Alzheimer's Disease (\alzpathway \cite{ogishima_AlzPathwayUpdatedMap_2016}),
-Parkinson's Disease (\pdmap \cite{fujita_IntegratingPathwaysParkinson_2014}),
+Alzheimer's Disease (\textit{AlzPathway}~\cite{ogishima_AlzPathwayUpdatedMap_2016}),
+Parkinson's Disease (\textit{PDMap}~\cite{fujita_IntegratingPathwaysParkinson_2014}),
 and recently \textsc{COVID-19}
 \cite{ostaszewski_COVID19DiseaseMap_2020}.
 
@@ -1952,7 +1955,7 @@ from known antibiotics \cite{stokes_DeepLearningApproach_2020}.
 %
 Notably, \citeauthor{duvenaud_convolutional_2015} employ this approach well
 before the recent popularisation of Graph Neural Networks in the style of  
-\refeq{gnn-framework}.
+Equation~\ref{eq:gnn-framework}.
 Focussed reviews of applications of GNNs for molecular property prediction
 \cite{wieder_CompactReviewMolecular_2020}
 and drug development in general
@@ -2190,10 +2193,10 @@ biological complexes of proteins. Simple and complex species aliases are
 arranged in an arbitrarily nested hierarchy. For the graph structure, we
 consider only top-level elements, that is, we consider complex species aliases
 as single nodes and omit their contents. Contents of complex species aliases
-will be taken into account when considering GO annotations
-(\refsec{feature-selection}). A reaction may involve an entire complex species
-alias (CSA) or only a species alias contained in the CSA. Since we interpret the
-CSA as a single node, an edge will be attached to it in either case.
+will be taken into account when considering GO annotations. A reaction may
+involve an entire complex species alias (CSA) or only a species alias contained
+in the CSA. Since we interpret the CSA as a single node, an edge will be
+attached to it in either case.
 
 Species aliases can also be contained in \ild{compartments} representing
 biological cellular compartments or broader notions of spatial relationship. We
@@ -2309,10 +2312,6 @@ to be among these nodes.
 
 \begin{algorithm}[h]
   \DontPrintSemicolon
-  \label{alg:identify-duplicates}
-  \caption{ Procedure to identify duplication parents. Transcribed from
-    \citeauthor{nielsen_MachineLearningSupport_2019} \cite{nielsen_MachineLearningSupport_2019}.
-  }
   \setstretch{1.2} \KwData{Directed graphs $G_t$ and $G_{t+1}$ (reorganisation
     step), node $v_i \in G_{t+1}$} \KwResult{Duplication parent of $v_i$ or
     None} $W_+ \gets \neighb_t^- ( \neighb_{t+1}^+(v_i) )$ \; $P_+ \gets
@@ -2337,6 +2336,10 @@ to be among these nodes.
       \Return $w$ \;
     }{
       \Return None
+    }
+    \label{alg:identify-duplicates}
+    \caption{ Procedure to identify duplication parents. Transcribed from
+      \citeauthor{nielsen_MachineLearningSupport_2019} \cite{nielsen_MachineLearningSupport_2019}.
     }
 \end{algorithm}
 % TODO what kind of ID? alias ID?
@@ -2423,7 +2426,7 @@ explore different settings (see \refsec{experiments-results}).
 
 
 \subsection{Feature Engineering}
-\label{sec:feature-selection}
+\label{sec:feature-engineering}
 
 We are given one or several disease map diagrams and want to make a prediction
 for the contained species aliases whether they should be duplicated or not.
@@ -2435,8 +2438,8 @@ characteristics of the species alias that are relevant to its class.
 Classifiers such as SVMs and NNs commonly expect their input in the form of a
 numerical vector.
 %
-In the following, we define several \ild{features}, \ie characteristics of
-species aliases. Such a characteristic can be a vector of numbers or a single
+In the following, we define several characteristic \ild{features} of
+species aliases. Such a feature can be a vector of numbers or a single
 number, in which case we consider it as a one-element vector. Once all
 features are computed, their resulting vectors are concatenated into a
 single \ild{feature vector} and provided to the classifier as input.
@@ -2472,7 +2475,7 @@ which reorganisation steps are available and it is of limited size. Thus we
 decide to omit this approach for now, while acknowledging that considering
 layout information may lead to interesting approaches (see
 \refsec{future-work}). We do consider layout information as a
-criterion for attaching edges to duplicates, see \refsec{edge attachment}. 
+criterion for attaching edges to duplicates, see \refsec{edge-attachment}. 
 
 
 \paragraph{Structural Features} The following structural features were defined
@@ -3098,8 +3101,8 @@ We use version \cd{2.01} from 2015-11-20.
 
 
 In experiments, we will consider different sets of node features as input to the
-classifier. We outline these \ild{feature sets} in table
-\reftab{feature-importance-feature}. The set \cd{basic-both} is the same set of
+classifier. We outline these \ild{feature sets} in 
+\reftab{feature-importance-features}. The set \cd{basic-both} is the same set of
 features as used by \nielsen{}, with the exception of omitting one particular
 feature. For a node $v$, the feature would contain statistics on centrality
 scores of $v$'s neighbours in the ego graph centered on $v$ of radius $k$ for $k
@@ -3132,7 +3135,7 @@ feature. This suggests that this feature is not essential here.
 \end{tabular}
 \caption{Overview over the different feature sets used as input to a
   classification model in this work. The feature sets are defined
-  in~\refsec{feature-engineering}.}
+  in~\refsec{datasets}.}
   \label{tab:feature-importance-features}
 \end{table}
 
@@ -3155,7 +3158,7 @@ In this work, we use grid search for sake of simplicity.
 The models were trained on the AlzPathway reorganisation steps (\ADMap) and
 evaluated on the Parkinson's Disease Map (\PDMap). The considered features in
 this and subsequent experiments are, unless stated otherwise, based on the work
-of \nielsen{} (see \cf{basic-both} in \reftab{feature-importance-features}). We
+of \nielsen{} (see \cd{basic-both} in \reftab{feature-importance-features}). We
 select the best-performing model with respect to AUC score.
 
 \subsection{Support Vector Machine}
@@ -3163,7 +3166,7 @@ select the best-performing model with respect to AUC score.
 % - train-on-many/train-on-many-svm
 
 For the choice of kernel function, we pick the RBF kernel (see
-\refeq{rbf-kernel}) as a heuristic choice since
+Equation~\ref{eq:rbf-kernel}) as a heuristic choice since
 \citeauthor{nielsen_MachineLearningSupport_2019} showed that a generally
 best-performing kernel cannot easily be determined and that the RBF
 kernel generally achieves good performance.
@@ -3192,7 +3195,7 @@ $\gamma$ and weight roughly agree with the results of \nielsen{}.
   \caption{Considered SVM hyperparameters, value range searched via grid search and
     best identified combination of values.
     The weight hyperparameter specifies the weight of the minority class. Here, this
-    is the positive class. It corresponds to the value $C_P$ in \refeq{svm-imbalanced}.
+    is the positive class. It corresponds to the value $C_P$ in Equation~\ref{eq:svm-imbalanced}.
   }
   \label{tab:svm-hyperparams}
 \end{table}
@@ -3414,6 +3417,7 @@ same progress cannot be reliable replicated in a greater number of smaller steps
 
 
 \section{Importance of Reorganisation Steps}
+\label{sec:importance-reorganisation-steps}
 Recall that in case of Alzheimer's Disease Map, we are
 given a sequence of reorganisation steps. The original approach of \nielsen{} was
 train a model on the entire sequence of reorganisation steps s.t. the model
@@ -3469,7 +3473,8 @@ published disease map.
 
 \paragraph{Results \& Discussion} The results are illustrated in
 \reffig{importance-reorganisation-steps}. Note how both SVM and GNN models do
-not degrade noticeably in performance (compare to \reffig{TODO}). In
+not degrade noticeably in performance (compare to
+\reffig{svm-repro-roc-train-test} and \reffig{svm-repro-reconmapolder-roc-train-test}). In
 fact, the SVM model performs \textit{better} when trained on the collapsed map,
 potentially due to fewer contradictory examples. The GNN models show similar
 performance.
@@ -3537,7 +3542,7 @@ provide any advantages.
 
 As can be seen from \reffig{maps-summary}, we can expect to deal with unbalanced
 data. Class imbalance is already adressed in the SVM model of previous
-experiments (see \refsec{hyperameter-search}). We aim to assess the effect of
+experiments (see \refsec{hyperparameter-search}). We aim to assess the effect of
 class imbalance on the GNN model.
 
 % TODO name the numbers from the figure
@@ -3585,7 +3590,7 @@ coefficient to the loss function that will determine the weight of prediction
 outcome of the positive class.
 %
 We consider the \ild{Weighted Binary Cross Entropy} loss as
-an extension of \refeq{bce-loss-basic}, given by
+an extension of Equation~\ref{eq:bce-loss-basic}, given by
 \begin{align}
   \label{eq:bce-loss-weighted}
   \mathcal{L}_{\text{BCE weighted}} = \nicefrac{1}{n} \sum_{i=1}^n w_i y_i \log(\pi_i) + (1-y_i) \log (1-\pi_i)
@@ -3627,7 +3632,7 @@ To assess the importance of using message-passing layers at all, we compare to a
 model that has the message-passing layers replaced with fully-connected layers.
 %%
 Note that for message-passing on the simple graph interpretation, of the
-structural features described in \refsec{feature-selection}, we can only
+structural features described in \refsec{datasets}, we can only
 consider those computed on the simple graph.
 
 % TODO vertical alignment
@@ -3651,7 +3656,7 @@ consider those computed on the simple graph.
 \end{figure}
 
 \paragraph{Results \& Discussion} Results are summarised in
-\reffig{fig:importance-message-passing}. It is evident that on this dataset,
+\reffig{importance-message-passing}. It is evident that on this dataset,
 using these features, message-passing does not provide a big
 advantage in overall performance.
 % \footnote{ We will consider a different feature set in
@@ -3684,7 +3689,7 @@ In previous experiments, we used a rather simple message-passing scheme. More
 sophisticated approaches are potentially able to capture more complex patterns,
 or better discern relevant from irrelevant characteristics. To this end, we
 explore the usefulness of another flavour of message passing, namely \ild{Graph
-  Attention} as defined in \refeq{graph-attention}.
+  Attention} as defined in Equation~\ref{eq:graph-attention}.
 
 % just run and report so we can write it down...
 % previously did that on train-on-many so idk
@@ -3742,7 +3747,7 @@ While there are sophisticated approaches to automatic feature selection
 for sake of simplicity we simply train and compare models on different subsets
 of the available features.
 
-For each of the structural features defined in \refsec{feature-selection},
+For each of the structural features defined in \refsec{datasets},
 \nielsen{} provide the same characteristic computed both on the simple graph
 interpretation and on the graph's bipartite projection. We aim to assess if
 indeed both variants are needed or if one alone works better.
@@ -3753,8 +3758,7 @@ This interesting because node degree has been used as a heuristic for
 classifying currency metabolites in the context of the analysis of metabolic
 models (see \nameref{sec:related-work}). The basic idea is that if a node's
 degree is particularly large, it is likely that the connectivity it implies
-between its neighbours is not semantically meaningful (i.e. implies \ild{false
-  connectivity} as discussed in \refsec{draw-biol-networks}).
+between its neighbours is not semantically meaningful.
 
 Beyond the undirected degree, we additionally consider in- and out-degree. This
 is interesting, because directed degrees may have a biological interpretation: A
@@ -3918,11 +3922,11 @@ steps:
 We check the following combinations of features (see \reftab{feature-importance-features}):
 \begin{itemize}
 \item As a \cd{baseline} we use the same feature set as used in
-  \refsec{TODO-importance of reorg steps}, i.e. \cd{basic-both}.
+  \refsec{importance-reorganisation-steps}, i.e. \cd{basic-both}.
 \item To assess the predictive value of the GO-based features in isolation, we consider
   \cd{constant-stddev} and \cd{constant-embed}: The features
   \cd{GO_stddev} and \cd{GO_embedding} as defined in
-  \refsec{feature-selection} (the identifier ``constant'' comes from the fact
+  \refsec{datasets} (the identifier ``constant'' comes from the fact
   that we additionally supply a meaningless single constant number as feature
   due to implementation purposes).
 \item Additionally, we assess the GO-based features in combination with
@@ -3931,7 +3935,7 @@ We check the following combinations of features (see \reftab{feature-importance-
 \end{itemize}
 Since the embeddings are of relatively large dimensionality, to avoid making the
 dimensionality of the final feature vector (in the sense of
-\refsec{feature-selection}) exceedingly large, we avoid combining them with the
+\refsec{datasets}) exceedingly large, we avoid combining them with the
 full set of all other available features.
 
 
@@ -4016,7 +4020,7 @@ We apply the method to determine the number of duplicates and re-distribute
 edges described in \refsec{edge-attachment} to the \textit{AlzPathway} map.
 
 We provide some examples for successful and problematic cases in
-\reffig{fig:neighb-clust-examples}. All nodes considered have positive
+\reffig{neighb-clust-examples}. All nodes considered have positive
 ground-truth class (i.e. are real duplication parents). From manual inspection,
 the vast majority of results seemed to be reasonable clusterings, and in rare
 cases, ambiguous situations like illustrated here occured.
@@ -4202,7 +4206,8 @@ with.
 % \defbibnote{bibnote}{Here are the references in citation order.\par\bigskip} % Prepend this text to the bibliography
 % \printbibliography[heading=bibintoc, title=References, prenote=bibnote] % Add the bibliography heading to the ToC, set the title of the bibliography and output the bibliography note
 \renewcommand*{\bibfont}{\small}
-\printbibliography[heading=bibintoc, title=References] % Add the bibliography heading to the ToC, set the title of the bibliography and output the bibliography note
+\printbibliography[heading=bibintoc, title=References]
+% Add the bibliography heading to the ToC, set the title of the bibliography and output the bibliography note
 
 %----------------------------------------------------------------------------------------
 %	INDEX
