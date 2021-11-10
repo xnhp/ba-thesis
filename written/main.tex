@@ -1,7 +1,7 @@
 % Load the kaobook class
 \documentclass[
 	fontsize=10pt, % Base font size
-	twoside=false, % Use different layouts for even and odd pages (in particular, if twoside=true, the margin column will be always on the outside)
+	twoside=true, % Use different layouts for even and odd pages (in particular, if twoside=true, the margin column will be always on the outside)
 	%open=any, % If twoside=true, uncomment this to force new chapters to start on any page, not only on right (odd) pages
 	secnumdepth=1, % How deep to number headings. Defaults to 1 (sections)
   toc=indentunnumbered % indent unnumbered entries in toc. if not used, they
@@ -188,7 +188,6 @@ The decision of whether to duplicate a node is commonly still left to the
 expertise of a human curator. Previous work
 % \cite{nielsen_MachineLearningSupport_2019}
 suggests to employ a machine learning
-% TODO cap. of ML
 model trained on a set of already laid-out diagrams to predict node duplication.
 
 In this work, we explore the usefulness of Graph Neural Networks (GNNs) for
@@ -273,8 +272,6 @@ edges appears promising.
 
 
 
-% TODO somewhere (related work? background?) describe in more detail the
-% use-case of nielsen of suggesting predictions (maybe even with screenshot)
 
 
 
@@ -296,7 +293,6 @@ edges appears promising.
 
 \tableofcontents % Output the table of contents
 
-% TODO include?
 % if so, set up short captions.
 % \listoffigures % Output the list of figures
 
@@ -304,7 +300,6 @@ edges appears promising.
 % \let\cleardoublepage\bigskip
 % \let\clearpage\bigskip
 
-% TODO include? probably not.
 % \listoftables % Output the list of tables
 
 \endgroup
@@ -355,7 +350,6 @@ Neural Networks to this classification task. Second, we consider which of the
 previously suggested features are useful and introduce a new set of features
 based on Gene Ontology term annotations. Finally, we suggest an approach to
 distribute edges after duplication.
-% TODO this does not contain quite everything, go over sec 5 again
 
 
 % \paragraph{Problem Statement} 
@@ -374,8 +368,8 @@ as centrality scores.
 For training the model, disease maps can be given in two variants: Either as a
 single disease map, or as a sequence of reorganisation steps. Such a sequence is
 made up of intermediate snapshots of a disease map taken during the curation
-process. For evaluation, we always consider the variant of a single disease map.
-% TODO motivate somewhere why --- not much data available
+process. For evaluation, we always consider the variant of a single disease map
+since, in practise, we only have one reorganisation sequence available.
 %
 Additionally, nodes of the graphs in the training dataset are associated with
 ground-truth labels indicating whether the node should be duplicated. Given one
@@ -462,7 +456,6 @@ thus its semantics -- in the GO graph.
 % While structural features such as an extremely large node degree
 % immediately come to mind, such simple predictors often do not suffice to capture
 % all cases (see \nameref{sec:experiments-results}).
-% % TODO elaborate more?
 
 % \paragraph{Structure}
 We begin by reviewing the basic notions and definitions in
@@ -481,8 +474,6 @@ possible directions for future work (\refsec{future-work}).
 
 
 
-% TODO some prose on how biological systems are complex, inspired by
-% https://www.quantamagazine.org/biologists-rethink-the-logic-behind-cells-molecular-signals-20210916/
 
 % motivation for disease maps
 % Our understanding of the molecular mechanisms that are involved in biological
@@ -494,9 +485,6 @@ possible directions for future work (\refsec{future-work}).
 % network structure accessible to both human cognition and computational analysis
 % \ cite{barabasi_NetworkBiologyUnderstanding_2004}.
 
-% TODO node duplication important in
-% - general network analysis, as preprocessing (manipur, iPAO1, ...)
-% - visualisation
 
 % may not be a good idea to simply duplicate anything e.g. involved in more than
 % one pathway because of *key connectors*
@@ -617,7 +605,6 @@ However, several diseases such Alheimer's Disease or Parkinson's Disease do not 
 merely on a single pathway. Rather, they are thought to arise through complex
 interactions of biological processes or genetic and environmental factors.
 Knowledge on relevant factors is obtained incrementally and scattered across
-% TODO different word for relevant factors
 individual publications or database entries.
 Thus, a systematic understanding of the involved actors and their
 relationships is essential
@@ -675,24 +662,24 @@ advantages:
   analysis and interactive exploration (see \refsec{related-work}).
 \end{itemize}
 
-% TODO vertical alignment of subfigure labels
 \begin{figure}[h]
   \centering
   \begin{subfigure}{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{NF-kB-mechanism/handdrawn.png}
-    \caption{Traditional process diagram. The artifact is a pixel or vector
-      graphic, containing only the information shown in the image. Species are
-      represented as different shapes. Reactions are represented by arrows.
-      \cite{boghog2_NFkBMechanismAction_2007} .}
+    \caption{Traditional process
+      diagram~\cite{onenglishwikipedia_NFkBMechanismAction_2007}. The artifact
+      is a pixel or vector graphic, containing only the information shown in the
+      image. Species are represented as different shapes. Reactions are
+      represented by arrows.}
     \label{fig:process-diagram-old-vs-new:handdrawn}
   \end{subfigure}
   \hspace{1em}
   \begin{subfigure}{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{NF-kB-mechanism/CellDesigner.png}
-    \caption{Diagram \cite{_CellDesignerProcessDiagram_} as created with
-      \toolname{CellDesigner}. The artifact is a formal description of
+    \caption{Diagram as created with
+      \toolname{CellDesigner}~\cite{_CellDesignerProcessDiagram_}. The artifact is a formal description of
       species and relationships, combined with layout information. 
       Species are represented as large, coloured boxes.
       Biochemical reactions are represented by arrows. }
@@ -701,11 +688,9 @@ advantages:
   \caption{
     Two examples for different variants of biological process diagrams.
     % Two representations of prototypical mechanisms of \nfkb{}-signaling.
-    % TODO describe why this is a nice example for a'' `complex interaction'
   }
   \label{fig:process-diagram-old-vs-new}
 \end{figure}
-% TODO replace with image from  http://www.celldesigner.org/features.html ?
 
 \begin{figure}[h]
   \centering
@@ -744,28 +729,32 @@ sense and for their graphical representations.
 Finding a \textit{layout} of a graph (also called \textit{graph drawing}) means
 finding positions for node representations and potentially also routing edges.
 %
-What makes a good layout generally depends on the specific kind of network data and the
-task of the consumer of the visualisation.
+What makes a good layout generally depends on the specific kind of network data
+and the task of the consumer of the visualisation. In particular, there are two
+different kinds of constraints to be considered: \ild{syntactic constraints}
+that are based on the graph structure and \ild{semantic constraints} that are
+based on the inherent meaning of nodes and
+relationships~\cite{coleman_AestheticsbasedGraphLayout_1996}.
 %
-In general, a good layout is commonly required to avoid edge crossings or
-overlapping nodes, to be compact and to keep euclidean distances proportional to
-graph distances.
-% TODO citation here?
-Additional constraints may be for example the preservation of symmetries, clear
-representation of hierarchical structure or preservation of a viewer's mental map when
-updating a dynamically changing graph layout.
+In general, a good layout is commonly required to adhere to syntactic
+constraints such as avoiding edge crossings or overlapping nodes, being compact
+and keeping euclidean distances proportional to graph
+distances~\cite{coleman_AestheticsbasedGraphLayout_1996}. Additional constraints
+may be for example the preservation of symmetries, clear representation of
+hierarchical structure or preservation of a viewer's mental map when updating a
+dynamically changing graph layout.
 %
 Automatic graph layouting is a highly studied topic and numerous different
 methods are available (see \refsec{related-work}).
-
+%
 Biological process diagrams, however, often contain subgraphs with particular
 semantics, which must be considered explicitly in the layout in order to convey
-the contained information as effectively as possible.
-Because of this, it is still common practise to draw such diagrams manually,
-or to obtain an initial automatic layout and adjust that manually. This process is
-extremely time-consuming and often requires specific domain knowledge.
-We outline some of the challanges in drawing biological process diagrams
-\cite{bourqui_MetabolicNetworkVisualization_2007,
+the contained information as effectively as possible, these are domain-specific
+semantic constraints. Because of this, it is still common practise to draw such
+diagrams manually, or to obtain an initial automatic layout and adjust that
+manually. This process is extremely time-consuming and often requires specific
+domain knowledge. We outline some of the challanges in drawing biological
+process diagrams \cite{bourqui_MetabolicNetworkVisualization_2007,
   siebenhaller_HumanlikeLayoutAlgorithms_2020,
   wu_MetabopolisScalableNetwork_2019}:
 
@@ -875,13 +864,11 @@ are likely to mention the function of Adenosine Triphosphate (ATP), a basic
 molecule that appears in many metabolic reactions. Both projects use the same
 notion of ATP and its effects, yet they may describe it differently, e.g., by
 its full name, abbreviation or
-% TODO commas for e.g.?
 chemical formula. This hinders knowledge transfer and -integration. We are
 striving towards a structured, formalised body of knowledge for representing
 information about physical entities such as molecules, but also on biological terms
 describing processes (e.g. ``glycolysis''), localisation (e.g. ``cytoplasm'') or
 functions.
-% TODO not nice, maybe example for functions
 
 There are several publicly available databases that gather information on
 biological entities such as proteins (\toolname{UniProt}
@@ -900,7 +887,6 @@ provides three distinct ontology graphs describing molecular functions, cellular
 component or biological processes. Each ontology graph loosely describes a
 relationship, however, links between hierarchies may also exist, for instance
 that the DNA repair process occurs in the Mitochondrion.
-% TODO do need to make clearer what'' `function' stands for.
 
 
 
@@ -921,7 +907,6 @@ maps.
 Thus, we are working in the setting of \ild{supervised learning}, which we
 briefly introduce in the
 following~\cite{vapnik_PrinciplesRiskMinimization_,bronstein_geometric_2021}:
-% TODO better-looking references?
 We consider $n$ observations $\mathcal{T} = \{(\vec x_i, y_i)\}_{i=1}^n$ (also
 % TODO this would be saying we evaluate on data we trained with, lets phrase
 % this better.
@@ -961,7 +946,6 @@ For finding the classifier $\tilde f$, we can choose out of a variety of
 existing approaches. The two model families we consider for classification in
 this work are graph neural networks and Support Vector Machines. We describe
 these in detail in the following sections.
-% TODO captialisation
 
 
 % TODO add a sentence that we evaluate on another set.
@@ -1024,7 +1008,6 @@ then the output of the $(i+1)$-th layer is given as
 \mat H^{(i+1)} = \sigma((\mat H^{(i)})^T \mat W^{(i+1)} + \vec b^{(i+1)}).
 \label{eq:fully-connected}
 \end{align}
-% TODO sounds too much like what I wrote in the report?
 %
 Possible choices for the activation function $\sigma$ are the sigmoid or $\tanh$
 functions. Another common choice used in this work is the ReLU function given by
@@ -1077,7 +1060,6 @@ would be to consider the brightness value of each input pixel as a feature, i.e.
 $\vec x_i \in \mathbb{R}^{w \cdot h}$. However, looking at each
 pixel in isolation is unlikely to be useful since certainly the target class
 depends on the values of pixels in their context.
-% TODO moreover, extremely expensive if using MLP
 Further, note that the hidden representation of some input (e.g. given by
 Equation~\ref{eq:fully-connected}) may be considered an alternate feature representation
 of this input. In this sense, neural networks can be thought to perform
@@ -1093,8 +1075,6 @@ including 1-dimensional grids (sequences) such as RNA and DNA sequence
 alignments~\cite{flagel_UnreasonableEffectivenessConvolutional_2019,aoki_ConvolutionalNeuralNetworks_2018}.
 It is important to note that we have additional information on the structure of
 the input,
-% (also called \ild{inductive bias}),
-% TODO that term is not relevant here? would just sound fancy
 namely that its pixel values are arranged in a grid. This means there is a
 well-defined notion of context, or \textit{neighbourhood}.
 %
@@ -1112,7 +1092,6 @@ X_{i,j}$ as
   \mat H_{i,j} = u + \sum_{a= -\Delta}^\Delta \sum_{b = -\Delta}^\Delta \mat V_{a,b} \mat X_{i+a,j+b}
   \label{eq:convolution}
 \end{align}
-% TODO diagram / illustration for grid convolution
 where $u$ is the bias, and $\Delta$ is the (window) \ild{size} of the
 \ild{convolution kernel} $\mat V$.
 %
@@ -1144,7 +1123,7 @@ target node, which are then combined with the target node's features into the
 final output.
 
 
-% TODO note somewhere that 'spectral' GNNs have been around for a while, but
+% maybe note somewhere that 'spectral' GNNs have been around for a while, but
 % GNNs have only become quite popular recently with these simplified formulations
 \paragraph{Convolutions on Graphs} We extend the notion of a convolution
 from grid-structured graphs to arbitrary simple graphs. We will see that
@@ -1208,7 +1187,7 @@ can be done either by application of a simple permutation-invariant aggregation
 function or by iteratively coarsening the graph together with its node-level
 feature representations \cite{ying_hierarchical_2019}. 
 
-% TODO also mention edge-level tasks and computation over edges,
+% maybe also mention edge-level tasks and computation over edges,
 % see https://distill.pub/2021/understanding-gnns/#modern-gnns > modern GNNs >
 % thoughts for some references
 
@@ -1243,7 +1222,6 @@ Attention is a technique that has previously been used successfully in other
 neural network architectures. In particular, Graph Attention Networks are
 analogous to the Transformer architecture \cite{vaswani_AttentionAllYou_2017}
 that has achieved great popularity in areas of natural language processing such as machine translation.
-% TODO capitalisation
 For translation from a source language
 to a target language, text input is typically given as two sequences of tokens.
 The key idea behind the Transformer architecture in NLP is to apply an attention
@@ -1262,7 +1240,6 @@ as graph classification, GNNs are able to process the entire graph without
 relying on a fixed-length encoding. Furthermore, the aggregations are invariant
 to permutation and rotation.
 
-% TODO GNNs relatively low complexity, seem to not need super-deep convolutions like w/images
 
 % NOPE dont go into polynomial filters for graphs here but mention them in
 % related work, the distill article gives a nice journey there that we can
@@ -1292,8 +1269,6 @@ to permutation and rotation.
 % are saliency maps an example for node-level task in image processing?
 % starting point: https://medium.com/stellargraph/https-medium-com-stellargraph-saliency-maps-for-graph-machine-learning-5cca536974da
 
-% TODO or on intermediate scale, finding
-% communities, subgraphs, motifs, ... 
 
 
 \paragraph{Additional Techniques} There are some additional techniques that are
@@ -1356,7 +1331,6 @@ that $\vec x_i$ belongs to class $y_i$. Since we are dealing with binary
 classification, we have $P_\Theta(y_i=0~|~\vec x_i) = 1 - P_\Theta(y_i=1~|~\vec
 x_i)$. Under the assumption that input samples are independent and identically
 distributed, we have
-% TODO check where else we can use align* instead of align
 \begin{align}
   -\log L(\Theta)  &= -\log \prod_{i=1}^n (\pi_i)^{y_i} \cdot (1-\pi_i)^{1-y_i} \nonumber \\
                    &= - \sum_{i=1}^n \underbrace{y_i \log(\pi_i) + (1-y_i) \log(1-\pi_i)}_{:=~ \text{CE}(f(\vec x), y)}
@@ -1390,7 +1364,6 @@ confidence score alike to the output of NNs via cross-validation.
 \paragraph{Preliminaries} For sake of notational convenience, let $\mathcal{Y} =
 \{-1, 1\}$. A \ild{hyperplane} is an affine set of points $L := \{\vec x~|~ \vec
 x^T \vec \beta + \beta_0 = 0\}$. The signed distance from a point $\vec x$ to $L$ is
-% TODO make it clearer that beta is a vector?
 given by $d(x, L) := \nicefrac{1}{\norm\beta} (\vec x^T \vec \beta + \beta_0)$. Based
 on $L$, we can define a linear classifier
 \begin{align}
@@ -1511,9 +1484,6 @@ x_i$ and $\vec x_j$ only appear when taking their inner product.
 %   & \forall i:~~ \alpha_i, \mu_i \geq 0 \\
 % \end{align*}
 % omitting additional constraints. 
-% TODO formatting
-% TODO what is y_i here?
-% TODO omitting KKT conditions, is this a problem?
 %
 Further, the decision function $h_L$ (see Equation~\ref{eq:linear-classifier}) can be
 rewritten as
@@ -1563,8 +1533,7 @@ function.
 % dimensions as adding 
 The hyperparameter $\gamma$ controls the width of the bell shape, with
 larger values producing a more narrow shape. 
-% TODO mention some other kernels
-% TODO diagram like here, with 3 points
+% maybe diagram like here, with 3 points
 % https://medium.com/analytics-vidhya/radial-basis-functions-rbf-kernels-rbf-networks-explained-simply-35b246c4b76c
 
 
@@ -1614,9 +1583,9 @@ in \refsec{draw-biol-netw}. To this end, there has been work done to develop
 specific methods for biological networks.
 
 Early work focussed mainly on the drawing of process diagrams that contain up to
-several dozens of nodes, e.g. describing only a single biological pathway.
-\cite{becker_GraphLayoutAlgorithm_2001}
-\cite{schreiber_ComparisonMetabolicPathways_2003}.
+several dozens of nodes, e.g. describing only a single biological pathway
+\cite{becker_GraphLayoutAlgorithm_2001,
+  schreiber_ComparisonMetabolicPathways_2003}.
 % Widely used online databases such as \toolname{KEGG} and \toolname{Reactome}
 % provide (semi-)automatic layouts of pathway diagrams.
 
@@ -1662,7 +1631,6 @@ reactions via a common node would imply false connectivity.
 % are molecules such as ATP or H2O.
 % NOTE commenting this out since read in places that ATP can actually be a key connector
 Currency metabolites are commonly duplicated.
-% TODO  also consider direks_dynamic?
 
 In the context of decomposing a metabolic network into subsystems,
 \citeauthor{schuster_exploring_2002} classify a given metabolite as
@@ -1688,7 +1656,6 @@ to the best of our knowledge there are relatively few concrete, general-purpose
 algorithms that employ automatic node duplication.
 
 Most notably, \citeauthor{eades_VertexSplittingTensionfree_1996} introduce a
-% TODO do not list all names in \citeauthor
 general graph drawing algorithm that applies node duplication to simplify the
 graph structure in order to find a better layout
 \cite{eades_VertexSplittingTensionfree_1996}. The method is an extension of the
@@ -1731,15 +1698,12 @@ methods exclusively rely on structural criteria based on the graph structure and
 are thus potentially transferrable to disease maps.
 
 % % \paragraph{Metabolic Models}
-% % TODO introduce somewhere what that is?
-% % TODO some introduction text
 % Because different instances of the same metabolite can participate in many
 % different reactions, node duplication can be essential for working with
 % metabolic models.
 % % not sure about this
 % % While visualisation is one possible motivation, node duplication
 % % also has to be considered for other tasks such as flux balance analysis
-% % % TODO really?
 % or integration of secondary \textit{-omics} data \cite{manipur_clustering_2020}.
 
 % Node duplication in layout tasks potentially is a different problem from the
@@ -1807,15 +1771,18 @@ not aware of any other previous work that investigates using a machine learning
 classifier for node duplication.
 
 
-\paragraph{Tools and Formats}
+\toolname{VANTED}~\cite{rohn_VANTEDV2Framework_2012} offers functionality to
+duplicate nodes if they exceed a given degree threshold. The tool introduces one
+duplicate per edge and can optionally lay out duplicates next to each other on a grid.
+Additionally, in \toolname{VANTED}, external data can be mapped to network nodes.
+Nodes that are assigned more than one dataset can be automatically duplicated.
+%
 There are several tools that provide functionality to easily introduce
-duplicates once the decision has been made. \toolname{Arcadia}
+duplicates once the duplication decision has been made. \toolname{Arcadia}
 \cite{villeger_ArcadiaVisualizationTool_2010} allows to split a node such that
 each copy has exactly unit degree. \toolname{Omix}
 \cite{droste_OmixVisualizationTool_2013} makes it easier to introduce duplicates
 with certain connectivity patterns by providing a \textit{motif stamp} tool.
-% TODO description is lacking
-%
 
 
 \section{Disease Maps}
@@ -1864,7 +1831,7 @@ Detailed information on the disease maps considered in this work can be found in
 \label{sec:gnn-applications}
 
 
-% TODO for related work on CNNs in Life Sciences, search in Obsidian for
+% maybe for related work on CNNs in Life Sciences, search in Obsidian for
 % 'Convolutional Nerual Network' have some nice ones there, including those
 % already quite similar to graph convolution
 
@@ -1924,7 +1891,6 @@ These embeddings can be thought
 of to encode the term's position in the graph, that is, its relationship to
 other terms. A measure of semantic similarity can be derived by comparing the
 (sets of) computed embeddings.
-% TODO split this off into own section on ontologies/KGs?
 
 \ild{Single-cell RNA-sequencing} (scRNA-seq) is a technology that provides gene
 expression data on the level of individual cells. In the work of
@@ -1977,7 +1943,7 @@ based on the the structure of the molecule and concrete, low level properties.
 Moreover, the extraction and aggregation of input features performed by graph
 neural networks is differentiable and thus the entire prediction pipeline can
 jointly be optimised end-to-end, yielding task-specific fingerprints.
-% TODO make it clearer that fingerprints is another term for this automatic
+% maybe make it clearer that fingerprints is another term for this automatic
 % feature extraction
 \citeauthor{stokes_DeepLearningApproach_2020} use this approach to predict the
 growth inhibition against \textit{E.coli}, eventually resulting in the discovery
@@ -1998,8 +1964,8 @@ fingerprints of molecules that are then used to predict their broad metabolic
 pathway class (e.g. carbohydrate metabolism, amino acid metabolism, \etc)
 \cite{baranwal_deep_2020}.
 
-% TODO also mention creation of synthetic molecular graphs
-% TODO include zuo2021
+% maybe also mention creation of synthetic molecular graphs
+% maybe include zuo2021
 
 
 \paragraph{Edge-level tasks} GNNs have been applied for edge-level tasks
@@ -2020,7 +1986,7 @@ applications can be found in the literature
 
 
 \section{Gene Ontology}
-
+\label{sec:gene-ontology-related}
 
 \citeauthor{henry_ConvertingDiseaseMaps_2021} extract the relationships such as
 reactions, links to phenotypes and genes or relationships to cellular components
@@ -2050,7 +2016,6 @@ species-level GO term annotations in \textit{AlzPathway} to automatically
 identify semantic clusters in the diagram, adopting a measure of semantic
 similarity between GO terms.
 
-% TODO maybe talk about fingerprints aswell (split into subsections)
 
 
 
@@ -2126,8 +2091,7 @@ The task at hand comes with a particular set of challenges:
   training examples are contradictory in label with respect to their feature
   representation. Further, considering several reorganisation steps is likely to
   introduce contradictory examples if a node is duplicated in some step but not
-  in an earlier one.
-  % TODO will we adress this? if not, mention it in Future Work
+  in an earlier one. 
 \item The number of datapoints used for training and evaluation is relatively
   low compared to other common use-cases for machine learning. Care has to be
   taken to avoid overfitting, i.e. the model adjusting overly well to the training
@@ -2206,7 +2170,6 @@ projection based on the undirected interpretation of the graph.
 % \begin{figure}[h]
 %   \centering
 %   \begin{subfigure}{0.45\linewidth}
-%     % TODO diagram illustrating graph construction: combine drawing of SBML
 %     % with simplified graph structure
 %     (graph-interpretation) from paper notes
 %     \caption{Illustration of how a rich SBML model is interpreted as a simple,
@@ -2238,8 +2201,6 @@ do not consider compartments at all herein (see \refsec{future-work}).
 % Attributes such as the species class or the position of the species alias in the
 % layout are extracted from the source file and attached as node at
 
-% TODO include diagram of CellDesigner-SBML from miro board?
-% ... or anything else illustrating the complexity...
 
 
 
@@ -2256,31 +2217,25 @@ reorganisation steps, we need to determine which species aliases are duplicates.
 The determination of ground-truth labels is based on comparing a disease map to
 a next curation step. Concretely, given maps $D_1$ and $D_2$, and $D_2$ is
 created from $D_1$ through some reorganisation, we can infer ground-truth
-labels for $D_1$ (but not for $D_2$). See \refsec{determining-labels} for details.
+labels for $D_1$ (but not for $D_2$). 
 
 A disease map can be given in two different variants. On the one hand, we may be
 given a sequence of reorganisation steps of a disease map, i.e. a series of intermediate
 snapshots of a disease map taken during manual curation. On the other hand, we
 may simply consider a single, fully laid-out disease map.
-% TODO check cap of disease map
 
 In case we consider a single disease map $D$ and not a reorganisation sequence,
-we interpret $D$ as the result of some reorganisation. However, as input for a
-classifier we actually require the ``previous'' step before reorganisation.
-Since this is not explicitly given, we construct a \ild{collapsed} version $D_0$
-of $D$ by merging all species aliases that correspond to the same species into a
-single representative alias.
+we interpret $D$ as the result of some reorganisation. Let $G$ be the graph
+interpretation of $D$. As input for a classifier we actually require the
+``previous'' step before reorganisation. Since this is not explicitly given, we
+construct a \ild{collapsed} version $G_0$ of $G$ by merging all species aliases
+that correspond to the same species into a single representative alias.
+%
+In case we are given a reorganisation sequence $(D_1, ..., D_k)$ of disease
+maps, the result will be a sequence of graphs $(G_0, ..., G_{k-1})$ where $G_i$
+is the graph interpretation of $D_i$ and additionally $G_0$ is the graph
+corresponding to the collapsed version of $D_1$. 
 
-\paragraph{Handling reorganisation sequences}
-In case we are given a reorganisation sequence, we interpret each snapshot as a
-single graph. Since the determination of ground-truth labels is based on the
-next graph in the sequence, a given sequence $(D_1, ..., D_k)$ of disease maps
-results in a sequence of graphs $(G_0, ..., G_{k-1})$, where $G_i$ is the graph
-interpretation of $D_i$. Additionally, $G_0$ is the graph corresponding to the
-collapsed version of $D_1$.
-% TODO this means the entire experiment on importance of reorganisation steps
-% may be weird since it also includes step G_0 -> G_1 which may already be most.
-% Let's exclude that and try again. Would then be at least a nice finding.
 
 
 \paragraph{Determining duplication} Given two graphs $G_t$ and $G_{t+1}$, we
@@ -2290,10 +2245,8 @@ duplicated, but nodes in $G_t$ that will be duplicated. We refer to these as
 \ild{duplication parents}. In case we are given a sequence of reorganisation
 steps $(G_1, ..., G_k)$ , we infer node labels by comparing successive steps
 $G_t$ and $G_{t+1}$. In
-% TODO % define reorganisation steps
 case we are given only a single disease map $G$, we first construct a collapsed
 version $G_0$ by collapsing any species aliases
-% TODO calling this G is fishy
 corresponding to the same species into a representative node and moving any edges
 incident to aliases to the corresponding representative. We then proceed by
 comparing $G_0$ and $G$ like reorganisation steps.
@@ -2317,7 +2270,7 @@ in detail for clarity.
 %   % adressed by considering to-from/from-to neighbours instead of covering
 %   % (ex-remove-edge)
 % \end{itemize}
-% % TODO does not make much sense to include this list if there are only two
+% % does not make much sense to include this list if there are only two
 % % points. Its basically saying the same thing as in the sentence above.
 
 A simple approach to identify duplication parents that comes to mind is to
@@ -2375,8 +2328,6 @@ to be among these nodes.
       \citeauthor{nielsen_MachineLearningSupport_2019} \cite{nielsen_MachineLearningSupport_2019}.
     }
 \end{algorithm}
-% TODO what kind of ID? alias ID?
-% TODO terminology aliases vs graph nodes
 
 The procedure is given in pseudocode in \ref{alg:identify-duplicates}. For
 directed graphs, let the \ild{positive neighbourhood} of $v$ in $G_k$
@@ -2403,7 +2354,7 @@ removed.
 
 
 
-% TODO maybe later, drawing these cleanly is *so* much effort
+% maybe later, drawing these cleanly is *so* much effort
 % \begin{figure}[h]
 %   \centering
 %   \begin{subfigure}{0.23\textwidth}
@@ -2437,8 +2388,6 @@ removed.
 
 
 \subsection{Data Selection}
-
-% TODO motivation on this
 
 Like \nielsen{}, we exclude complex species aliases and nodes of degree less than
 two from prediction. This means they will not be considered as input examples
@@ -2532,7 +2481,6 @@ however, is unclear since positions are most likely determined by a mixture of
 layout requirements, semantic arrangement and preference of the curator.
 %
 For the scope of this work, we avoid using layout-based predictors
-% TODO mention term predictor in background
 since we only have one practical instance in which we have layout information
 and ground-truth labels available, which is when making a prediction for a
 \dataname{AlzPathway} reorganisation step and comparing it to the actual next
@@ -2607,33 +2555,37 @@ with respect to all given training graphs.
 Additionally, we consider the directed degrees (\featname{in_degree},
 \featname{out_degree}). This is motivated by the notion that a species alias may
 have a different biological meaning with respect to node duplication if either in- our
-% TODO biological good word to use here?
 out-degree is higher, both are balanced or the node is a source or a sink.
-% TODO this is repeating to what we write in the results, where to leave it?
-% generally think the distance may be bit large and this section has a too fuzzy
-% distinction between nielsen features and our thoughts
-% TODO this is repeating to what we write in the results, where to leave it?
-% generally think the distance may be bit large and this section has a too fuzzy
-% distinction between nielsen features and our thoughts
 
 
 
 
 \paragraph{Semantic Features}
 
-A simple semantic feature that \citeauthor{nielsen_MachineLearningSupport_2019}
-propose is the one-hot encoding the species type.
-The \ild{one-hot encoding} of a categorical variable with $d$ possible values is
-a $d$-dimensional binary vector in which $d_i = 1$ if the categorical variable has
-value $i$ and $0$ otherwise.
-Possible species types are
-\textit{protein}, \textit{RNA}, \textit{simple molecule}, \textit{ion},
-\textit{gene}, \textit{phenotype}, \textit{drug}, \textit{complex},
-\textit{degraded} and \textit{unknown}. 
+Previous work~\cite{nielsen_MachineLearningSupport_2019} primarily used node
+features based on graph structure. The only feature providing domain-specific
+information was the one-hot encoding of species type. The \ild{one-hot encoding}
+of a categorical variable with $d$ possible values is a $d$-dimensional binary
+vector in which $d_i = 1$ if the categorical variable has value $i$ and $0$
+otherwise. Possible species types are \textit{protein}, \textit{RNA},
+\textit{simple molecule}, \textit{ion}, \textit{gene}, \textit{phenotype},
+\textit{drug}, \textit{complex}, \textit{degraded} and \textit{unknown}.
 
+Relying solely on structural features may be insufficient. For example, consider
+a node $v$ of degree two whose neighbours $u$ and $w$ have similar structural
+characteristics. It may be the case that $u$ and $w$ appear in similar
+biological processes and thus $v$ should not be duplicated. On the other hand,
+$u$ and $w$ may appear in completely unrelated processes, in which case $v$
+likely establishes false connectivity. Thus, we need to consider the biological
+interpretation of $u$ and $w$. However, $v$ may well also be a key connector
+between two pathways through $u$ and $w$ and, as such, should not be duplicated.
+Determining whether $v$ is a key connector likely depends on the biological
+characteristics of the two pathways.
 
-In addition, we explore using Gene Ontology term annotations to infer meaningful
-features.
+In the disease maps considered here, each species is annotated with a set of
+Gene Ontology (GO) terms. We consider the subset of the Gene Ontology that describes
+biological processes. We aim to assess neighbourhood heterogeneity with respect
+to GO term annotations.
 % We extract GO annotations directly from the given \toolname{CellDesigner}-SBML
 % files (see \refsec{gene-ontology-annotations}).
 % Given a set of GO term annotations for a species alias, we have to derive a
@@ -2661,7 +2613,7 @@ the following advantages:
   edges after duplication.
 \end{itemize}
 
-% TODO describe node2vec in background?
+
 For computing an embedding vector for a given GO term, we closely follow the
 approach of \citeauthor{zhong_GO2VecTransformingGO_2020}
 \cite{zhong_GO2VecTransformingGO_2020} and encode a term's position in the GO
@@ -2697,10 +2649,7 @@ The above considerations lead to the following concrete feature definitions:
   Note that this approach encodes characteristics of the embeddings across a
   node's neighbourhood directly into a single feature vector and can thus be
   used with any classifier such as SVMs.
-  % TODO cite S/O discussion
 \end{itemize}
-
-
 There are two cases when we are required to
 aggregate a set of embeddings into a single value. On the one hand, a single
 protein can be annotated with several GO terms. On the other hand, a complex
@@ -2747,10 +2696,8 @@ training data based on their true and predicted class
   (sizes of) subsets of the predicted data, depending on its ground-truth and predicted class.}
   \label{tab:conf-names}
 \end{table}
-% TODO formatting (space after command)
 
 Based on the terms in \reftab{conf-names}, we define the following measures:
-% TODO reference for this
 \begin{itemize}
 \item \ild{Accuracy}, given by the ratio of
   correctly classified examples: $\nicefrac{\TP{} + \TN{}}{\P{}+\N{}}$. Note that for
@@ -2782,7 +2729,6 @@ depends on the use-case since different importance may be assigned
 to either Precision or Recall.
 %
 The original use-case of \nielsen{} was to use a classifier trained for predicting
-% TODO space after command
 node duplication to provide a low number of high-confidence examples as
 suggestions to the user. When considering only the few examples with the highest
 score, Precision is more important than Recall.
@@ -2843,7 +2789,7 @@ can be inferred heuristically (see~\refsec{reproducing}).
 
 
 
-\section{Attachment of edges}
+\section{Attachment of Edges}
 \label{sec:edge-attachment}
 
 
@@ -2858,13 +2804,13 @@ inter-cluster distances.
 
 The choice of distance metric is open. Of particular interest are metrics that
 reflect semantic similarity of attached GO terms
-(see \refsec{related-work}).
+(see \refsec{gene-ontology-related}).
 % \footnote{ Indeed,
 %   \citeauthor{ostaszewski_ClusteringApproachesVisual_2018} applied GO semantic
 %   similarity to cluster nodes in a disease map. }
 However, because in the given
 datasets, most aliases are annotated with a relatively large number of GO terms
-and exploiting these annotations for classification was problematic (see \refsec{experiments-results}),
+and exploiting these annotations for classification was problematic (see \refsec{gene-ontology-annotations}),
 % did not yield gains in
 % classification performance most likely due to high ambiguity,
 we opt for a
@@ -2901,9 +2847,9 @@ $C_2$. The most simple ones employed for agglomerative clustering are:
   \text{\ild{complete linkage:}} &~~ d(C_1, C_2) = \max_{p \in C_1, q \in C_2} d(p,q) \\
   \text{\ild{centroid linkage:}} &~~ d(C_1, C_2) = d(\text{mean}(C_1),\text{mean}(C_2))
 \end{align*}
-where $C_1$ and $C_2$ are considered to be sets of points. e
-Complete and centroid linkage are inadequate since they are strongly affected by
-large in-cluster variances and do not work well with non-convex clusters.
+where $C_1$ and $C_2$ are considered to be sets of points. We use single linkage
+since complete and centroid linkage are strongly affected by large in-cluster
+variances and do not work well with non-convex clusters.
 
 Setting a threshold value on the maximum dissimilarity inside a cluster, we
 obtain a concrete clustering. This can be thought of as ``cutting off'' the
@@ -2912,7 +2858,7 @@ number of clusters but instead a threshold dissimilarity. This threshold can be
 determined automatically via a heuristic:
 % \footnote{
 %   This is basically the \ild{elbow method} in which we plot clustering quality
-%   % TODO citation?
+%   % citation?
 %   against number of clusters and aim to find an elbow (i.e. bend) in the curve.
 %   Clustering quality here would be the minimum inter-cluster distance of two yet
 %   unmerged clusters.
@@ -2981,6 +2927,14 @@ exploring the design space of GNNs \cite{you_design_2020}. We extend
   experiment run.
 \end{itemize}
 
+In general, one of the main challenges in preprocessing was to handle tabular
+data (node features and labels) and graph-structured data at the same time.
+Moreover, there are several instances of tabular and graph-structured data for a
+single entitity. For example, for computing structural features based on both
+simple and bipartite graph, we have to construct and handle both graph
+representations. The result is several individual features for each node which
+finally have to be combined into one final feature vector.
+
 For the computation of graph-structural features, we used either
 \toolname{networkx} \cite{hagberg_ExploringNetworkStructure_2008} or the Python
 frontend of \toolname{igraph} \cite{csardi_IgraphSoftwarePackage_}.
@@ -3017,7 +2971,7 @@ rudimentary. For the computation of embedding vectors, we used the
 The given \toolname{CellDesigner}-SBML files are essentially large XML files.
 Some common text or XML editors may struggle with large file sizes. Tools that
 have proven particularly useful were
-\toolname{XMLExplorer}~\cite{_Xmlexplorer_2021} and \toolname{GNU
+\toolname{XMLExplorer}~\cite{_XmlExplorer_2021} and \toolname{GNU
   Emacs}~\cite{_GNUEmacsGNU_}.
 
 We deliberately refrained from using Jupyter Notebooks
@@ -3117,7 +3071,7 @@ this map as exported from \toolname{Minerva} at 2021-09-07.
 is a visual representation of the genome-scale metabolic model
 \ild{Recon 2} \cite{thiele_CommunitydrivenGlobalReconstruction_2013} that aims
 to comprehensively model the human metabolism. It can be viewed at \url{https://vmh.life/minerva}.
-We use version \cd{2.01} from 2015-11-20.
+We use version \cd{2.01} of 2015-11-20.
 
 \begin{figure}[h]
   \centering
@@ -3135,33 +3089,29 @@ We use version \cd{2.01} from 2015-11-20.
   \end{subfigure} 
   \caption[ An overview of characteristics of networks used for training. ]{ An
     overview of characteristics of the \textit{collapsed} networks used for
-    training: \ADLast{}, \PDMap{} and \ReconMap{}. The count of species aliases and reactions is effectively the
-    count of the bipartite node sets in the constructed graphs. Since we are
-    considering collapsed diagrams, the count of species aliases equals the
-    count of species. Networks and labels are determined as described in
-    \refsec{datasets}. }
+    training: \ADLast{}, \PDMap{} and \ReconMap{}. The count of species aliases
+    and reactions is effectively the count of the bipartite node sets in the
+    constructed graphs.
+    % Since we are considering collapsed diagrams, the count
+    % of species aliases equals the count of species.
+    Networks and labels are
+    determined as described in \refsec{datasets}. Note that the $y$-axis of the
+    node degree histogram is plotted in logarithmic scale. \textit{ReconMap}
+    additionally has two nodes of degree $859$ and $1077$ that were excluded
+    from the histogram. }
   \label{fig:maps-summary}
 \end{figure}
-% TODO consistent ordering of bars!
-% TODO assess&remove&mention-explicitly node degree outliers for ReconMapOlder
-% to make plot more informative
-
-% TODO mention discrepancy between sequence and collapsed
-% TODO using sequence of train and collapsed as validate may be problematic
-% because different characteristics?
-% particularly reconmap looks quite different?
-% cf train-on-many?
 
 % TODO adress concern 'but is it OK to use NN on small dataset'
 % by providing examples of comparable work
 % by saying that GNNs are potentially of much lower complexity than the computer
 % vision NNs you see.
 
-% TODO practical concerns on SVMs:
+% practical concerns on SVMs:
 % - few hyperparams
 % - formulation naturally seems suited for little training data
 % maybe notes from end of here: https://people.csail.mit.edu/dsontag/courses/ml13/slides/lecture6.pdf
-% TODO practical concerns on NNs:
+% practical concerns on NNs:
 % many hyperparameters that need to be picked/tuned
 % convergence not guaranteed
 % unique 'solution' not guaranteed
@@ -3239,7 +3189,7 @@ Equation~\ref{eq:rbf-kernel}) as a heuristic choice since
 best-performing kernel cannot easily be determined and that the RBF
 kernel generally achieves good performance.
 %
-Since the source code of previous work by \nielsen{} is not publicly available,
+Because the source code of previous work by \nielsen{} is not publicly available,
 we are likely using a different SVM implementation. Different implementations
 may interpret parameters slightly differently. Thus, we perform grid search over
 a similar range of values to determine a best-performing set of hyperparameters.
@@ -3289,8 +3239,8 @@ design space for Graph Neural Networks for node classification.
     Activation function $\sigma$ & \cd{[PReLU]} &   \\
     Use batch normalisation? & \cd{[yes]} & \\
     Learning rate $\eta$ & \cd{[0.01]} & \\
-    % TODO Learning rate decay & \cd{[0.0, *0.1*]} \\
-    % TODO weight decay, normalise adj, cf small-optimisations
+    % Learning rate decay & \cd{[0.0, *0.1*]} \\
+    % weight decay, normalise adj, cf small-optimisations
     Optimiser & \cd{[adam]} & 
   \end{tabular}
   \caption{Considered hyperparameters for the GNN models. In case there are
@@ -3312,8 +3262,6 @@ providing a large advantage has already been hinted at in previous work
 \cite{you_design_2020}.
 
 
-% TODO elaborate on hidden layer size
-% TODO explain/define dropout, skipsum
 
 
 \section{Reproducing previous work \& Comparison to GNN}
@@ -3346,7 +3294,7 @@ sections.
 %     \PDMap (\textit{testing set}, solid line).}
 %   \label{fig:svm-repro-comparison}
 % \end{figure}
-% TODO what do we need this for?
+% what do we need this for?
 
 
 %
@@ -3371,11 +3319,6 @@ sections.
   \label{fig:svm-repro-results}
 \end{figure}
 
-% TODO discussion on ROC curves and on cutoffs
-% - In general, models able to generalise
-% - SVMs and GNNs pretty much the same for high precision, GNNs slightly better
-% in the middle
-% on cutoffs: compare to what is given in nielsen
 
 \begin{figure}[h]
   \centering
@@ -3440,7 +3383,7 @@ sections.
 First, we check whether we can reproduce the results of \nielsen{}. Note that no
 source code of their work was available. This means there may still be
 unattributed differences in data processing. We compare to the results
-provided in their publication~\cite{nielsen_MachineLearningSupport_2019}. In the
+provided in their written publication~\cite{nielsen_MachineLearningSupport_2019}. In the
 use-case of providing few high-confidence examples as suggestions to a human
 curator, the high-confidence predictions of the classifier are particularly
 interesting. This can be assessed visually by focussing on the left lower part
@@ -3457,30 +3400,43 @@ the paper, we assume that these rates correspond to a decision threshold
  AUC score of $0.69$. Our SVM model reports an AUC of $0.77$. For comparison,
  our GNN model achieves an AUC score of $0.86$.
 
- For evaluation on \ReconMap{}, we compare the behaviour of the SVM classifier
- of \nielsen{} and ours by means of describing single points on the ROC curve.
- We are given only these and can thus not infer an optimal decision threshold
- and thus no AUC score. The results are given in
- \reftab{svm-repro-theirs-vs-ours}. The values suggest that our SVM model
- performs worse particularly for lower decision thresholds.
- %
-This may be due to different preprocessing of the data. Namely, we handled the
-cleaning of contradictory examples from reorganisation steps differently (see \refsec{datasets}).
+ For evaluation on \ReconMap{}, we directly compare to the results provided by
+ \nielsen{} in their publication. The data is illustrated in
+ \reffig{svm-repro-results} and \reffig{importance-reorganisation-steps},
+ denoted as ``theirs''.
+ % Note that the exact values had to be transcribed
+ % manually from a graphical plot and may thus deviate slightly.
+ The values suggest that our SVM model performs worse particularly for lower
+ decision thresholds. This may be due to different preprocessing of the data.
+ Namely, we handled the cleaning of contradictory examples from reorganisation
+ steps differently (see \refsec{datasets}). However, we show in later
+ experiments (see \refsec{importance-reorganisation-steps}) that we are able to
+ find a different, simpler approach that matches the evaluation performance of
+ \nielsen{}.
+ 
+%  For evaluation on \ReconMap{}, we compare the behaviour of the SVM classifier
+%  of \nielsen{} and ours by means of describing single points on the ROC curve.
+%  We are given only these and can thus not infer an optimal decision threshold
+%  and thus no AUC score. The results are given in
+%  \reftab{svm-repro-theirs-vs-ours}. The values suggest that our SVM model
+%  performs worse particularly for lower decision thresholds.
+%  %
+% This may be due to different preprocessing of the data. Namely, we handled the
+% cleaning of contradictory examples from reorganisation steps differently (see \refsec{datasets}).
 
-
-\begin{table}[h]
-  \begin{tabular}{c | c | c c}
-    \TPR{} & \multicolumn{3}{c}{\FPR{}} \\
-    ~ & theirs (SVM) & ours (SVM) & ours (GNN) \\
-    \hline
-    $0.25$ & $0.03$ & $0.02$ & $0.01$  \\
-    $0.50$ & $0.11$ & $0.16$ & $0.07$  \\
-    $0.75$ & $0.32$ & $0.46$ & $0.15$
-  \end{tabular}
-  \caption{ (\ADMap{} $\rightarrow$ \ReconMap) \FPR{} values at \TPR{} cutoffs
-    (lower is better). We report values for the RBF kernel only. }
-  \label{tab:svm-repro-theirs-vs-ours}
-\end{table}
+% \begin{table}[h]
+%   \begin{tabular}{c | c | c c}
+%     \TPR{} & \multicolumn{3}{c}{\FPR{}} \\
+%     ~ & theirs (SVM) & ours (SVM) & ours (GNN) \\
+%     \hline
+%     $0.25$ & $0.03$ & $0.02$ & $0.01$  \\
+%     $0.50$ & $0.11$ & $0.16$ & $0.07$  \\
+%     $0.75$ & $0.32$ & $0.46$ & $0.15$
+%   \end{tabular}
+%   \caption{ (\ADMap{} $\rightarrow$ \ReconMap) \FPR{} values at \TPR{} cutoffs
+%     (lower is better). We report values for the RBF kernel only. }
+%   \label{tab:svm-repro-theirs-vs-ours}
+% \end{table}
 
 
 As a first sanity check for the GNN approach, we verify whether the optimisation
@@ -3492,32 +3448,31 @@ training set.
 % Note that in \reffig{svm-repro-comparison}, we instead report
 % the performance on the training set of the model state that performed best on
 % the validation set.
-% TODO do we need to show that? where do we ref to that?
 
 
 Since training a neural network ultimately means optimising the overall loss
 value, it is important to inspect the development of the optimisation. Ideally,
 the overall loss value should decrease smoothly with each training epoch and
 converge to a minimum. If the loss development is overly erratic, the
-optimisation procedure may fail to reach a local minumum.
-Note how, for both \PDMap{} and \ReconMap{} as evaluation datasets, the
-validation loss reaches its minimum after just a handful of training epochs. We
-additionally ran the same experiment with a decreased learning rate (from $0.01$
-to $0.001$). There, we can see a smoother decrease of the loss value, but also note
-that the overall achieved minimum is worse than in case of a greater learning
-rate (see \reffig{svm-repro-lowlr-reconmapolder-loss}).
-This means that the model training makes huge progress on optimising the loss
-(as evaluated on the training data) in the first few epochs. This progress is then also
-useful to some extent for generalisation to the validation data. Further
-training only improves training loss by small amounts and the validation loss
-increases, the model optimisation is overfitting.
+optimisation procedure may fail to reach a local minumum. Note how, for both
+\PDMap{} and \ReconMap{} as evaluation datasets, the validation loss reaches its
+minimum after just a handful of training epochs. We additionally ran the same
+experiment with a decreased learning rate (from $0.01$ to $0.001$). There, we
+can see a smoother decrease of the loss value, but also note that the overall
+achieved minimum is slightly worse than in case of a greater learning rate (see
+\reffig{svm-repro-lowlr-reconmapolder-loss}). This means that the model training
+makes huge progress on optimising the loss (as evaluated on the training data)
+in the first few epochs. This progress is then also useful to some extent for
+generalisation to the validation data. Further, training only improves training
+loss by small amounts and the validation loss increases, the model optimisation
+is overfitting.
 
 The initialisation of neural network weights before the first training epoch
 depends on random values. To check whether our training procedure is robust with
 respect to random initialisation, we repeat each run several times with
 different seed values for the random number generators. The separate runs are
 illustrated as multiple lines in \reffig{svm-repro-results}. There is noticeable
-variability in classifier behaviour, particularly when evaluated on \ReconMap{}.
+variability in classification behaviour, particularly when evaluated on \ReconMap{}.
 We note that for a real-world application of this model, this should be
 adressed. However, due to the different behaviour depending on the choice of
 evaluation dataset, we hypothesize that this effect may primarily be due to the
@@ -3536,7 +3491,7 @@ GNN model is better particularly when we aim to identify more than just the
 high-confidence examples. The difference between ROC curves is only slight on
 evaluation on \PDMap{} but strong on evaluation on \ReconMap{}. This is probably
 due to the quality of training data since this difference disappears when
-considering a slightly different setup (see \refsec{importance-reorganisation-steps}).
+considering a slightly different set of training data (see \refsec{importance-reorganisation-steps}).
 
 \begin{figure}[h]
   \centering
@@ -3587,15 +3542,18 @@ resemble a collapsed map in the sense we construct it here.
 % examples: An alias that is duplicated only in a later step will appear as
 % negative example in all previous steps. Further, the concatenation of all
 % reorganisation steps into one big, disconnected graph for training
-% % TODO verify that we are indeed doing this and describe it earlier
 % will further amplify the inherent class imbalance.
 %
-Thus, we deem it interesting to explore how a model will perform if trained not
-on the reorganisation steps but simply the collapsed version of the final map.
+Further, this approach circumvents the problem of contradictory examples introduced
+through reorganisation steps as described in \refsec{datasets}.
 %
 This approach has an additional practical advantage, since, in practise,
 reorganisation steps may rarely be available. A collapsed version, on the
 other hand, can be constructed from any published disease map.
+%
+Thus, we deem it interesting to explore how a model will perform if trained not
+on the reorganisation steps but simply the collapsed version of the final map.
+%
 
 \begin{figure}[h]
   \centering
@@ -3613,61 +3571,47 @@ other hand, can be constructed from any published disease map.
     \textit{AlzPathway} map (not the reorganisation steps).}
   \label{fig:importance-reorganisation-steps}
 \end{figure}
-% TODO missing GNN results
 
 \paragraph{Results \& Discussion} The results are illustrated in
 \reffig{importance-reorganisation-steps}. Note how both SVM and GNN models do
 not degrade noticeably in performance (compare to \reffig{svm-repro-results}).
 In fact, the SVM model performs \textit{better} when trained only on the
-collapsed map.
-%
-This may be due to that node characteristics in later reorganisation steps become
-different from node characteristics in the collapsed map. For evaluation, we are
-only considering node features from a collapsed map. As such, additionally
-including reorganisation steps may not provide any training data that is
-actually useful for the evaluation task. Indeed, providing training data from
-reorganisation steps is detrimental to model performance, likely because this
-data is not well related to evaluation task. 
+collapsed map. The SVM model now slightly exceeds the performance of the
+approach identified by \nielsen{}. This means we effectively have at hand a
+simpler preprocessing approach, requiring only the final curation result instead
+of individual reorganisation steps that yields the same performance. Again, we
+need to carefully consider the use-case and what we actually train the
+classifier for. Collapsed disease maps are potentially different from partially
+curated disease maps. Herein, we select a model based on performance on
+collapsed disease maps. This is different from the intuitive use-case of
+\nielsen{} in which the classifier will be applied to partially curated disease
+maps during manual reorganisation.
 
-% TODO mention that here then SVM achieves eval performance of nielsen
-% TODO elaborate on why that is the case
-% ,
-% potentially due to fewer contradictory examples. The GNN models show similar
-% performance.
+The results may be due to two reasons: First, not
+explicitly considering reorganisation steps circumvents the problem of
+contradictory examples described in \refsec{datasets}. Although we do adress
+this issue with a simple approach, it is unlikely that this problem is solved
+completely. Second, this may be due to that node characteristics in later
+reorganisation steps become different from typical node characteristics in a
+collapsed map. For evaluation, we are only considering node features from a
+collapsed map. As such, additionally including reorganisation steps may not
+provide any training data that is actually useful for the evaluation task.
+Indeed, providing training data from reorganisation steps is detrimental to
+model performance, likely because this data is not well related to evaluation
+task.
 
-% TODO also look at loss here?
 
-Another factor to consider here is that collapsed maps are constructed
-programmatically. When dealing with human-created reorganisation steps, it may
-be the case that there will be events that may intuitively be interpreted as
-duplication events but are not picked correctly up by our inferral of
-ground-truth labels. This is another advantage of the approach of considering
-only the collapsed version.
+% Another factor to consider here is that collapsed maps are constructed
+% programmatically. When dealing with human-created reorganisation steps, it may
+% be the case that there will be events that may intuitively be interpreted as
+% duplication events but are not picked correctly up by our inferral of
+% ground-truth labels. This is another advantage of the approach of considering
+% only the collapsed version.
 % make it sound nicer -- why should our alg not pick it up? due to renaming,
 % different ids, ...?
-% TODO paragraph needs rewriting and should go somewhere else
 
-% TODO
-% Another factor may be that reorganisation steps really are completely
-% independent, as such considering the steps vs the collapsed map would not
-% provide any advantages.
 
-% TODO-maybe make it even more clearer that this is a different use-case
-
-% TODO verify this insight (it's been late in the evening)
-% TODO if verified, mention this in introduction and discussion in end
-
-% TODO also shows that model is able to learn from 'little' data (719 for prediction).
-
-% TODO somewhere make clear that in this kind of node classification shit like
-% undersampling is more complicated to implement since we need to keep the
-% entire graph but cut&slice label and label index tensors
-
-% dont *need* reorganisation steps?
-% can train on more than one disease map?
-% train-on-many
-
-% [[importance of duplication steps vs ...]]
+% TODO see if theres anything in [[importance of duplication steps vs ...]]
 
 
 \section{Handling unbalanced classes in GNNs}
@@ -3698,11 +3642,8 @@ only the collapsed version.
 
 As can be seen from \reffig{maps-summary}, we can expect to deal with unbalanced
 data. Class imbalance is already adressed in the SVM model of previous
-experiments (see \refsec{hyperparameter-search}). We aim to assess the effect of
-class imbalance on the GNN model.
-
-% TODO name the numbers from the figure
-% TODO mention that this is particularly relevant for AD reorg *steps*
+experiments (see \refsec{hyperparameter-search}) by means of providing class
+weights. We aim to assess the effect of class imbalance on the GNN model.
 A possible concern is that the GNN model may become biased towards predicting
 the majority class during training since it is simply more likely to occur when
 evaluating the empirical risk.
@@ -3720,25 +3661,21 @@ give more importance to examples from the minority class.
 \paragraph{Undersampling}
 The dataset can be made balanced 
 % cf undersampling-lossweight
-% TODO need to rerun experiment for plots
 either by \ild{oversampling} the minory class (coming up with new examples for
 the minority class) or by \ild{undersampling} the majority class (dropping
 examples from the majority class) of the majority class from the training data.
 For oversampling, one may simply duplicate existing examples, or generate
-synthetic new examples in a more advanced manner. Although undersampling will
-decrease the size of the dataset even further, we stick to this approach for
-sake of simplicity.
+synthetic new examples in a more advanced manner. Creating synthetic examples
+for graph-structured data comes with additional requirements since, contrary to
+conventional methods, not only a feature vector but also graph adjacency has to
+be inferred~\cite{zhao_GraphSMOTEImbalancedNode_2021}. Although undersampling
+will decrease the size of the dataset even further, we stick to this approach
+for sake of simplicity.
 %
 We undersample the majority class by considering only a random subset for
 prediction. Note that excluded nodes are not removed from the graph structure (see
 \refsec{graph-interpretation}). We undersample the majority class to contain
 the same number of examples as the minority class.
-% TODO maybe elaborate how exclusion works in a central place, have that in
-% preprocessing too.
-
-
-% TODO svm-repro-adlast-undersampling-sanity absurdly large value makes no difference...?
-% but e.g. removing features does impact AUC score (0.4 on only node class)
 
 
 \paragraph{Weights} In case of neural networks, we can introduce an additional
@@ -3751,25 +3688,18 @@ an extension of Equation~\ref{eq:bce-loss-basic}, given by
   \label{eq:bce-loss-weighted}
   \mathcal{L}_{\text{BCE weighted}} = \nicefrac{1}{n} \sum_{i=1}^n w_i y_i \log(\pi_i) + (1-y_i) \log (1-\pi_i)
 \end{align}
-% TODO express with \vec x_i and y_i and parameters to L_BCE
-% TODO give proper comparison of BCE *loss* in Background, including
-% - mean reduction
-% - minimisation instead of maximisation (omitting sign)
 We set the weight of the minority class to
 $\nicefrac{n_{\text{maj}}}{n_{\text{min}}}$ where $n_{\text{maj}}$ is the number
 of examples in the majority
-% TODO somewhere define 'examples', majority and minority class
 class and $n_{\text{min}}$ the number of examples in the minority class. In
 other words, if every example is counted according to its weight, the class
 counts are balanced.
-% TODO this sounds confusing, maybe put it in formula
 
 \paragraph{Results \& Discussion} Experimental results show that neither
 undersampling nor custom class weights have substantial effect on performance of
 the GNN model (\ADLast $\rightarrow$ \PDMap: AUC$=0.83$).
 % ; SVM-AUC$=0.83$
 We omit visualisations here due to space constraints.
-% TODO maybe upload them to repo and link?
 For sake of simplicity, we omit undersampling or weights for the GNN model in future experiments.
 
 
@@ -3779,20 +3709,18 @@ For sake of simplicity, we omit undersampling or weights for the GNN model in fu
 
 We explore whether the message-passing layers of the GNN model actually provide
 an advantage over a neural network
-% TODO consistent capitalisation of 'neural network'
 consisting simply of fully-connected layers. Further, we aim to compare which
 graph structure serves better for message-passing: We can interpret the given
 bipartite graph of species aliases and reactions as a simple graph, or we can
-consider its bipartite projection (as in previous experiments).
+consider its bipartite projection as in previous experiments.
 
 To assess the importance of using message-passing layers at all, we compare to a
-model that has the message-passing layers replaced with fully-connected layers.
+model that has any message-passing layers replaced with fully-connected layers.
 %%
 Note that for message-passing on the simple graph interpretation, of the
 structural features described in \refsec{datasets}, we can only
 consider those computed on the simple graph.
 
-% TODO vertical alignment
 \begin{figure}[h]
   \centering
   \begin{subfigure}[h]{0.48\linewidth}
@@ -3820,12 +3748,12 @@ advantage in overall performance.
 %   \refsec{feature-selection}. }
 However, note that the development of the overall validation loss reaches a
 lower value sooner than in the fully-connected variant. With more training
-epochs, all models the loss value eventually begins to fluctuate. This
+epochs, for all models the loss value eventually begins to fluctuate. This
 development is much smoother if message-passing on the bipartite graph is used.
 % TODO connection to smoothing property of GCNs?
 % results on MP on simple vs bipartite are not very meaningful since MP itself
 % does not make a real difference.
-Further, the results on the graph interpretation are probably not meaningful
+Further, the results on the choice of graph interpretation are probably not meaningful
 since the message-passing itself does not make a real difference.
 
 % TODO evaluation on ReconMap?
@@ -3835,8 +3763,6 @@ since the message-passing itself does not make a real difference.
 % svm-repro-adlast-messagepassing / config-gnn-none
 
 
-% TODO somewhere, at least in talk, give something clearer than an ROC curve
-% that shows 'so how good are we doing now *really*, practically?'
 
 
 \section{Attention Mechanism}
@@ -3845,14 +3771,13 @@ In previous experiments, we used a rather simple message-passing scheme. More
 sophisticated approaches are potentially able to capture more complex patterns,
 or better discern relevant from irrelevant characteristics. To this end, we
 explore the usefulness of another flavour of message passing, namely \ild{Graph
-  Attention} as defined in Equation~\ref{eq:graph-attention}.
+  Attention} as defined in Equation~\ref{eq:graph-attention}. Moreover, the
+score associated with each edge may allow further interpretation.
 
 % just run and report so we can write it down...
 % previously did that on train-on-many so idk
 
 % NOTE no gains on ADLast, similar but slightly worse behaviour altogether...
-% TODO maybe see if that helps something when supplying w/ tons of training data (but
-% probably not)
 
 
 \begin{figure}[h]
@@ -3865,7 +3790,9 @@ explore the usefulness of another flavour of message passing, namely \ild{Graph
   \pic{svm-repro-adlast-attention-reconmapolder/results/config-gnn/roc.png}
   \caption{(\ADLast $\rightarrow$ \ReconMap{})}
 \end{subfigure}
-\caption{Attention TODO more text}
+\caption{Comparison of classification performance for GNN models using
+  attention. Dashed lines describe performance as evaluated on the training
+  dataset according to the model state that performs best on the evaluation dataset.}
 \label{fig:results-attention}
 \end{figure}
 % TODO dont really need these figures, do we?
@@ -3891,26 +3818,23 @@ well as the quality of the ground-truth labels.
 % experiment feature-importance (and others?)
 % cf [[feature-importance]]
 
-% TODO Degrees combined species type?
-
 In their initial publication \cite{nielsen_MachineLearningSupport_2019},
 \nielsen{} used a set of features mainly based on different node centrality
 measures, as well as statistics on the centralities of a node's neighbours. They
 remark that elaborating the usefulness of different features is left open to
 future work. In this section, we aim to explore this direction.
-
+%
 While there are sophisticated approaches to automatic feature selection  
 \cite{saeys_ReviewFeatureSelection_2007},
 for sake of simplicity we simply train and compare models on different subsets
 of the available features.
 
-For each of the structural features defined in \refsec{datasets},
-\nielsen{} provide the same characteristic computed both on the simple graph
-interpretation and on the graph's bipartite projection. We aim to assess if
-indeed both variants are needed or if one alone works better.
-% TODO define term 'predictors' somewhere
-
-Further, we check the predictive value of information on node degrees.
+For each of the structural features defined in \refsec{datasets}, \nielsen{}
+provide two variants: one computed on the simple graph interpretation and one on
+the graph's bipartite projection. We aim to assess if indeed both variants are
+needed or if one alone works better.
+%
+Further, we explore the predictive value of information on node degrees.
 This is interesting because node degree has been used as a heuristic for
 classifying currency metabolites in the context of the analysis of metabolic
 models (see \refsec{related-work}). The basic idea is that if a node's
@@ -3923,8 +3847,6 @@ species that occurs with high out-degree (resp. in-degree) may mainly appear as
 substrate or enabling factor (resp. product or result). A node with balanced in-
 and out-degree on the other hand may rather represent a central step or even a
 key connector.
-% TODO related to betweenness
-% TODO this is weakened by that we put edges in both directions for side products...
 
 
 \begin{figure}[h]
@@ -3964,32 +3886,22 @@ predictions.
 Most interestingly, we can see that the node degree alone is already a strong
 indicator for node duplication. Further, the different behaviour between
 evaluation on \PDMap{} and on \ReconMap{} is striking. 
-For evaluation on \PDMap{}, using only degrees as
+For evaluation on \PDMap{}, using only undirected degree as
 features provides only a relatively small disadvantage. On \ReconMap{}, however,
-using undirected degrees yields a significantly worse performance, while
+using undirected degree yields a significantly worse performance, while
 considering the directed degree actually matches the AUC score of the models
 using the full feature sets. This hints at that \PDMap{} and \ReconMap{} show
-different characteristics in network structure. We discuss this further in (TODO
-ref either Discussion or Future Work).
-% TODO future work: looking at examples would be interesting here
-% TODO future work: much more simple classifier on node degree, or see if not
-% simply threshold would do.
-
+different characteristics in network structure. We discuss this further in
+\refsec{discussion}.
 
 \section{Gene Ontology Annotations}
 \label{sec:gene-ontology-annotations}
 
 % TODO chapter intro
-% TODO split this from results and move it to methods
-
-% TODO for sake correctness, mention that this is a newer versin of PDMap than
-% in previous experiments, however seems unlikely that this really makes a
-% difference to the conclusions.
 
 % want to see whether these features 'help'
 % i.e. if performance improves if we add them on top of all other features?
 
-% TODO mention how large the dataset of the subgraph is.
 
 % what to report? simply the feature on top of other features? or on top of
 % degrees, or constant?
@@ -3997,24 +3909,36 @@ ref either Discussion or Future Work).
 % then report results for embed+degrees, stddev+degrees
 % say we picked this way to avoid super high number of input features
 
+Our general intuition is to design feature representations that describe the
+heterogeneity of a node's neighbourhood. If a node's neighbourhood is highly
+hetereogeneous, that is, subsets of the neighbourhood are vastly different, we
+conclude that the node establishes false connectivity and should thus be
+duplicated. We hypothesize that a curator's decision on duplication is not based
+merely on structural features but also on the biological meaning of the affected
+processes. We seek to encode the biological processes a species is involved in.
+To this end, we use the Gene Ontology (GO) annotations that are provided with
+the disease maps considered in this work. This approach is motivated in detail
+in \refsec{datasets}. For this experiment only, we use a newer version of
+\PDMap{} from autumn 2019 because it was easier to extract annotations from it.
+
+
+% As described in \refsec{feature-engineering}, we consider two approaches 
+
 
 To obtain representative embeddings based on GO terms, we perform the following
 steps:
 \begin{enumerate}
-\item \textbf{Extract Annotations}.~~ For each species, we extracted identifiers
+\item \textbf{Extract Annotations}.~~For each species, we extracted identifiers
   from the \toolname{CellDesigner}-SBML files. For \textit{AlzPathway}, these
   were UniProt identifiers (as done in \cite{ostaszewski_ClusteringApproachesVisual_2018})
   , for \textit{PDMap}, we used Entrez Gene IDs.
-  % TODO why?
-  % TODO mention that for PDMap we use identifiers as exported from minerva?
 %
   For each identifier, we obtain the associated GO terms by querying the
-  \href{https://mygene.info/}{mygene.info} web service
-  \cite{xin_HighperformanceWebServices_2016}. Each GO term annotation
+  \href{https://mygene.info/}{mygene.info} web
+  service~\cite{xin_HighperformanceWebServices_2016}. Each GO term annotation
   additionally comes with an \ild{evidence code} that describes how well the
   annotation is supported. We allowed only some evidence codes, based on the
-  work of \citeauthor{ruiz_identification_2021} \cite{ruiz_identification_2021}.
-  % TODO is that really what they use? check
+  work of \citeauthor{ruiz_identification_2021}~\cite{ruiz_identification_2021}.
   The list of allowed evidence codes can be found in \reftab{go-evidence-codes}.
   The vast majority of evidence codes in both cases was either \cd{IDA} or
   \cd{IMP}.
@@ -4038,7 +3962,6 @@ steps:
   $10$ walks per node. We picked $p=1$ and $q=0.5$ s.t. embeddings will reflect
   the local positions in the graph. The optimisation was done with a learning
   rate of $0.01$.
-  % TODO introduce node2vec in background
 \item \textbf{Attach Embeddings to Graph}.~~ For each species alias in the
   graph, we obtain corresponding embeddings via its species ID. In case a
   species is annotated with multiple GO terms, or in case of complex species
@@ -4103,13 +4026,13 @@ full set of all other available features.
   \centering
   \begin{subfigure}{0.48\linewidth}
     \pic{annotations/results/comparison/roc-gnn-bak.png}
-    \caption{TODO}
+    \caption{Performance comparison of GNN classifier on different feature sets.}
   \end{subfigure}
   \begin{subfigure}{0.48\linewidth}
     \pic{annotations/results/comparison/roc-svm-bak.png}
-    \caption{TODO}
+    \caption{Performance comparison of SVM classifier on different feature sets.}
   \end{subfigure}
-  \caption{(\ADLast $\rightarrow$ \PDMap{}; subsets) TODO}
+  \caption{(\ADLast $\rightarrow$ \PDMap{}; subsets)}
   \label{fig:annotations-results}
 \end{figure}
 
@@ -4117,9 +4040,6 @@ full set of all other available features.
 \reffig{annotations-results}. Note that since we only consider the induced
 subgraph or nodes for wich annotations are available, the training and
 validation datasets are different from previous experiments.
-% TODO mention that we use newer version PDMap but that this probably does not
-% make a big difference
-% TODO motivate why we only evaluate for PDMap19, why we have no annots for ReconMap
 
 Neither approach seems to yield gains in classification performance. Indeed,
 using GO-based features only yields performance not much better than that of a
@@ -4128,10 +4048,15 @@ performance stays the same in the best case and drops in other cases.
 
 The implementation of this approach given here has several shortcomings:
 \begin{itemize}
-  \item It is species that are annotated with GO terms, but we map this
-    information to species aliases. Thus, a species alias may be associated with
-    GO terms that do not correspond to its graph neighbours in the diagram. This
-    potentially leads to ambiguity. 
+\item It is questionable how expressive the term embeddings are. Due to time
+  constraints, parameters for
+  determining the embeddings have been chosen naively and there has been little
+  evaluation of their quality.
+\item It is species that are annotated with GO terms, but we map this
+  information onto species aliases. If a species has more than one alias that
+  appears in different biological processes, both aliases can be expected to
+  carry annotations for all biological processes the species is involved in.
+  This potentially leads to ambiguity.
 \item Many species are in fact annotated with more than just a few GO terms (see
   \reffig{go-term-counts}). It is unclear how specific or expressive many of
   these annotations are.
@@ -4153,35 +4078,38 @@ does not.
 
 
 % \section{Additional Training Data}
-
-...
 % seems hard to find other maps that are somewhat comparable...
-% TODO mention this in outlook?
 
 
 \section{Attachment of Edges}
+
+Once the decision whether a given node should be duplicated has been made, the
+next step is to determine the number of duplicates to be introduced and how to
+distribute the edges of the duplicated node among its duplicates. 
+
 % TODO more blah
 
 % TODO can we compare with the actual reattachment as done in the reorganisation
 % steps? is this sth like 'enrichment analysis'? or could use comparison scores
 % for clusterings like mutual information?
 
-% TODO maybe plot number of duplicates for given disease maps
-
 % TODO make clear that this could be used with other distances measures like on ostaszwewski_clustering
 
 We apply the method to determine the number of duplicates and re-distribute
-edges described in \refsec{edge-attachment} to the \textit{AlzPathway} map.
-
-We provide some examples for successful and problematic cases in
-\reffig{neighb-clust-examples}. All nodes considered have positive
-ground-truth class (i.e. are real duplication parents). From manual inspection,
-the vast majority of results seemed to be reasonable clusterings, and in rare
-cases, ambiguous situations like illustrated here occured.
+edges described in \refsec{edge-attachment} to the \textit{AlzPathway} map. From
+manual inspection, the vast majority of results seemed to be reasonable
+clusterings, and in rare cases, ambiguous situations like illustrated here
+occured. We provide some examples for successful and problematic cases in
+\reffig{neighb-clust-examples}. All nodes considered have positive ground-truth
+class (i.e. are real duplication parents).
 
 % TODO maybe do comparison to *real* split? (or future work)
 
-% TODO vertical alignment
+% sa40 is representative species alias in collapsed version of ADLast
+% want to figure out how it was duplicated
+
+
+
 \begin{figure}[h]
   \centering
   \begin{subfigure}{0.48\linewidth}
@@ -4201,7 +4129,6 @@ cases, ambiguous situations like illustrated here occured.
     \caption{Example in which using the second derivative yields a clustering
       that intuitively seems more reasonable. The first derivative has its
       minimum
-      % TODO should be maximum?
       at 2 clusters. 
     }
     % or 856
@@ -4249,13 +4176,18 @@ cases, ambiguous situations like illustrated here occured.
 \chapter{Discussion}
 \label{sec:discussion}
 
-% TODO musings on definition of train/test tasks, internal split, more data
+
+% in Dicussion, mention that 'degree works well as predictor' sort of
+% supports previous work that would decide based on node degree; now supporting
+% this from a different angle (inferred from training data)
+
+% musings on definition of train/test tasks, internal split, more data
 
 % ambuigity, difficulty
 % (make sure we dont mention that too often...)
 % - user study in nielsen et all even shows disagreement between experts
 
-% TODO examine (mis)classifications
+% examine (mis)classifications
 
 % GNNs able to handle nasty case (with reorg seq) better, but svm catches up
 % without reorg steps? (without contradictory examples)
@@ -4276,6 +4208,10 @@ cases, ambiguous situations like illustrated here occured.
 % need to take care that computed values are transferrable across maps
 
 
+% future work: looking at examples would be interesting here
+% future work: much more simple classifier on node degree, or see if not
+% simply threshold would do.
+
 %  model learns while user is duplicating?
 
 %  more data
@@ -4291,6 +4227,9 @@ cases, ambiguous situations like illustrated here occured.
 % GO annotations
 % - semantic similarity
 % - further ideas from mail from marek
+
+% ambuigity due to GO annots on species instead of species aliases: simply
+% consider stddev of annots on single node?
 
 
 % attachment of edges:
@@ -4312,20 +4251,6 @@ cases, ambiguous situations like illustrated here occured.
 
 \section{Notation \& Abbreviations}
 \begin{itemize}
-\item Vectors and matrices are usually set in bold letters, e.g. $\vec x$ or
-  $\mat A$. Vectors are assumed to column vectors unless otherwise specified.
-  $\cdot^T$ denotes the transpose.
-\item $\norm{\cdot}$ denotes the $l_2$-norm, or set cardinality.
-\item $G$ commonly denotes a graph, $V(G)$ is its vertex set and $E(G)$ its edge
-  set. Whether we consider a directed, undirected, bipartite or simple graph
-  will be made clear from context.
-\item $\neighb(v)$ denotes the graph neighbourhood of node $v$. Unless otherwise
-  specified, this is the direct 1-hop neighbourhood.
-\item For a bipartite graph with node set $V = A
-  \cupdot B$, that is, the disjoint union of species aliases $A$ and reactions
-  $B$, the \ild{bipartite projection onto $A$} is the simple graph with node set
-  $A$ in which $v_i, v_j \in A$ are connected if and only if in the bipartite
-  they have a common neighbour in $B$.
 \item A \ild{species} is an actor in a biological system. Examples for species
   are proteins, smaller molecules, but also drugs or phenotypes. A \ild{species
     alias} is a visual representation of a species in a drawing. If a disease map
@@ -4334,6 +4259,21 @@ cases, ambiguous situations like illustrated here occured.
   aliases corresponding to the same species. A \ild{complex species alias}
   represents a collection of species aliases, commonly representing protein
   complexes.
+\item Vectors and matrices are usually set in bold letters, e.g. $\vec x$ or
+  $\mat A$. Vectors are assumed to column vectors unless otherwise specified.
+  $\cdot^T$ denotes the transpose.
+\item $\norm{\cdot}$ denotes the $l_2$-norm or set cardinality, depending on context.
+\item $G$ commonly denotes a graph, $V(G)$ is its vertex set and $E(G)$ its edge
+  set. Whether we consider a directed, undirected, bipartite or simple graph
+  will be made clear from context.
+\item $\neighb(v)$ denotes the graph neighbourhood of node $v$. Unless otherwise
+  specified, this is the direct 1-hop neighbourhood, that is, the nodes adjacent
+  to $v$.
+\item For a bipartite graph with node set $V = A
+  \cupdot B$, that is, the disjoint union of species aliases $A$ and reactions
+  $B$, the \ild{bipartite projection onto $A$} is the simple graph with node set
+  $A$ in which $v_i, v_j \in A$ are connected if and only if in the bipartite
+  they have a common neighbour in $B$.
 \end{itemize}
 
 
