@@ -55,7 +55,7 @@
 % Load the package for hyperreferences
 \usepackage{kaorefs}
 
-\graphicspath{{images/}{./}{../GraphGym/run/}{../computed/dendrograms/}} % Paths where images are looked for
+\graphicspath{{images/}{./}{../GraphGym/run/}} % Paths where images are looked for
 
 \makeindex[columns=3, title=Alphabetical Index, intoc] % Make LaTeX produce the files required to compile the index
 
@@ -1552,21 +1552,21 @@ focus on features based on the graph structure. For the classification model,
 Support Vector Machines are chosen and the authors tune the model to find
 optimal choices of kernel and hyperparameters. The primary use-case considered
 in their work is to provide a small, human-digestible number of predictions as
-suggestions to the curator. An analogous approach is used to suggest
-de-duplication operations, however, in this work we focus exclusively on node
-duplication. The SVM model is trained on a sequence of curation snapshots
-provided by an expert working on \textit{AlzPathway}, a disease map describing
-processes related to Alzheimer's Disease (see \refsec{datasets}). Model
-hyperparameters were tuned and selected based on evaluation on \textit{PDMap}, a
-diagram on Parkinson's Disease. The final identified model was further validated
-on \textit{ReconMap}, a large diagram describing the human metabolism (see
-\reffig{disease-map-example}) and a number of smaller pathway graphs obtained
-from Reactome \cite{joshi-tope_ReactomeKnowledgebaseBiological_2005}. Finally, a
-user study among domain experts was conducted on smaller networks, comparing the
-performance of the machine learning model with the decisions of experts. We
-reproduce some of their main results in \refsec{experiments-results}. In
-general, the identified model was able to make predictions well above random.
-However, the user study showed considerable variations even in expert decisions.
+suggestions to the curator. Likewise, a similar approach is used to suggest
+de-duplication operations. The SVM model is trained on a sequence of curation
+snapshots provided by an expert working on \textit{AlzPathway}, a disease map
+describing processes related to Alzheimer's Disease (see \refsec{datasets}).
+Model hyperparameters were tuned and selected based on evaluation on
+\textit{PDMap}, a diagram on Parkinson's Disease. The final identified model was
+further validated on \textit{ReconMap}, a large diagram describing the human
+metabolism (see \reffig{disease-map-example}) and a number of smaller pathway graphs obtained from Reactome
+\cite{joshi-tope_ReactomeKnowledgebaseBiological_2005}. Finally, a user study
+among domain experts was conducted on smaller networks, comparing the
+performance of the machine learning model
+with the decisions of experts. We reproduce some of their main results in
+\refsec{experiments-results}. In general, the
+identified model was able to make predictions well above random. However, the
+user study showed considerable variations even in expert decisions.
 
 
 
@@ -1681,7 +1681,7 @@ user-defined threshold.
 Node Duplication has also been applied in the area of Electronic Circuit Design,
 for example to avoid edge crossings \cite{li_EliminateWireCrossings_2008} or
 paths exceeding a maximum length
-\cite{paik_VertexSplittingDags_1998}.
+\cite{paik_VertexSplittingDags_1998, mayer_GeneticAlgorithmsVertex_1993}.
 
 \citeauthor{henr_ImprovingReadabilityClustered_2008}
  consider how to represent
@@ -4084,7 +4084,6 @@ does not.
 
 
 \section{Attachment of Edges}
-\label{sec:attachment-of-edges}
 
 Once the decision whether a given node should be duplicated has been made, the
 next step is to determine the number of duplicates to be introduced and how to
@@ -4107,62 +4106,9 @@ occured. We provide some examples for successful and problematic cases in
 class (i.e. are real duplication parents).
 
 % TODO maybe do comparison to *real* split? (or future work)
-% -- comparison a bit hard because in practise often edges removed, other
-% subgraphs reorganised at the same time
 
-% systematic evaluation is tricky because
-% - often also edges added / removed
-% - often aliases deleted completely, even after duplication
-% - only partially duplicated, not yet perfect w.r.t. this alias
-% but considering across all steps is tricky 
-
-
-A systematic evaluation is not trivial because a reorganisation step in
-\textit{AlzPathway} often involves more than a few editing operations. A
-duplication may be involved in a larger-scale reorganisation that also modifies
-other nodes and edges. Often, aliases and edges are added or removed, even those
-incident to the duplicated alias. Further, new aliases corresponding to the same
-species that do not quality as duplicates may be introduced. Instead, we
-describe the strengths and weaknesses of our approach by a concrete example.
-\reffig{reorg-duplication-example} shows the diagram before and after a real
-reorganisation step in the \textit{AlzPathway} map. In this step, a species
-alias is duplicated. The duplicated species and its duplicates, as well as
-incident edges are highlighted in red.
-% 
-The coloured boxes in the top image describe clusters of the node neighbourhood
-as identified by our method. The colours correspond to those in the scatterplot in
-\reffig{s597:dendrogram}.
-% 
-Our method would suggest to introduce two new duplicates, one for yellow and one
-for the green cluster.
-% 
-
-For the yellow cluster, the real reorganisation step introduces two duplicates.
-However, here, also the neighbourhood is modified and new aliases and edges are
-added.
-%
-For the green cluster, note that there exists already another alias
-for the same species nearby (highlighted in cyan), and the nodes are
-re-attached to that alias.
-%
-For the purple cluster, an additional alias is introduced, although our method
-would not have suggested that. This seems related to the visible larger
-reorganisation of surrounding nodes.
-
-In general, we suppose that this approach is able to make the process of
-duplicating nodes more efficient and can provide reasonable suggestions.
-However, since duplications often come along with reorganisations of the
-neighbourhood, these suggestions should still be considered individually by the curator.
-
-\begin{figure}[h]
-  \includegraphics[width=\linewidth]{attachment-examples/s597/202.jpg} \\
-  \includegraphics[width=\linewidth]{attachment-examples/s597/203.jpg}
-  \caption{ Example of a real reorganisation step that duplicates a species
-    alias. The graphic is described in detail in \refsec{attachment-of-edges}.
-  }
-  \label{fig:reorg-duplication-example}
-\end{figure}
-
+% sa40 is representative species alias in collapsed version of ADLast
+% want to figure out how it was duplicated
 
 
 
@@ -4170,258 +4116,130 @@ neighbourhood, these suggestions should still be considered individually by the 
   \centering
   \begin{subfigure}{0.48\linewidth}
     % example where it works nicely
-    \includegraphics[width=\textwidth]{attachment-examples/s597/dendrogram.png}
+    \includegraphics[width=1.0\textwidth]{dendrograms/sa40.png}
     \caption{
-      Simple example for which our method yields an intuitive clustering.
+      Example for which the heuristic yields an intuitive clustering. Note that
+      outliers do not distort the clustering result and are assigned their own cluster.
     }
-    \label{fig:s597-dendrogram}
+    % sa40
   \end{subfigure}
   ~~~
   \begin{subfigure}{0.48\linewidth}
-    \includegraphics[width=\textwidth]{AlzPathwayReorg202-203/sa89.png}
+    % example where 2nd derivative is better than 1st (obs)
+    % 220
+    \includegraphics[width=\textwidth]{dendrograms/sa220.png}
     \caption{Example in which using the second derivative yields a clustering
       that intuitively seems more reasonable. The first derivative has its
-      maximum at 3 clusters. 
+      minimum
+      at 2 clusters. 
     }
+    % or 856
   \end{subfigure}
   \linebreak
       \begin{subfigure}{0.48\linewidth}
         % example where distributions are tricky (obs)
-        % sa25
-        % sa102
-        % sa123
-        \includegraphics[width=\textwidth]{AlzPathwayReorg202-203/sa102.png}
+        \includegraphics[width=\textwidth]{dendrograms/sa982.png}
         \caption{
-          Distances between the yellow points are not much
-          different from the distance between the purple and the yellow clusters
-          (as measured by single linkage). While the heuristic yields
+          Distances between the purple points are not much
+          different from the distance between the yellow point and the purple
+          cluster (measured by \textit{single linkage}). While the heuristic yields
           only two clusters, it may have also been feasible to create many clusters.
+          Indeed, the second derivative curve shows another local maximum at 11 clusters.
         }
         % or sa77
       \end{subfigure}
       ~~~
       \begin{subfigure}{0.48\linewidth}
-        \includegraphics[width=\textwidth]{AlzPathwayReorg202-203/sa74.png}
-        \caption{
-          Example illustrating the ability of single linkage clustering to
-          identify non-convex clusters. In this case, introducing a single
-          duplicate for large green cluster is probably not sufficient.
-        }
+        \includegraphics[width=\textwidth]{dendrograms/sa77-variance.png}
+        \caption{Another example where large intra-cluster variance is
+          problematic. Contrary to the heuristic's output, it may be preferrable
+          to further split the yellow cluster.}
       \end{subfigure}
-      \caption{
-    Examples for the clustering procedure described in \refsec{edge-attachment}.
-    The topmost scatterplot shows the positions of neighbours
-    of a given node in the layout (given node and edges are not shown; note that
-    $x$ and $y$-axes have different scales). Below, a clustering dendrogram describes
+      \caption[
+      Example outputs of the heuristic for attaching edges after node
+      duplication has been decided.
+      ]
+      {
+    Examples for the clustering procedure described in \refsec{edge-attachment}. The topmost scatterplot shows the positions of neighbours
+    of a given node in the layout (given node and edges are not shown). Below, a clustering dendrogram describes
     the distances between any two clusters as they were merged. Finally, the
-    sequence of merge distances as well as its first and second derivative are shown.
-    Taking the maximum yields a hint for the number of clusters
+    sequence of merge distances as well as its first and second derivative.
+    Taking the minumum, resp. maximum yields a hint for the number of clusters
     to choose. The red line indicates the suggested choice for the number of
-    clusters and thus a concrete clustering
-    % , determing the merge node in the
-    % dendrogram where the ``cut'' should be made.
-    All examples are from \textit{AlzPathway} reorganisation steps and
-    and correspond to aliases that were actually duplicated}
+    clusters and thus a concrete clustering, determing the merge node in the
+    dendrogram where the ``cut'' should be made.
+    % TODO reverse step size, should not be plotted as minimum here.
+    All examples are from \ADLast{} with positive ground-truth label.}
   \label{fig:neighb-clust-examples}
 \end{figure}
 
-
-% TODO redo examples because we were using layout info of G_i+1 for clustering
-% nodes in G_i
-% \begin{figure}[h]
-%   \centering
-%   \begin{subfigure}{0.48\linewidth}
-%     % example where it works nicely
-%     \includegraphics[width=1.0\textwidth]{dendrograms/sa40.png}
-%     \caption{
-%       Example for which the heuristic yields an intuitive clustering. Note that
-%       outliers do not distort the clustering result and are assigned their own cluster.
-%     }
-%     % sa40
-%   \end{subfigure}
-%   ~~~
-%   \begin{subfigure}{0.48\linewidth}
-%     % example where 2nd derivative is better than 1st (obs)
-%     % 220
-%     \includegraphics[width=\textwidth]{dendrograms/sa220.png}
-%     \caption{Example in which using the second derivative yields a clustering
-%       that intuitively seems more reasonable. The first derivative has its
-%       minimum
-%       at 2 clusters. 
-%     }
-%     % or 856
-%   \end{subfigure}
-%   \linebreak
-%       \begin{subfigure}{0.48\linewidth}
-%         % example where distributions are tricky (obs)
-%         \includegraphics[width=\textwidth]{dendrograms/sa982.png}
-%         \caption{
-%           Distances between the purple points are not much
-%           different from the distance between the yellow point and the purple
-%           cluster (measured by \textit{single linkage}). While the heuristic yields
-%           only two clusters, it may have also been feasible to create many clusters.
-%           Indeed, the second derivative curve shows another local maximum at 11 clusters.
-%         }
-%         % or sa77
-%       \end{subfigure}
-%       ~~~
-%       \begin{subfigure}{0.48\linewidth}
-%         \includegraphics[width=\textwidth]{dendrograms/sa77-variance.png}
-%         \caption{Another example where large intra-cluster variance is
-%           problematic. Contrary to the heuristic's output, it may be preferrable
-%           to further split the yellow cluster.}
-%       \end{subfigure}
-%       \caption[
-%       Example outputs of the heuristic for attaching edges after node
-%       duplication has been decided.
-%       ]
-%       {
-%     Examples for the clustering procedure described in \refsec{edge-attachment}. The topmost scatterplot shows the positions of neighbours
-%     of a given node in the layout (given node and edges are not shown). Below, a clustering dendrogram describes
-%     the distances between any two clusters as they were merged. Finally, the
-%     sequence of merge distances as well as its first and second derivative.
-%     Taking the minumum, resp. maximum yields a hint for the number of clusters
-%     to choose. The red line indicates the suggested choice for the number of
-%     clusters and thus a concrete clustering, determing the merge node in the
-%     dendrogram where the ``cut'' should be made.
-%     % TODO reverse step size, should not be plotted as minimum here.
-%     All examples are from \ADLast{} with positive ground-truth label.}
-%   \label{fig:neighb-clust-examples}
-% \end{figure}
-
+flabobble. 
 
 
 % ====================================
-\chapter{Conclusion}
-\label{sec:conclusion}
-% discussion and future work
-
-Disease maps aim to provide comprehensive, informative diagrams of biological
-processes relevant for a given disease. A disease map can be seen as a network
-of biological entities (\ild{species}) and their interactions (\ild{processes}).
-In order to be useful for visual and computational analysis, network structure
-and layout have to convey the underlying biological meaning as faithfully as
-possible. Due to the interconnected nature of biological processes, a species
-may appear in more than just a single interaction.
-% $S$ may appear in more than just a single interaction.
-% However, it may be the
-% case that the roles of $S$ in two processes $R_1$ and $R_2$ it appears in are
-% completely unrelated. In this case, the network should not contain a path
-% linking $R_1$ to $R_2$ through $S$, as this would incorrectly imply that $R_1$
-% and $R_2$ are indeed semantically related through $S$ (\ild{false
-%   connectivity}). Rather, if $R_1$ and $R_2$ are unrelated, $S$ should appear in
-% the network as two distinct nodes, each linked independently to the processes it
-% is actually related to. We refer to this as \ild{duplicating} $S$.
-%
-The decision whether a given node in the disease map network implies false
-connectivity and should be duplicated is not trivial. Previous work would either
-apply simple heuristic rules or leave the decision entirely to the expertise of
-the curator. In this work, we consider employing a machine learning model to
-predict whether a given node should be duplicated. In particular, we explore the
-applicability of Graph Neural Networks.
-% , which, when learning an embedding for a
-% given node, explicitly consider its neighbour nodes.
-%
-Further, we discuss the usefulness of individual reorganisation steps as
-training data as opposed to a single, fully curated diagram. Additionally, we
-explore which choice of node features is useful and suggest to capture the
-biological meaning of species through Gene Ontology term annotations. Finally,
-we provide a heuristic approach for determining the number of duplicates and the
-attachment of edges after a duplication decision has been made.
-
-\section{Discussion}
-
-In general, we saw that neural network models slightly outperform the SVM model.
-However, it is open how useful this slight advantage is in practise.
-While the neural network models do provide useful predictions, there is still
-considerable variability with respect to random initialisation and maximum
-training epoch.
-
-Incorporating message-passing layers into the neural network architecture did
-not provide a substantial advantage in performance. However, the effectiveness
-of message-passing depends on the choice of features and the actual mechanism of
-message-passing. In both cases, we considered only simple approaches. Further,
-it is interesting that, in message-passing models, the development of the loss
-value over training iterations is smoother compared to an MLP model.
-%
-Also, while the SVM model struggled to handle reorganisation steps as training data
-(likely due to insufficient data cleaning), the GNN model was not affected as
-strongly by this. This may hint at that neural network models can better handle
-unclean or noisy data.
-
-We see that providing only node degrees as features already yields
-good classification performance and including additional structural features
-provides only marginal gains. This supports previous work, which would decide
-node duplication based on a degree threshold, from a different angle. Here, we
-show that node degree is actually useful for predicting the decisions of an
-expert curator.
-%
-Futher, interestingly, we see that it makes a substantial difference for
-evaluation on \ReconMap{} whether we consider directed or only undirected
-degree.
-%
-We see that there is little effective difference between using structural
-features based on the bipartite projection, the simple graph or both. In fact,
-it seems like using both actually impacts model performance negatively. 
-%
-This means that we have at hand a simpler classification procedure than proposed
-by \nielsen{}~\cite{nielsen_MachineLearningSupport_2019} in the sense that
-fewer node characteristics have to be computed to obtain the same classification
-performance. This is beneficial since particularly for large networks, the
-computation of global node characteristics takes much longer to compute than
-the actual model training.
-
-We show that, when evaluating performance on a collapsed map, using
-reorganisation steps as training data is not benefical compared to simply using
-the final, fully-curated map. This is useful because data on reorganisation
-steps is hard to obtain in practise, whereby we can construct a collapsed
-version of any disease map. One has to note that we are evaluating the
-model based on its ability to predict node duplication in a collapsed disease
-map. This is potentially a different task than predicting duplication in a
-partially curated map.
-
-We explore an embedding-based approach to encode Gene Ontology term annotations
-as node features. However, the features determined through the current
-implementation seem not to be useful for the classification task. It is unclear
-whether the obtained embeddings are of sufficient quality. Further, some species
-are annotated with a relatively great number of terms while for other species no
-annotations are available. Nevertheless, exploiting the rich semantic value of
-human annotation seems promising and is subject to future work.
-
-In general, one has to take into account that training data for this task is
-extremely limited. The creation of disease maps requires extensive domain
-knowledge. Thus, there are few large-scale disease maps publicly available.
-Moreover, since disease maps are created manually by human curators to convey a
-particular message, their contents are inherently subjective and may differ in
-style and structure. Further, ground-truth information on whether a node should
-be duplicated is also based on expert decisions, with different curators
-potentially making different
-decisions~\cite{nielsen_MachineLearningSupport_2019}. This means that obtaining
-a sufficient, unbiased training dataset is still an open challenge.
-
-Our agglomerative clustering approach on determining the number of duplicates
-and attachment of edges seems promising. When using layout positions as input to
-the clustering algorithm, we consistently obtain intuitive clusterings. This
-means that this may provide a usable, simple heuristic to introduce duplicates
-once the classification has been made. Note that this approach can in principle
-be used with any similarity measure, particularly one not relying on layout
-information.
+\chapter{Discussion}
+\label{sec:discussion}
 
 
+% in Dicussion, mention that 'degree works well as predictor' sort of
+% supports previous work that would decide based on node degree; now supporting
+% this from a different angle (inferred from training data)
+
+% musings on definition of train/test tasks, internal split, more data
+
+% ambuigity, difficulty
+% (make sure we dont mention that too often...)
+% - user study in nielsen et all even shows disagreement between experts
+
+% examine (mis)classifications
+
+% GNNs able to handle nasty case (with reorg seq) better, but svm catches up
+% without reorg steps? (without contradictory examples)
 
 
-\section{Future Work}
+% ====================================
+\chapter{Outlook \& Future Work}
+\label{sec:future-work}
 
-% TODO go through [[Backlog]]
+% more training data...
 
 
+% positoning of duplicates
+
+% using layout information
+% - tension
+% - stress
+% need to take care that computed values are transferrable across maps
 
 
-\section{Outlook}
-% some high-level summary maybe
-% only structural? 
+% future work: looking at examples would be interesting here
+% future work: much more simple classifier on node degree, or see if not
+% simply threshold would do.
 
-\vfill
+%  model learns while user is duplicating?
+
+%  more data
+%  - more disease maps
+% - other kinds of networks (metabolic models)
+
+
+% semi-supervised learning
+
+
+% \citeauthor{tiezzi_GraphNeuralNetworks_2021} for node dup?
+
+% GO annotations
+% - semantic similarity
+% - further ideas from mail from marek
+
+% ambuigity due to GO annots on species instead of species aliases: simply
+% consider stddev of annots on single node?
+
+
+% attachment of edges:
+% semantic similarity for clustering
+
+
 \pagebreak
 
 
