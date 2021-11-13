@@ -1,8 +1,11 @@
+import os
+from importlib.resources import files
+
 import numpy as np
 from graphgym.contrib.feature_augment.util import nx_get_interpretations, get_non_rxn_nodes, get_prediction_nodes
 from graphgym.contrib.loader.SBML import sbml_single_bipartite_projection_impl
 from graphgym.contrib.loader.gg_loaders import load_graphs
-from run.visualisation import init_fig
+from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
 import deepsnap
@@ -51,44 +54,56 @@ def cluster(X:np.array):
 
 
 def plot_vis(dist_levels_rev, step_sizes, acceleration, n_clust, partition, Z, X):
-    fig, axs = init_fig(rows=3, cols=1)
-    # TODO sizes of axes — make scatter and dend a bit taller
-    ax_scatter = axs[0]
-    ax_dend = axs[1]
-    ax_line = axs[2]
+    # fig, axs = init_fig(rows=3, cols=1)
+
+    fig = plt.figure(constrained_layout=True)
+    fig.set_dpi(140)
+    gs = fig.add_gridspec(ncols=1, nrows=3, height_ratios=[0.4,0.2,0.2])
+    
+    ax_scatter = fig.add_subplot(gs[0])
+    ax_dend = fig.add_subplot(gs[1])
+    ax_line = fig.add_subplot(gs[2])
 
     # TODO color mapping between dendrogram and scatterplot
     ax_scatter.scatter(X[:, 0], X[:, 1], c=partition)
     # TODO just make them really small instead? they're not really relevant but probably bad practise not to give them
     #   also add x and y labels (also really small)
-    ax_scatter.set_yticks([])
-    ax_scatter.set_xticks([])
+    # ax_scatter.set_yticks([])
+    # ax_scatter.set_xticks([])
+    # ax_scatter.set_title("Positions in layout")
+    ax_scatter.invert_yaxis()
+    ax_scatter.tick_params(labelsize=8)
+    ax_line.tick_params(labelsize=8)
+    ax_dend.tick_params(labelsize=8)
 
     # TODO for line plot, instead of different colors, use different line styles.
     if dist_levels_rev is not None and len(X)>2:
         ax_line.plot(range(1, len(Z) + 2), dist_levels_rev + [0])  # aggregate differences of i..i+2
         if step_sizes is not None:
-            ax_line.plot(range(2, len(Z) + 3), step_sizes)  # aggregate diff of i..i+4
+            ax_line.plot(range(2, len(Z) + 3), step_sizes * -1)  # aggregate diff of i..i+4
         if acceleration is not None:
             ax_line.plot(range(2, len(Z)), acceleration)  # 2nd deriv
-        ax_line.legend(['dist level', 'step size (1st deriv)', 'acceleration (2nd deriv)'],
-                       bbox_to_anchor=(0, 1.02, 1, 0.2), mode="expand", ncol=3, loc="lower left")
+        ax_line.legend(['Merge distance', 'Step size (1st deriv.)', 'Acceleration (2nd deriv.)'],
+                       bbox_to_anchor=(0, 1.02, 1, 0.2), mode="expand", ncol=3, loc="lower left", fontsize=8)
         ax_line.set_xticks(range(len(Z) + 2))
-        ax_line.set_xlabel("number of clusters")
-        ax_line.set_yticks([])  # none
+        ax_line.set_xlabel("Number of clusters", fontdict={'fontsize': 8})
+        # ax_line.set_yticks([])  # none
         ax_line.hlines([0], xmin=1, xmax=len(Z) + 2, linestyle='--')
 
         # illustrate cut line
         ax_line.axvline(n_clust, color="r", linewidth=1, linestyle="--")
         # move line below merge point for more visual clarity
         # only do this a little because it must be above any lower merge
-        offset = 0.05 * (dist_levels_rev[n_clust-2] - dist_levels_rev[n_clust-1])
+        # offset = 0.05 * (dist_levels_rev[n_clust-2] - dist_levels_rev[n_clust-1]) # buggy
+        offset = 0
         cut_thresh = dist_levels_rev[n_clust - 2]
         ax_dend.axhline(cut_thresh - offset, color="r", linewidth=1, linestyle="--")
         # TODO animate cut line with camera
+        # ax_dend.set_title("Clustering dendrogram")
+        ax_dend.set_ylabel("Distance", fontdict={'fontsize': 8})
 
-        dendrogram(Z, ax=ax_dend, color_threshold=cut_thresh, no_labels=True)
-        ax_dend.set_yticks([])
+        dendrogram(Z, ax=ax_dend, color_threshold=0, no_labels=True)
+        # ax_dend.set_yticks([])
 
     return fig
 
@@ -122,8 +137,9 @@ if __name__ == '__main__':
     #     plot_vis(dist_levels_rev, step_sizes, acceleration, n_clust, partition, Z, X)
 
     names = [
-        # "AlzPathwayReorgLast",
-        "PDMap19"
+        "AlzPathwayReorg202-203",
+        # "AlzPathwayReorg305-306",
+        # "PDMap19"
     ]
 
     graphs: list[deepsnap.graph.Graph] = load_graphs(
@@ -134,6 +150,7 @@ if __name__ == '__main__':
     # TODO what if reaction has degree > 2 and other node is somewhere else altogether?
     # TODO reason why it makes sense to consider bipartite proj
 
+    graphs = [graphs[1]]
     for graph in graphs:
         simple_nxG, proj_nxG = nx_get_interpretations(graph)
         non_rxn_nodes = get_non_rxn_nodes(simple_nxG)
@@ -141,10 +158,14 @@ if __name__ == '__main__':
         included, excluded = get_prediction_nodes(simple_nxG)
         included = np.intersect1d(included, non_rxn_nodes)
         pos_nodes = [node for (node, label) in graph.nodes(data="node_label", default=False) if label == 1]
-        pos_nodes = pos_nodes[4:16]
+        pos_nodes = pos_nodes[0:25]  # 4:16
         # pos_nodes = ["sa10250"]
 
-        for alias_to_split in pos_nodes:  # TODO first few for debugging
+        res = {}
+        # dict from alias id to list of dicts (one for each cluster),
+        #   containing centroid coordinates and neighbour alias ids
+        for alias_to_split in pos_nodes:
+
             node = simple_nxG.nodes[alias_to_split]
             # as "neighbours" want to consider neighbour species, not reactions. can use bipartite proj for that.
             neighbs = [simple_nxG.nodes[n] for n in proj_nxG.neighbors(alias_to_split)]  # get node data dicts
@@ -154,9 +175,33 @@ if __name__ == '__main__':
 
             partition = memberships_to_partition(memberships, neighbs)
 
+            # a possible position for the copy would be the centroid
+            # problem: does not have anything to do with pre-existing layout
+            # problem: for 1-point clusters, will be exactly that point
+            # TODO: plot centroid in scatter?
+            if alias_to_split not in res:
+                res[alias_to_split] = []
+            for cluster_id, members in partition.items():
+                centroid = np.mean([[alias['pos_x'], alias['pos_y']] for alias in members], axis=0)
+                res[alias_to_split].append({
+                    'neighbours': [member['id'] for member in members],
+                    'centroid': list(centroid)
+                })
+
+            # plot things
             fig = plot_vis(dist_levels_rev, step_sizes, acceleration, n_clust, memberships, Z, X)
-            fig.suptitle(f"{alias_to_split} (deg {len(neighbs)}) \n in {graph.graph['name']}")
+            # fig.suptitle(f"{alias_to_split} (deg {len(neighbs)}) \n in {graph.graph['name']}")
+            alias_info = graph.nodes[alias_to_split]
+            fig.suptitle(f"{alias_to_split}/{alias_info['species']} (degree {len(neighbs)})", fontsize=9)
             fig.tight_layout()
-            fig.show()
+            # fig.show()
+
+            target_path = os.path.join(files("computed"), "dendrograms", names[0], alias_to_split)
+            fig.savefig(target_path)
+
+        # target_path = os.path.join(files("computed"), "clustering.json")
+        # with open(target_path, 'w') as f:
+        #     print(f"writing results to {target_path}")
+        #     json.dump(res, f)
 
 
