@@ -64,6 +64,8 @@ def construct_collapsed_graph(model: SBMLModel, name=None, fail_on_unknown_edge_
     G.graph['is_collapsed'] = True
 
     # dict speciesid → (complex) alias ids (top-level only)
+    # this includes complex species aliases (and does not collapse them) since each CSA entry is linked to an
+    # SBML species ID
     top_level_aliases_by_species = groupby(model.top_level_aliases.values(), lambda e: e['species'])
 
     top_level_alias_to_representative = {}
