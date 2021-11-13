@@ -272,11 +272,17 @@ class CellDesignerModel(SBMLModel):
 
     def get_alias_info(self, alias: _Element):
         # d = dict(alias.attrib)
+        # bounds (position and size of graphical element)
+        b = alias.find("celldesigner:bounds", self.nsmap)
+
         d = {
             # this set of attributes is shared by both normal and complex species aliases
             'id': alias.attrib['id'],
-            'species': alias.attrib['species']
+            'species': alias.attrib['species'],
+            'pos_x': float(b.attrib['x']),
+            'pos_y': float(b.attrib['y'])
         }
+
         # additionally add information on the species this alias represents
         species_info = self.species[alias.attrib['species']]
         for key in species_info:  # do not overwrite attributes with coinciding names
