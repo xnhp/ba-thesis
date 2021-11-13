@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="settings.xml">
+<entry key="node_file" type="xstring" value="settings.xml"/>
+<config key="flow_stack"/>
+<config key="internal_node_subsettings">
+<entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
+</config>
+<config key="model">
+<config key="expressions">
+<config key="element 0">
+<entry key="expression" type="xstring" value="substr(column(&quot;id&quot;), 1)"/>
+<entry key="outputName" type="xstring" value="id without prefix"/>
+<config key="outputType">
+<entry key="cell_class" type="xstring" value="org.knime.core.data.def.StringCell"/>
+<entry key="is_null" type="xboolean" value="false"/>
+</config>
+<entry key="replaceColumn" type="xboolean" value="false"/>
+<entry key="isCollection" type="xboolean" value="false"/>
+</config>
+</config>
+<entry key="count" type="xint" value="1"/>
+<entry key="failOnInvalidAccess" type="xboolean" value="true"/>
+<entry key="failOnScriptError" type="xboolean" value="false"/>
+</config>
+<entry key="customDescription" type="xstring" isnull="true" value=""/>
+<entry key="state" type="xstring" value="EXECUTED"/>
+<entry key="factory" type="xstring" value="org.knime.expressions.base.node.formulas.FormulasNodeFactory"/>
+<entry key="node-name" type="xstring" value="Column Expressions"/>
+<entry key="node-bundle-name" type="xstring" value="KNIME Expression Nodes"/>
+<entry key="node-bundle-symbolic-name" type="xstring" value="org.knime.expressions.base"/>
+<entry key="node-bundle-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+<entry key="node-bundle-version" type="xstring" value="4.3.0.v202011191431"/>
+<entry key="node-feature-name" type="xstring" value="KNIME Expressions"/>
+<entry key="node-feature-symbolic-name" type="xstring" value="org.knime.features.expressions.feature.group"/>
+<entry key="node-feature-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+<entry key="node-feature-version" type="xstring" value="4.3.0.v202011191431"/>
+<config key="factory_settings"/>
+<entry key="name" type="xstring" value="Column Expressions"/>
+<entry key="hasContent" type="xboolean" value="true"/>
+<entry key="isInactive" type="xboolean" value="false"/>
+<config key="ports">
+<config key="port_1">
+<entry key="index" type="xint" value="1"/>
+<entry key="port_spec_class" type="xstring" value="org.knime.core.data.DataTableSpec"/>
+<entry key="port_object_class" type="xstring" value="org.knime.core.node.BufferedDataTable"/>
+<entry key="port_object_summary" type="xstring" value="Rows: 1128, Cols: 4"/>
+<entry key="port_dir_location" type="xstring" value="port_1"/>
+</config>
+</config>
+<config key="filestores">
+<entry key="file_store_location" type="xstring" isnull="true" value=""/>
+<entry key="file_store_id" type="xstring" value="82eec0d8-f579-437a-a603-4468ba7fc0c4"/>
+</config>
+</config>
