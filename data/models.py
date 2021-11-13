@@ -344,9 +344,19 @@ def get_dataset(identifier: str) -> tuple[str, SBMLModel]:
             "AlzPah_reorganisation_steps",  # is a directory
             CellDesignerModel
         ),
+        "AlzPathwayReorg202-203": (
+            # note that this describes a collection of networks
+            "AlzPathwayReorg202-203",  # is a directory
+            CellDesignerModel
+        ),
+        "AlzPathwayReorg305-306": (
+            # note that this describes a collection of networks
+            "AlzPathwayReorg305-306",  # is a directory
+            CellDesignerModel
+        ),
         "AlzPathwayReorgLast": (
             # single map, the last reorganisation step
-            "AlzPah_reorganisation_steps/406-alzpath_8APR.xml",  # is a directory
+            "AlzPah_reorganisation_steps/406-alzpath_8APR.xml",
             CellDesignerModel
         ),
         "AlzPathway": (
