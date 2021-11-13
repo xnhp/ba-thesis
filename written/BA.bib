@@ -58,7 +58,7 @@
   url = {http://link.springer.com/10.1007/978-3-319-96151-4_1},
   urldate = {2021-10-13},
   abstract = {In the Cluster Editing problem, a given graph is to be transformed into a disjoint union of cliques via a minimum number of edge editing operations. In this paper we introduce a new variant of Cluster Editing whereby a vertex can be divided, or split, into two or more vertices thus allowing a single vertex to belong to multiple clusters. This new problem, Cluster Editing with Vertex Splitting, has applications in finding correlation clusters in discrete data, including graphs obtained from Biological Network analysis. We initiate the study of this new problem and show that it is fixed-parameter tractable when parameterized by the total number of vertex splitting and edge editing operations. In particular we obtain a 4k(k + 1) vertex kernel for the problem.},
-  isbn = {978-3-319-96150-7 978-3-319-96151-4},
+  isbn = {978-3-319-96150-7},
   langid = {english},
   file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\abu-khzam_ClusterEditingVertex_2018.md;C\:\\Users\\Ben\\Zotero\\storage\\9TRAYLQ5\\Abu-Khzam et al. - 2018 - Cluster Editing with Vertex Splitting.pdf}
 }
@@ -501,6 +501,7 @@
 @article{bergstra_RandomSearchHyperParameter_,
   title = {Random {{Search}} for {{Hyper}}-{{Parameter Optimization}}},
   author = {Bergstra, James and Bengio, Yoshua},
+  journaltitle = {Journal of Machine Learning Research},
   pages = {25},
   abstract = {Grid search and manual search are the most widely used strategies for hyper-parameter optimization. This paper shows empirically and theoretically that randomly chosen trials are more efficient for hyper-parameter optimization than trials on a grid. Empirical evidence comes from a comparison with a large previous study that used grid search and manual search to configure neural networks and deep belief networks. Compared with neural networks configured by a pure grid search, we find that random search over the same domain is able to find models that are as good or better within a small fraction of the computation time. Granting random search the same computational budget, random search finds better models by effectively searching a larger, less promising configuration space. Compared with deep belief networks configured by a thoughtful combination of manual search and grid search, purely random search over the same 32-dimensional configuration space found statistically equal performance on four of seven data sets, and superior performance on one of seven. A Gaussian process analysis of the function from hyper-parameters to validation set performance reveals that for most data sets only a few of the hyper-parameters really matter, but that different hyper-parameters are important on different data sets. This phenomenon makes grid search a poor choice for configuring algorithms for new data sets. Our analysis casts some light on why recent “High Throughput” methods achieve surprising success—they appear to search through a large number of hyper-parameters because most hyper-parameters do not matter much. We anticipate that growing interest in large hierarchical models will place an increasing burden on techniques for hyper-parameter optimization; this work shows that random search is a natural baseline against which to judge progress in the development of adaptive (sequential) hyper-parameter optimization algorithms.},
   langid = {english},
@@ -815,6 +816,41 @@
   doi = {10.1145/3404835.3463082},
   abstract = {In this paper, we propose an augmented Graph Convolutional Network (GCN) mechanism wherein additional information of local interaction patterns between a node with its neighbors (specifically, in the form of distribution of cosine similarity values of a pre-trained node vector with its neighbors) is used to enrich a node's representation prior to training a GCN. This provides additional information about the structural properties of a node, which the standard convolution operation in a GCN can then leverage for obtaining potentially improved effectiveness in a down-stream task. Our experiments demonstrate that adding these node interaction patterns (NIPs) along with an additional noise-contrastive pairwise document similarity objective within a GCN improves the linked document classification task.},
   file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\chandra_NIPGCNAugmentedGraph_2021.md}
+}
+
+@article{chandrashekar_SurveyFeatureSelection_2014,
+  title = {A Survey on Feature Selection Methods},
+  author = {Chandrashekar, Girish and Sahin, Ferat},
+  date = {2014-01-01},
+  journaltitle = {Computers \& Electrical Engineering},
+  shortjournal = {Computers \& Electrical Engineering},
+  series = {40th-Year Commemorative Issue},
+  volume = {40},
+  number = {1},
+  pages = {16--28},
+  issn = {0045-7906},
+  doi = {10.1016/j.compeleceng.2013.11.024},
+  url = {https://www.sciencedirect.com/science/article/pii/S0045790613003066},
+  urldate = {2021-11-12},
+  abstract = {Plenty of feature selection methods are available in literature due to the availability of data with hundreds of variables leading to data with very high dimension. Feature selection methods provides us a way of reducing computation time, improving prediction performance, and a better understanding of the data in machine learning or pattern recognition applications. In this paper we provide an overview of some of the methods present in literature. The objective is to provide a generic introduction to variable elimination which can be applied to a wide array of machine learning problems. We focus on Filter, Wrapper and Embedded methods. We also apply some of the feature selection techniques on standard datasets to demonstrate the applicability of feature selection techniques.},
+  langid = {english}
+}
+
+@article{chawla_SMOTESyntheticMinority_2002,
+  title = {{{SMOTE}}: Synthetic {{Minority Over}}-Sampling {{Technique}}},
+  shorttitle = {{{SMOTE}}},
+  author = {Chawla, N. V. and Bowyer, K. W. and Hall, L. O. and Kegelmeyer, W. P.},
+  date = {2002-06-01},
+  journaltitle = {Journal of Artificial Intelligence Research},
+  volume = {16},
+  pages = {321--357},
+  issn = {1076-9757},
+  doi = {10.1613/jair.953},
+  url = {https://www.jair.org/index.php/jair/article/view/10302},
+  urldate = {2021-11-12},
+  abstract = {An approach to the construction of classifiers from    imbalanced datasets is described. A dataset is imbalanced if the    classification categories are not approximately equally    represented. Often real-world data sets are predominately composed of    ``normal'' examples with only a small percentage of ``abnormal'' or    ``interesting'' examples. It is also the case that the cost of    misclassifying an abnormal (interesting) example as a normal example    is often much higher than the cost of the reverse    error. Under-sampling of the majority (normal) class has been proposed    as a good means of increasing the sensitivity of a classifier to the    minority class. This paper shows that a combination of our method of    over-sampling the minority (abnormal) class and under-sampling the    majority (normal) class can achieve better classifier performance (in    ROC space) than only under-sampling the majority class.  This paper    also shows that a combination of our method of over-sampling the    minority class and under-sampling the majority class can achieve    better classifier performance (in ROC space) than varying the loss    ratios in Ripper or class priors in Naive Bayes. Our method of    over-sampling the minority class involves creating synthetic minority    class examples.  Experiments are performed using C4.5, Ripper and a    Naive Bayes classifier. The method is evaluated using the area under    the Receiver Operating Characteristic curve (AUC) and the ROC convex    hull strategy.},
+  langid = {english},
+  file = {C\:\\Users\\Ben\\Zotero\\storage\\V3EEMVR7\\Chawla et al_2002_SMOTE.pdf}
 }
 
 @inproceedings{chen_GraphPASParallelArchitecture_2021,
@@ -1420,7 +1456,7 @@
 @incollection{eades_VertexSplittingTensionfree_1996,
   title = {Vertex Splitting and Tension-Free Layout},
   booktitle = {Graph {{Drawing}}},
-  author = {Eades, P. and de Mendonça N, C. F. X.},
+  author = {Eades, P. and de Mendonça, N.},
   editor = {Brandenburg, Franz J.},
   options = {useprefix=true},
   date = {1996},
@@ -1434,7 +1470,7 @@
   urldate = {2021-06-16},
   editorb = {Goos, G. and Hartmanis, J. and van Leeuwen, J.},
   editorbtype = {redactor},
-  isbn = {978-3-540-60723-6 978-3-540-49351-8},
+  isbn = {978-3-540-60723-6},
   langid = {english},
   file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\eades_VertexSplittingTensionfree_1996.md;C\:\\Users\\Ben\\Zotero\\storage\\UPBAAIHK\\Eades and de Mendonça N - 1996 - Vertex splitting and tension-free layout.pdf}
 }
@@ -1767,7 +1803,7 @@
   abstract = {One of the most popular graph drawing methods is based on achieving graph-theoretic target distances. This method was used by Kamada and Kawai [15], who formulated it as an energy optimization problem. Their energy is known in the multidimensional scaling (MDS) community as the stress function. In this work, we show how to draw graphs by stress majorization, adapting a technique known in the MDS community for more than two decades. It appears that majorization has advantages over the technique of Kamada and Kawai in running time and stability. We also found the majorization-based optimization being essential to a few extensions to the basic energy model. These extensions can improve layout quality and computation speed in practice.},
   editorb = {Hutchison, David and Kanade, Takeo and Kittler, Josef and Kleinberg, Jon M. and Mattern, Friedemann and Mitchell, John C. and Naor, Moni and Nierstrasz, Oscar and Pandu Rangan, C. and Steffen, Bernhard and Sudan, Madhu and Terzopoulos, Demetri and Tygar, Dough and Vardi, Moshe Y. and Weikum, Gerhard},
   editorbtype = {redactor},
-  isbn = {978-3-540-24528-5 978-3-540-31843-9},
+  isbn = {978-3-540-24528-5},
   langid = {english},
   file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\hutchison_graph_2005.md;C\:\\Users\\Ben\\Zotero\\storage\\5VUGTA5W\\Gansner et al. - 2005 - Graph Drawing by Stress Majorization.pdf}
 }
@@ -1844,19 +1880,6 @@
   doi = {10.1109/ACCESS.2021.3055280},
   abstract = {The last half-decade has seen a surge in deep learning research on irregular domains and efforts to extend convolutional neural networks (CNNs) to work on irregularly structured data. The graph has emerged as a particularly useful geometrical object in deep learning, able to represent a variety of irregular domains well. Graphs can represent various complex systems, from molecular structure, to computer and social and traffic networks. Consequent on the extension of CNNs to graphs, a great amount of research has been published that improves the inferential power and computational efficiency of graph-based convolutional neural networks (GCNNs). The research is incipient, however, and our understanding is relatively rudimentary. The majority of GCNNs are designed to operate with certain properties. In this survey we review of the state of graph representation learning from the perspective of deep learning. We consider challenges in graph deep learning that have been neglected in the majority of work, largely because of the numerous theoretical difficulties they present. We identify four major challenges in graph deep learning: dynamic and evolving graphs, learning with edge signals and information, graph estimation, and the generalization of graph models. For each problem we discuss the theoretical and practical issues, survey the relevant research, while highlighting the limitations of the state of the art. Advances on these challenges would permit GCNNs to be applied to wider range of domains, in situations where graph models have previously been limited owing to the obstructions to applying a model owing to the domains’ natures.},
   file = {C\:\\Users\\Ben\\Dropbox\\Uni\\Uni Vault\\zotero-mdnotes-export\\georgousis_graph_2021.md;C\:\\Users\\Ben\\Dropbox\\Uni\\Uni Vault\\zotero-mdnotes-export\\georgousis_graph_2021.md;C\:\\Users\\Ben\\Zotero\\storage\\4ISKBE4C\\Georgousis et al_2021_Graph Deep Learning.pdf}
-}
-
-@book{gesellschaftfurklassifikation_DataAnalysisMachine_2008,
-  title = {Data Analysis, Machine Learning and Applications: Proceedings of the 31st {{Annual Conference}} of the {{Gesellschaft}} Fü̈r {{Klassifikation}} e.{{V}}., {{Albert}}-{{Ludwigs}}-{{Universität Freiburg}}, {{March}} 7-9, 2007},
-  shorttitle = {Data Analysis, Machine Learning and Applications},
-  editor = {Gesellschaft für Klassifikation and Preisach, Christine},
-  date = {2008},
-  publisher = {{Springer}},
-  location = {{Berlin}},
-  isbn = {978-3-540-78239-1 978-3-540-78246-9},
-  pagetotal = {719},
-  keywords = {Classification,Congresses,Information storage and retrieval systems,Machine learning},
-  file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\gesellschaftfurklassifikation_DataAnalysisMachine_2008.md}
 }
 
 @article{gimeno_light_2019,
@@ -2983,6 +3006,27 @@
   issue = {1},
   langid = {english},
   file = {C\:\\Users\\Ben\\Dropbox\\Uni\\Uni Vault\\zotero-mdnotes-export\\kriege_survey_2020.md;C\:\\Users\\Ben\\Zotero\\storage\\AZBNXYSU\\Kriege et al_2020_A survey on graph kernels.pdf;C\:\\Users\\Ben\\Zotero\\storage\\BTWPJNK9\\s41109-019-0195-3.html;C\:\\Users\\Ben\\Zotero\\storage\\U8D773C9\\s41109-019-0195-3.html}
+}
+
+@article{krieger_MetaCycMultiorganismDatabase_2004,
+  title = {{{MetaCyc}}: A Multiorganism Database of Metabolic Pathways and Enzymes},
+  shorttitle = {{{MetaCyc}}},
+  author = {Krieger, Cynthia J. and Zhang, Peifen and Mueller, Lukas A. and Wang, Alfred and Paley, Suzanne and Arnaud, Martha and Pick, John and Rhee, Seung Y. and Karp, Peter D.},
+  date = {2004-01-01},
+  journaltitle = {Nucleic Acids Research},
+  shortjournal = {Nucleic Acids Res},
+  volume = {32},
+  eprint = {14681452},
+  eprinttype = {pmid},
+  pages = {D438-442},
+  issn = {1362-4962},
+  doi = {10.1093/nar/gkh100},
+  abstract = {The MetaCyc database (see URL http://MetaCyc.org) is a collection of metabolic pathways and enzymes from a wide variety of organisms, primarily microorganisms and plants. The goal of MetaCyc is to contain a representative sample of each experimentally elucidated pathway, and thereby to catalog the universe of metabolism. MetaCyc also describes reactions, chemical compounds and genes. Many of the pathways and enzymes in MetaCyc contain extensive information, including comments and literature citations. SRI's Pathway Tools software supports querying, visualization and curation of MetaCyc. With its wide breadth and depth of metabolic information, MetaCyc is a valuable resource for a variety of applications. MetaCyc is the reference database of pathways and enzymes that is used in conjunction with SRI's metabolic pathway prediction program to create Pathway/Genome Databases that can be augmented with curation from the scientific literature and published on the world wide web. MetaCyc also serves as a readily accessible comprehensive resource on microbial and plant pathways for genome analysis, basic research, education, metabolic engineering and systems biology. In the past 2 years the data content and the Pathway Tools software used to query, visualize and edit MetaCyc have been expanded significantly. These enhancements are described in this paper.},
+  issue = {Database issue},
+  langid = {english},
+  pmcid = {PMC308834},
+  keywords = {Biochemical Phenomena,Biochemistry,Classification,Databases; Factual,Enzymes,Escherichia coli,Humans,Information Storage and Retrieval,Internet,Metabolism,Software},
+  file = {C\:\\Users\\Ben\\Zotero\\storage\\W9IQ7WAK\\Krieger et al_2004_MetaCyc.pdf}
 }
 
 @online{kumar_hypergraph_2018,
@@ -4354,7 +4398,7 @@
   title = {{{NF}}-{{kB Mechanism}} of {{Action}}},
   shorttitle = {English},
   options = {useprefix=true},
-  year = {3 October 2007 (original upload date)},
+  date = {2007},
   url = {https://commons.wikimedia.org/wiki/File:NFKB_mechanism_of_action.png},
   urldate = {2021-11-08},
   editora = {on English Wikipedia, Boghog},
@@ -4599,7 +4643,7 @@
 @article{pedregosa_ScikitlearnMachineLearning_,
   title = {Scikit-Learn: Machine {{Learning}} in {{Python}}},
   author = {Pedregosa, Fabian and Varoquaux, Gael and Gramfort, Alexandre and Michel, Vincent and Thirion, Bertrand and Grisel, Olivier and Blondel, Mathieu and Prettenhofer, Peter and Weiss, Ron and Dubourg, Vincent and Vanderplas, Jake and Passos, Alexandre and Cournapeau, David},
-  journaltitle = {MACHINE LEARNING IN PYTHON},
+  journaltitle = {Machine Learning in Python},
   pages = {6},
   abstract = {Scikit-learn is a Python module integrating a wide range of state-of-the-art machine learning algorithms for medium-scale supervised and unsupervised problems. This package focuses on bringing machine learning to non-specialists using a general-purpose high-level language. Emphasis is put on ease of use, performance, documentation, and API consistency. It has minimal dependencies and is distributed under the simplified BSD license, encouraging its use in both academic and commercial settings. Source code, binaries, and documentation can be downloaded from http://scikit-learn.sourceforge.net.},
   langid = {english},
@@ -4684,6 +4728,19 @@
   langid = {american},
   organization = {{Podium | The Next Web}},
   file = {C\:\\Users\\Ben\\Dropbox\\Uni\\Uni Vault\\zotero-mdnotes-export\\potapov_what_2020.md;C\:\\Users\\Ben\\Zotero\\storage\\5WMWNSYX\\what-are-neural-symbolic-ai-methods-and-why-will-they-dominate-2020.html}
+}
+
+@book{preisach_DataAnalysisMachine_2008,
+  title = {Data Analysis, Machine Learning and Applications: Proceedings of the 31st {{Annual Conference}} of the {{Gesellschaft}} Fuer {{Klassifikation}} e.{{V}}., {{Albert}}-{{Ludwigs}}-{{Universität Freiburg}}, {{March}} 7-9, 2007},
+  shorttitle = {Data Analysis, Machine Learning and Applications},
+  editor = {Preisach, Christine},
+  date = {2008},
+  publisher = {{Springer}},
+  location = {{Berlin}},
+  isbn = {978-3-540-78239-1},
+  pagetotal = {719},
+  keywords = {Classification,Congresses,Information storage and retrieval systems,Machine learning},
+  file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\gesellschaftfurklassifikation_DataAnalysisMachine_2008.md}
 }
 
 @article{rai_MatrixFactorizationMatrix_,
@@ -4852,7 +4909,7 @@
   abstract = {The universe of biochemical reactions in metabolic pathways can be modeled as a complex network structure augmented with domain specific annotations. Based on the functional properties of the involved reactions, metabolic networks are often clustered into so-called pathways inferred from expert knowledge. To support the domain expert in the exploration and analysis process, we follow the well-known Table Lens metaphor with the possibility to select multiple foci.},
   editorb = {Hutchison, David and Kanade, Takeo and Kittler, Josef and Kleinberg, Jon M. and Mattern, Friedemann and Mitchell, John C. and Naor, Moni and Nierstrasz, Oscar and Pandu Rangan, C. and Steffen, Bernhard and Sudan, Madhu and Terzopoulos, Demetri and Tygar, Doug and Vardi, Moshe Y. and Weikum, Gerhard},
   editorbtype = {redactor},
-  isbn = {978-3-642-11804-3 978-3-642-11805-0},
+  isbn = {978-3-642-11804-3},
   langid = {english},
   file = {C\:\\Users\\Ben\\Obsidian Vaults\\Uni Vault\\zotero-mdnotes-export\\rohrschneider_NovelGridBasedVisualization_2010.md;C\:\\Users\\Ben\\Zotero\\storage\\HAUMJLBF\\Rohrschneider et al. - 2010 - A Novel Grid-Based Visualization Approach for Meta.pdf}
 }
@@ -5597,7 +5654,6 @@
 @article{vapnik_PrinciplesRiskMinimization_,
   title = {Principles of {{Risk Minimization}} for {{Learning Theory}}},
   author = {Vapnik, Vladimir},
-  pages = {8},
   abstract = {Learning is posed as a problem of function estimation, for which two principles of solution are considered: empirical risk minimization and structural risk minimization. These two principles are applied to two different statements of the function estimation problem: global and local. Systematic improvements in prediction power are illustrated in application to zip-code recognition.},
   langid = {english},
   file = {C\:\\Users\\Ben\\Zotero\\storage\\M9HZ5SWF\\Vapnik - Principles of Risk Minimization for Learning Theor.pdf}
