@@ -103,7 +103,10 @@ def analyze_queried_terms(df):
     lens = df.apply(lambda row: len(row['go.BP']), axis=1)
     plt.hist(lens, bins=int(len(lens) / 10))
     assert not any(lens == 0)  # assume we have already filtered out those for which we have not found (valid) GO terms
-    plt.title(f"number of species: {len(lens)}")
+    plt.title(f"GO term counts of PDMap")
+    plt.xlabel("Number of terms")
+    plt.ylabel("Number of species")
+    plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
