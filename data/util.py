@@ -47,6 +47,7 @@ def upsert_dict(target, source):
     return d
 
 
+
 def add_edge_safely(G, source, target, fail: bool):
     if (source, target) in G.edges:
         # raise KeyError("edge already present")
