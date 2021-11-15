@@ -4369,16 +4369,17 @@ and in \refsec{future-work} we outline possible directions for future work.
 Although we could not substantially surpass classification performance of
 previous work~\cite{nielsen_MachineLearningSupport_2019}, we were able to
 simplify the machine learning task substantially while maintaining the same
-performance. On the one hand, we showed that much fewer input features are
-actually required. This is highly benefical since the computation of node
-characteristics in large networks can be computationally expensive and provide a
-major bottleneck in the entire pipeline. On the other hand, we showed that we
-can do with simpler training data that is much easier to obtain in practice.
+performance. On the one hand, we showed that similar classification performance
+can be achieved with substantially fewer input features. This is highly
+benefical since the computation of node characteristics in large networks can be
+computationally expensive. This can provide a major bottleneck in the entire pipeline.
+On the other hand, we showed that simpler training data, that is easier to
+obtain in practise, is sufficient to for achieving high performance.
 
 We see that providing only node degrees as features already yields
 good classification performance and including additional structural features
 provides only marginal gains. This supports previous work, which would decide
-node duplication based on a degree threshold, from a different angle. Here, we
+node duplication based on a degree threshold, from a different perspective. Here, we
 show that node degree is actually useful for modelling the decisions of an
 expert curator.
 %
@@ -4388,26 +4389,26 @@ degree.
 %
 We see that there is little effective difference between using structural
 features based on the bipartite projection, the simple graph or both. In fact,
-it seems like using both actually impacts model performance negatively. 
+it appears that using both impacts model performance negatively. 
 %
 This means that we have at hand a simpler classification procedure than proposed
 by \nielsen{}~\cite{nielsen_MachineLearningSupport_2019} in the sense that
 fewer node characteristics have to be computed to obtain the same classification
-performance. This is beneficial since particularly for large networks, the
-computation of global node characteristics takes much longer to compute than
-the actual model training.
+performance. This is beneficial since, for large networks in particular, the
+computation of global node characteristics is substantially more time consuming
+than model training itself.
 
-We show that, when evaluating performance on a collapsed map, using
+We show that when evaluating performance on a collapsed map, using
 reorganisation steps as training data is not benefical compared to simply using
-the final, fully-curated map. This is useful because data on reorganisation
-steps is hard to obtain in practice, whereby we can construct a collapsed
+the final, fully-curated map. This is an useful insight since data on reorganisation
+steps is hard to obtain in practice, while we can construct a collapsed
 version of any disease map. One has to note that we are evaluating the
 model based on its ability to predict node duplication in a collapsed disease
 map. This is potentially a different task than predicting duplication in a
 partially curated map.
 
 We saw that neural network models slightly outperform the SVM model.
-However, it is open how useful this slight advantage is in practice.
+However, it remains an open question how useful this slight advantage is in practice.
 While the neural network models do provide useful predictions, there is still
 considerable variability with respect to random initialisation and maximum
 training epoch.
@@ -4415,9 +4416,9 @@ training epoch.
 Incorporating message-passing layers into the neural network architecture did
 not provide a substantial advantage in performance. However, the effectiveness
 of message-passing depends on the choice of features and the actual mechanism of
-message-passing. In both cases, we considered only simple approaches. Further,
-it is interesting that, in message-passing models, the development of the loss
-value over training iterations is smoother compared to an MLP model.
+message-passing. In both cases, we considered only simple approaches. 
+It is interesting that message-passing models show a smoother loss curve during
+training than MLP models.
 %
 Also, while the SVM model struggled to handle reorganisation steps as training data
 (likely due to insufficient data cleaning), the GNN model was not affected as
@@ -4425,7 +4426,7 @@ strongly by this. This may hint at that neural network models can better handle
 unclean or noisy data.
 
 We explore an embedding-based approach to encode Gene Ontology term annotations
-as node features. However, the features determined through the current
+as node features. The features determined through the current
 implementation seem not to be useful for the classification task. It is unclear
 whether the obtained embeddings are of sufficient quality. Further, some species
 are annotated with a relatively great number of terms while for other species no
@@ -4433,17 +4434,14 @@ annotations are available. Nevertheless, exploiting the rich semantic value of
 human annotation seems promising and is subject to future work.
 % TODO still useful because we learned something about the techniques here?
 
-Our agglomerative clustering approach on determining the number of duplicates
-and attachment of edges seems promising. When using layout positions as input to
-the clustering algorithm, we consistently obtain intuitive clusterings. This
-means that this may provide a usable, simple heuristic to introduce duplicates
-once the classification has been made. Note that this approach can in principle
-be used with any similarity measure, particularly one not relying on layout
-information. Our method has the advantage that no additional parameters or
-thresholds have to be specified. 
-
-% TODO either move general sentences to end here
-% or write new ones summarising things
+We propose an agglomerative clustring approach for determining the number of
+duplicates and attachment of edges. This approach does not require any
+additional parameters or thresholds to be specified. It can in principle be used
+with any similarity measure, particularly one not relying on layout information.
+When using layout positions as input to
+the clustering algorithm, we consistently obtain intuitive clusterings.
+This may provide a usable, simple heuristic to introduce duplicates
+once the classification has been made. 
 
 
 
@@ -4458,22 +4456,20 @@ thresholds have to be specified.
 
 
 % LEARNING SETUP
-In this work, we considered the task of predicting
-duplication in a fully collapsed disease map, that is, a map containing no
-duplicates whatsoever yet. For training, we used other collapsed maps or,
-additionally, reorganisation steps. This seems suited to provide suggestions for
-node duplications for a prototypical network as in the early stages of disease
-map construction. Here, we only considered a single disease map for training and
-a single map for validation due to limited availability of data. 
-For this use-case, it may be
-interesting to train and validate on larger datasets consisting of several
-disease maps.
+In this work, we considered the task of predicting duplication in a fully
+collapsed disease map. For training, we used other collapsed maps, or other
+collapsed maps combined with reorganisation steps. This seems suited to provide
+suggestions for node duplications for a prototypical network as found in the early
+stages of disease map construction. Here, we only considered a single disease
+map for training and a single map for validation due to limited availability of
+data. For this use-case, it may be interesting to train and validate on larger
+datasets consisting of several disease maps.
 %
-For the use-case of supporting a curator during reorganisation
-steps, it may be interesting to more directly incorporate this in the machine
-learning setup. This means training and evaluating a model exclusively on
-reorganisation steps, and not additionally including a collapsed version as done
-here and in previous work~\cite{nielsen_MachineLearningSupport_2019}.
+For supporting a curator during reorganisation steps, it may be interesting to
+more directly incorporate this in the machine learning setup. This means
+training and evaluating a model exclusively on reorganisation steps, and not
+additionally including a collapsed version as done here and in previous
+work~\cite{nielsen_MachineLearningSupport_2019}.
 %
 Further, when considering reorganisation steps, it is an open challenge how to address
 reorganisation events that involved a duplication of a node but also other
@@ -4490,34 +4486,34 @@ be duplicated is also based on expert decisions, with different curators
 potentially making different
 decisions~\cite{nielsen_MachineLearningSupport_2019}. This means that obtaining
 a sufficient, unbiased training dataset is still an open challenge.
+This problem may be alleviated through the
+generation of synthetic training examples. An interesting approach here is
+\ild{GraphSMOTE}~\cite{zhao_GraphSMOTEImbalancedNode_2021}, an extension of the
+\textsc{SMOTE} algorithm~\cite{chawla_SMOTESyntheticMinority_2002}, which
+additionally infers graph adjacency for synthetic examples. Note that the issue
+here is not a lack of explicitly labelled data, but a general lack of data,
+since ground-truth labels can be inferred automatically.
 
-It may be beneficial to go beyond the information contained in a single
-disease map. Biological databases contain a wealth of information on the
-interactions between species. A simple approach as employed by
-\citeauthor{direks_DynamicVisualizationMetabolic_2014}~\cite{direks_DynamicVisualizationMetabolic_2014}
-may be to consider the total number of interactions in some database that a
-species appears in.
+It may be beneficial to go beyond the information contained in a single disease
+map. Biological databases contain a wealth of information on the interactions
+between species. A simple approach could be to consider the total number of
+interactions in some database that a species appears in, as previously employed
+by
+\citeauthor{direks_DynamicVisualizationMetabolic_2014}~\cite{direks_DynamicVisualizationMetabolic_2014}.
+
 
 % TECHNIQUES
 % There is a number of additional techniques that could applied to the learning
 % task. For one,
-The problem of low amounts of training data may be alleviated through the
-generation of synthetic training examples. An interesting approach here is
-\ild{GraphSMOTE}~\cite{zhao_GraphSMOTEImbalancedNode_2021}, an extension of the
-\textsc{SMOTE} algorithm~\cite{chawla_SMOTESyntheticMinority_2002}, which
-additionally infers graph adjacency for synthetic examples. Note that here the
-issue is not a lack of explicitly labelled data, but a lack of data in general,
-since ground-truth labels can be inferred automatically.
 
 % FEATURES
 The set of features can probably be reduced further without sacrificing much of
-classification performance. For this, further analysis is needed. In particular,
-there are several methods for automatic feature selection
-\cite{chandrashekar_SurveyFeatureSelection_2014}.
-In this work, we mainly focussed on features determined by
-the network structure or by semantic annotations. The advantage here is that
-such features can be computed even if the network has not been fully laid out
-yet.
+classification performance. For this, further analysis of feature importance is
+needed. In particular, there are several methods for automatic feature selection
+\cite{chandrashekar_SurveyFeatureSelection_2014}. In this work, we mainly
+focussed on features determined by the network structure or by semantic
+annotations. The advantage here is that such features can be computed even if
+the network has not been fully laid out yet.
 %
 However, we can expect layout information to also contain semantic value. For
 instance, compounds in a reaction cascades are commonly placed along a principal
@@ -4531,26 +4527,26 @@ characteristics but also on the layout of the considered subgraph.
 Thus, it may be of interest to consider layout-based features. Possible simple
 measures for a node could be the extent of the bounding box of its neighbours or
 the length of the longest incident edge. Another interesting approach may be to
-consider the tension of a node~\cite{eades_VertexSplittingTensionfree_1996}.
-Given a vertex $v$ and an incident edge, the \ild{tension of an edge} is a
-vector of direction of the edge in the current drawing and magnitude based on
-the difference between the actual edge length in the current drawing and some
-target distance. Any possible binary duplication of $v$ defines a \ild{split
-  line} that partitions $\mathcal{N}(v)$ into two disjoint subsets
-$\neighb(v)^+$ and $\neighb(v)^-$. The \ild{tension of a split line} is the sum
-of tensions of either $\neighb(v)^+$ or $\neighb(v)^-$ --- they are in fact equal
-if the drawing is in equilibrium. The \ild{tension of a vertex} then is the
-maximum tension of all possible split lines.
-\citeauthor{eades_VertexSplittingTensionfree_1996} propose an extension of the
-\textsc{Kamada-Kawai} algorithm in which a vertex with tension greater than a
-given threshold is split into to duplicates according to its maximum tension
-split line in each iteration~\cite{eades_VertexSplittingTensionfree_1996}.
-Instead of simply setting a threshold on maximum tension, the tension value may
-also be used as input feature for a classifier, which may use this information
-in combination with other features to decide duplication.
+consider the tension of a node~\cite{eades_VertexSplittingTensionfree_1996} as
+input feature for a classifier.
+% Given a vertex $v$ and an incident edge, the \ild{tension of an edge} is a
+% vector of direction of the edge in the current drawing and magnitude based on
+% the difference between the actual edge length in the current drawing and some
+% target distance. Any possible binary duplication of $v$ defines a \ild{split
+%   line} that partitions $\mathcal{N}(v)$ into two disjoint subsets
+% $\neighb(v)^+$ and $\neighb(v)^-$. The \ild{tension of a split line} is the sum
+% of tensions of either $\neighb(v)^+$ or $\neighb(v)^-$ --- they are in fact equal
+% if the drawing is in equilibrium. The \ild{tension of a vertex} then is the
+% maximum tension of all possible split lines.
+% \citeauthor{eades_VertexSplittingTensionfree_1996} propose an extension of the
+% \textsc{Kamada-Kawai} algorithm in which a vertex with tension greater than a
+% given threshold is split into to duplicates according to its maximum tension
+% split line in each iteration~\cite{eades_VertexSplittingTensionfree_1996}.
+% Instead of simply setting a threshold on maximum tension, the tension value may
+% also be used as input feature for a classifier, which may use this information
+% in combination with other features to decide duplication.
 
-Further,
-additional information that is provided in disease maps could be exploited. For
+Additional information that is provided in disease maps could be exploited. For
 instance, information on the compartment membership of a species alias was not
 considered at all in this work. Interactions that cross a compartment boundary
 may have special biological meaning such as transport of a compound across a
@@ -4575,14 +4571,14 @@ reactants or products and modifiers are more likely to be duplicated.
 \section{Outlook}
 
 Human-like node duplication in disease maps remains a challenging problem. While
-simple heuristics or machine learning approaches may provide reasonable
+current approaches may provide reasonable
 suggestions, these methods are not yet sophisticated enough to fully eliminate
-the need of an expert curator. Our work has provided further insights into the
+the need of an expert curator. Our work has provided further insight into the
 application of machine learning methods to node duplication. The
 approach of capturing expert knowledge via a machine learning model appears to
 be a viable alternative to rule-based heuristics.
 
-We envision that, in the future, the process of manually creating disease maps
+We envision that in the future the process of manually creating disease maps
 can be greatly accelerated by providing the curator with high-quality
 suggestions on what nodes should be considered and how they should be
 duplicated. Besides the quality of the prediction, it is also essential that the
