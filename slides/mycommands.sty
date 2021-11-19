@@ -1,0 +1,100 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mycommands}[mycommands]
+
+\newcommand{\mat}[1]{
+  \mathbf{#1}
+}
+
+
+% bold vectors (instead of arrows)
+\let\oldhat\hat
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\renewcommand{\hat}[1]{\oldhat{\mathbf{#1}}}
+
+\newcommand{\card}[1]{%
+  ||#1||
+}
+
+
+\newcommand{\cupdot}{\mathbin{\mathaccent\cdot\cup}}
+
+
+\newcommand{\inlinedef}[1]{{\color{purple}\textit{\textbf{{#1}}}}}
+\newcommand{\ild}[1]{\inlinedef{#1}}
+
+
+\newenvironment{myalgo}[1]
+{
+  \begingroup
+  \removelatexerror
+  \begin{algorithm}[h]
+    \setstretch{1.2}
+    \caption{#1}
+  }
+  { 
+  \end{algorithm}
+  \endgroup
+}
+
+
+
+\newcommand{\nfkb}{NF-$\kappa$B }
+
+\newcommand{\toolname}[1]{\textit{#1}}
+
+\newcommand{\dataname}[1]{\textsc{#1}}
+\newcommand{\ADMap}{\dataname{AlzPathwayReorg}}
+\newcommand{\ADLast}{\dataname{AlzPathwayLast}}
+\newcommand{\PDMap}{\dataname{PDMap}}
+\newcommand{\ReconMap}{\dataname{ReconMap}}
+
+
+\newcommand{\ecoli}{\textit{E. coli}}
+
+\newcommand{\msg}{\ensuremath{\vec{msg}}}
+
+\newcommand{\concat}{\|}
+
+\newcommand{\softmax}{\ensuremath{\text{softmax}}}
+
+\newcommand{\sign}{\ensuremath{\text{sign}}}
+
+\newcommand\inner[2]{\langle #1, #2 \rangle}
+
+\newcommand{\Krbf}{\ensuremath{K_{RBF}}}
+
+\newcommand{\argmax}{\ensuremath{\text{argmax}}}
+\newcommand{\argmin}{\ensuremath{\text{argmin}}}
+
+\newcommand{\neighb}{\ensuremath{\mathcal{N}}}
+
+\newcommand{\featname}[1]{\lstinline{#1}}
+
+\newcommand{\Remp}{\ensuremath{\mathcal{R}_{\text{emp}}}}
+
+\newcommand{\cd}[1]{\lstinline{#1}}
+
+\newcommand{\nielsen}{\citeauthor{nielsen_MachineLearningSupport_2019}}
+
+% \newcommand{\dataset}[1]{\textsc{#1}}
+
+\newcommand{\mychoice}[1]{*#1*}
+
+\newcommand{\myclassletter}[1]{\ensuremath{\text{\cd{#1}}}}
+
+\renewcommand{\P}{\myclassletter{P}}
+\newcommand{\N}{\myclassletter{N}}
+\newcommand{\TP}{\myclassletter{TP}}
+\newcommand{\TN}{\myclassletter{TN}}
+\newcommand{\FP}{\myclassletter{FP}}
+\newcommand{\FN}{\myclassletter{FN}}
+\newcommand{\PP}{\myclassletter{PP}}
+\newcommand{\PN}{\myclassletter{PN}}
+\newcommand{\FPR}{\myclassletter{FPR}}
+\newcommand{\TPR}{\myclassletter{TPR}}
+
+\newcommand{\pic}[1]{\includegraphics[width=\linewidth]{#1}}
+
+\newcommand{\chk}{\checkmark} % amssymb
+
+\endinput
