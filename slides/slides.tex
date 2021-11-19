@@ -16,6 +16,7 @@
 \usepackage{mycommands}
 \usepackage{nicefrac}
 \usepackage{listings}
+\usepackage[numbers]{natbib}
 
 \usepackage{graphicx,array}
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
@@ -110,6 +111,12 @@
   \begin{block}#2{#1}}{\end{block}}
 
 
+\newenvironment<>{objectiveblock}[1]{%
+  \setbeamercolor{block title}{fg=white,bg=teal}%
+  \setbeamercolor{block body}{bg=teal!25}
+  \begin{block}#2{#1}}{\end{block}}
+
+
 
 
 % Information to be included in the title page:
@@ -122,6 +129,28 @@
 \begin{document}
 
 \frame{\titlepage}
+
+\begin{frame}
+  \frametitle{Abstract}
+  % TODO make a 'visual abstract'?
+  \begin{itemize}
+  \item In preliminary layouts of disease maps, a species alias may be connected
+    to many different processes
+  \item Unclear whether connections are meaningful or merely artifact of
+    creation process
+ \item Faithful network representation should not have such connections $\leadsto$
+   duplicate some nodes
+ \item Decision which nodes may be duplicated is not trivial $\leadsto$ consider
+   ML model trained on expert decisions
+   \item ... % extend previous approach...
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  (definition of species, species alias, process, ...)
+  (DMs interpreted as networks)
+  (details on graph interpretation?)
+\end{frame}
 
 
 \begin{frame}
@@ -196,14 +225,15 @@
 
 \begin{frame}
   \frametitle{TODO}
-  \begin{exampleblock}{Objective 1}
+  \begin{objectiveblock}{Objective 1}
     Assess whether a given species alias implies false connectivity (and should
     thus be duplicated)
-  \end{exampleblock}
+  \end{objectiveblock}
   here: depends on context etc.?
-  \begin{exampleblock}{Objective 2}
+  \begin{objectiveblock}{Objective 2}
     Determine number of duplicates and attachment of edges
-  \end{exampleblock}
+  \end{objectiveblock}
+  distinction between these two tasks...?
 \end{frame}
 
 
@@ -238,25 +268,179 @@
 
 
 \begin{frame}
-  \frametitle{TODO}
-  (motivation for ML approach)
+  \frametitle{Motivation for ML approach}
+  % think: challenges in the problem and limitations of current approach
+  % TODO still have to specify threshold
+  % TODO still have to decide how many duplicates
+  \begin{objectiveblock}{Objective 1}
+    Assess whether a given species alias implies false connectivity (and should
+    thus be duplicated)
+  \end{objectiveblock}
+  \begin{itemize}
+  \item No clear requirements or guidelines (yet)
+  \item Previous work relies on heuristic rules
+  \end{itemize}
+  % TODO factors that may make it hard to hand-craft rules
+  \begin{itemize}
+  \item Decision potentially depends on biological domain knowledge.
+  \item Decision depends on \textit{context} (neighbourhood) of given species
+    alias
+  \end{itemize}
+
+  $\leadsto$ Try to learn rules from examples provided by domain expert \\
+  $\leadsto$ Provide information on network structure 
+  \begin{objectiveblock}{}
+    Given expert decisions, train a ML model for \ild{supervised node
+      classification} to predict node duplication.
+  \end{objectiveblock}
+  {\footnotesize
+    \begin{enumerate}
+    \item ``expert decisions''?
+    \item ``supervised node classification''?
+    \end{enumerate}
+  }
 \end{frame}
 
 
 \begin{frame}
-  \frametitle{Problem Definition / Overview}
-  \begin{exampleblock}{Objective}
-      Given expert decisions, train an ML model to predict node duplication.
-  \end{exampleblock}
+  ``Expert decisions''?
+  (repeat first part of later slide here)
+\end{frame}
 
+\begin{frame}
+  \frametitle{TODO}
+  (step through screenshots of snapshots...)
+\end{frame}
+
+
+\begin{frame}
+  % TODO this is copy of previous frame, make sure contents are in sync
+  \frametitle{TODO}
+  \begin{itemize}
+    % TODO use definition boxes for this?
+  \item \textbf{AlzPathway} is a disease map that describes signalling
+    pathways related to Alzheimer's Disease
+  \item Recently received additional curation of layout, including duplication
+    of nodes
+  \item Snapshots of intermediate progress were saved (\ild{reorganisation steps})
+  \end{itemize}
+  \vspace{1.5em}
+  % dont really need this here, do we...
+  % \begin{itemize}
+  % \item
+  %   Want to predict which nodes will be duplicated:
+  %   \begin{itemize}
+  %   \item Given sequence of graphs $(G_1, ..., G_k)$, infer ground-truth labels
+  %     for nodes in $G_i$ by comparing to $G_{i+1}$
+  %   \item Concatenation of $G_1, ..., G_{k-1}$ is input to classifier
+  %     % TODO this is just confusing...
+  %   \end{itemize}
+  % \end{itemize}
+  \begin{itemize}
+  \item Such reorganisation steps are hard to obtain in practice
+  \item For any disease map, can create a single ``step'' by comparing it to its
+    \ild{collapsed} version
+    % TODO create picture for this
+  \end{itemize}
+\end{frame}
+
+
+
+
+
+% consider three disease maps...
+
+% \begin{frame}
+%   \frametitle{TODO}
+%   \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.6\linewidth]{disease-map-screenshots/alzpathway-406.png}
+%     \caption{ \textbf{AlzPathway}~\cite{mizuno_AlzPathwayComprehensiveMap_2012}
+%       describes signalling pathways related to Alzheimer's Disease
+%     }
+%   \end{figure}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{TODO}
   \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{pipeline.png}
+    \includegraphics[width=\linewidth]{disease-map-screenshots/pdmap-whole}
+    \caption{
+      \textbf{Parkinson's Disease Map} (\PDMap{}) describes major pathways
+      involved in pathogenesis of Parkinson's Disease
+    }
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{TODO}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{disease-map-screenshots/reconmap}
+    \caption{
+      \textbf{ReconMap}~\cite{noronha_ReconMapInteractiveVisualization_2017}, a
+      visual representation of the \textit{Recon 2}~\cite{thiele_CommunitydrivenGlobalReconstruction_2013} GSMM }
+  \end{figure}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{TODO datasets used}
+  
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}{0.32\textwidth}
+    % ADReorgLast summary
+    \includegraphics[width=\linewidth]{generated/AlzPathwayReorgLast.png}
+  \end{subfigure} 
+  \begin{subfigure}{0.32\textwidth}
+    % PDMap summary
+    \includegraphics[width=\linewidth]{generated/PDMap19.png}
+  \end{subfigure} 
+  \begin{subfigure}{0.32\textwidth}
+    % ReconMap summary
+    \includegraphics[width=\linewidth]{generated/ReconMapOlder.png}
+  \end{subfigure} 
+  % \caption{An
+  %   overview of characteristics of the \textit{collapsed} networks used for
+  %   training: \ADLast{}, \PDMap{} and \ReconMap{}. The count of species aliases
+  %   and reactions is effectively the count of the bipartite node sets in the
+  %   constructed graphs.
+  %   % Since we are considering collapsed diagrams, the count
+  %   % of species aliases equals the count of species.
+  %   Networks and labels are
+  %   determined as described in \refsec{determining-labels}. Note that the $y$-axis of the
+  %   node degree histogram is plotted in logarithmic scale. \textit{ReconMap}
+  %   additionally has two nodes of degree $859$ and $1077$ that were excluded
+  %   from the histogram. }
+  \label{fig:maps-summary}
+\end{figure}
+\end{frame}
+
+% TODO make notes about differences between DMs
+% TODO mention class imbalance
+% other challenges, here or later:
+% TODO contradictory, no always exhaustive
+% TODO reorganisations beyond node duplication
+
+\begin{frame}
+  ``Supervised node classification''?
+  % (how do we even make this data available?) ``okay, so the plan is...''
+  % maybe three diagrams: preprocessing, training and evaluation
+  % TODO then probably here also note about how we dont do actual 'validation'
+  % after model selection
+  \vspace{1.5em}
+  % TODO split this in preprocessing, training classifier and evaluating classifier
+  % i.e. here, replace last part with indication that X, Y, A will be input to
+  % some classifier
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{pipeline-preprocessing.png}
   \end{figure}
 
 \end{frame}
 
- 
 
 \begin{frame}
   % TODO schematic for TPR, TPR
@@ -265,59 +449,48 @@
   \item To compare classifiers, we need an \textbf{unbiased performance measure}
   \end{itemize}
   \begin{itemize}
-  \item Classifiers yield a \ild{confidence score} in $[0,1]$ for a given example
-  \item Obtain concrete classification by setting a \ild{decision threshold}
+  \item Classifiers used herein yield a \ild{confidence score} in $[0,1]$ for a given example
+  \item Obtain concrete classification by setting a \ild{decision threshold}, yields
+    \begin{itemize}
+    \item \ild{True Positive Rate} (\TPR{}): $\nicefrac{\text{\# true
+          positives}}{\text{\# actually positive}}$
+    \item \ild{False Positive Rate} (\FPR{}): $\nicefrac{\text{\# false
+          positives}}{\text{\# actually negative}}$
+    \end{itemize}
   \end{itemize}
   % not analog. to precision-recall curve since recall is sensitive to
   % class skew  -- does not make sense to introduce Precision and Recall then,
   % simply stick to TPR, FPR
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{tpr-fpr.png}
+  \end{figure}
+  
   \begin{itemize}
-    \item \ild{True Positive Rate} (\TPR{}): $\nicefrac{\text{\# true
-          positives}}{\text{\# actually positive}}$
-      \item \ild{False Positive Rate} (\FPR{}): $\nicefrac{\text{\# false
-            positives}}{\text{\# actually negative}}$
-  % \item \ild{Precision}: $\nicefrac{\text{\# true positives}}{\text{\# predicted
-  %       positive}} = 1 - \FPR{}$
-  % \item \ild{Recall} (or True Positive Rate): $\nicefrac{\text{\# true
-  %       positives}}{\text{\# actually positive}}$
-  \end{itemize}
-  \begin{itemize}
-  \item Usually a tradeoff, choice depends on use-case
-    \begin{itemize}
-      \footnotesize
-      \item Accept only few high-confidence predictions $\rightarrow$ low
-        \FPR{}, but also low \TPR{} (Recall)
-      \item Lower decision threshold $\rightarrow$ increase \TPR{} at cost of
-        increased \FPR{}
-    % \item Accept only high-confidence predictions $\rightarrow$ high precision, low recall
-    % \item Lower decision threshold $\rightarrow$ increase recall at cost of precision
-    \end{itemize}
+  \item Focus on positive class
+  \item Insensitive to class imbalance 
   \end{itemize}
 \end{frame}
+
+% \begin{frame}
+%   \frametitle{Problem Definition / Evaluation of Classifiers / ROC Curve}
+%   \begin{columns}
+%     \halfcol
+%     \begin{figure}[h]
+%       \includegraphics[width=7cm]{roc-intro.png}
+%     \end{figure}
+%     \halfcol
+%     \begin{itemize}
+%     \item Concrete choice of threshold yields binary classification and \TPR{}, \FPR{}
+%     \end{itemize}
+%   \end{columns}
+% \end{frame}
 
 \begin{frame}
   \frametitle{Problem Definition / Evaluation of Classifiers / ROC Curve}
   \begin{columns}
     \halfcol
-    \begin{figure}[h]
-      \includegraphics[width=7cm]{roc-intro.png}
-    \end{figure}
-    \halfcol
-    \begin{itemize}
-    \item Concrete choice of threshold yields binary classification and \TPR{}, \FPR{}
-    \end{itemize}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Problem Definition / Evaluation of Classifiers / ROC Curve}
-  \begin{columns}
-    \halfcol
-    \begin{figure}[h]
-      \includegraphics[width=7cm]{roc-intro-line.png}
-      \caption{Plot \TPR{} and \FPR{} as function of decision threshold}
-    \end{figure}
-    \halfcol %
     \begin{itemize}
     \item Plot \TPR{}, \FPR{} as function of decision threshold $\leadsto$ \ild{ROC
         curve}
@@ -329,12 +502,102 @@
         % the ROC curves will not change.
       \item Insensitive to error costs
       \end{itemize}
+      \item Usually a tradeoff, choice depends on use-case
+        \begin{itemize}
+          \footnotesize
+        \item Accept only few high-confidence predictions $\rightarrow$ low
+          \FPR{}, but also low \TPR{} (Recall)
+        \item Lower decision threshold $\rightarrow$ increase \TPR{} at cost of
+          increased \FPR{}
+          % \item Accept only high-confidence predictions $\rightarrow$ high precision, low recall
+          % \item Lower decision threshold $\rightarrow$ increase recall at cost of precision
+        \end{itemize}
     \end{itemize}
+    \halfcol
+    \begin{figure}[h]
+      % TODO move annotation in graphic s.t. less whitespace on left
+      \includegraphics[width=7cm]{roc-intro-line.png}
+      \caption{Plot \TPR{} and \FPR{} as function of decision threshold}
+    \end{figure}
   \end{columns}
+\end{frame}
+
+\begin{frame}
+  maybe recap slide here
+  (then: ok, so now we have all the background we need to actually do stuff)
+\end{frame}
+
+\begin{frame}
+  \frametitle{Problem Definition / Overview}
+  Previous work by
+  \citeauthor{nielsen_MachineLearningSupport_2019}~\cite{nielsen_MachineLearningSupport_2019}:
+  % TODO replace with simplified version of pipeline graphic?
+  % TODO visualise reorganisation steps / multiplicity of input disease map in graphic
+  \begin{itemize}
+  \item Node features based on graph centralities
+    % \item Ground-truth labels based on reorganisation steps
+  \item Consider collapsed map plus reorganisation steps
+  \item Supplied to Support Vector Machine classifier
+  \end{itemize}
+  \vspace{1.5em}
+  We extend this in several directions:
+  \begin{itemize}
+  \item Explore different classifier (Graph Neural Networks)
+  \item Explore importance of reorganisation steps
+  \item Explore choice of features
+  \item Heuristic for determining number of duplicates and edge attachment
+  \end{itemize}
 \end{frame}
 
 
 
+
+
+
+\begin{frame}
+  (data setup: train on ADReorg (collapsed plus reorg), evaluate on both PDMap
+  and ReconMap -- because interesting to see how they behave differently)
+  (note on how we always build on the previous experiment)
+\end{frame}
+
+\begin{frame}
+  reproducing: show AUC comparison for PDMap, ROC curves for ReconMap
+\end{frame}
+
+
+\begin{frame}
+  GNN recap \& motivation of GNN
+\end{frame}
+
+\begin{frame}
+  additionally show curves for GNN model (emphasize that this is naive approach)
+\end{frame}
+
+\begin{frame}
+  discussion and takeaway of first experiment
+\end{frame}
+
+\begin{frame}
+  importance of reorganisation steps
+  (considerations on use-case)
+\end{frame}
+
+\begin{frame}
+ importance of message-passing 
+ % TODO move this to earlier/later? seems sort of isolated
+\end{frame}
+
+\begin{frame}
+  feature selection
+\end{frame}
+
+\begin{frame}
+  GO features
+\end{frame}
+
+\begin{frame}
+  attachment
+\end{frame}
 
 
 \begin{frame}
